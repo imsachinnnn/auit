@@ -1,0 +1,309 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard - {{ student.student_name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" type="image/png">
+    <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --secondary-bg: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --accent-color: #5a7d7c;
+            --accent-color-hover: #4a6b69;
+            --light-accent-bg: #eef2f2;
+        }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--primary-bg); 
+            color: var(--text-primary); 
+            margin: 0; 
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex-grow: 1;
+        }
+        /* --- UPDATED FOR SPACE EFFICIENCY --- */
+        .dashboard-container { 
+            max-width: 1600px; /* Increased max width */
+            margin: auto; 
+            padding: 40px 20px;
+        }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-header .title-group { display: flex; align-items: center; gap: 15px; }
+        .page-header h1 { margin: 0; font-size: 2em; font-weight: 600; }
+        .header-actions { display: flex; align-items: center; gap: 15px; }
+        .action-btn { display: inline-block; padding: 10px 20px; border: none; border-radius: 6px; background-color: var(--accent-color); color: white; text-decoration: none; font-size: 1em; font-family: 'Poppins', sans-serif; cursor: pointer; transition: background-color 0.3s; }
+        .action-btn:hover { background-color: var(--accent-color-hover); }
+        
+        .profile-header-card {
+            background-color: var(--secondary-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+        .profile-photo { width: 130px; height: 130px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-bg); flex-shrink: 0; }
+        .profile-info { width: 100%; }
+        .profile-info h2 { margin: 0 0 5px 0; font-size: 2em; }
+        .profile-info p { color: var(--text-secondary); margin: 0 0 20px 0; font-size: 1.1em; }
+        
+        .essential-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        .essential-links a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background-color: var(--light-accent-bg);
+            color: var(--accent-color);
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.9em;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .essential-links a:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        /* --- UPDATED FOR SPACE EFFICIENCY --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 3fr 1fr; /* Gave more space to the main content */
+            gap: 30px;
+            align-items: start;
+        }
+
+        .card { background-color: var(--secondary-bg); border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 25px; margin-bottom: 30px; }
+        .card:last-child { margin-bottom: 0; }
+        .card-title { font-size: 1.3em; font-weight: 600; margin-top: 0; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+        
+        /* --- UPDATED FOR SPACE EFFICIENCY --- */
+        .details-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* Wider items */
+            gap: 20px 30px; 
+        }
+
+        .detail-item { margin-bottom: 15px; }
+        .detail-item:last-child { margin-bottom: 0; }
+        .detail-item strong { color: var(--text-secondary); display: block; margin-bottom: 5px; font-size: 0.9em; font-weight: 500; }
+        .detail-item span, .detail-item a { word-wrap: break-word; }
+        .detail-item a { color: var(--accent-color); text-decoration: none; font-weight: 500; }
+        .detail-item a:hover { text-decoration: underline; }
+        .academic-section { margin-top: 25px; }
+        .academic-section:first-child { margin-top: 0; }
+        .academic-section h4 { margin-bottom: 15px; color: var(--accent-color); }
+        .scholarship-list { list-style-type: none; padding: 0; margin: 0; }
+        .scholarship-list li { background-color: var(--primary-bg); padding: 8px 12px; border-radius: 5px; margin-bottom: 8px; font-size: 0.9em; }
+        
+        @media (max-width: 1200px) { /* Adjust for medium-large screens */
+            .dashboard-grid {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+        @media (max-width: 992px) { /* Adjust for tablets */
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 768px) { /* Adjust for mobile */
+            .profile-header-card { flex-direction: column; text-align: center; }
+            .page-header { flex-direction: column; gap: 20px; }
+            .essential-links { justify-content: center; }
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 20px !important; margin: 0 !important; background: #ffffff !important; color: #000000 !important; }
+            .dashboard-container { width: 100% !important; max-width: 100% !important; padding: 0 !important; }
+            * { color: #000000 !important; background: transparent !important; box-shadow: none !important; }
+            .dashboard-grid { display: block !important; }
+            .card { border: 1px solid #ccc !important; page-break-inside: avoid; margin-bottom: 20px !important; padding: 15px !important; }
+            a, a:visited { text-decoration: none !important; color: #000000 !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header section for the dashboard page with print and logout buttons -->
+        <header class="page-header no-print">
+            <div class="title-group">
+                <h1>Student Dashboard</h1>
+            </div>
+            <div class="header-actions">
+                <button onclick="window.print()" class="action-btn">🖨️ Print Details</button>
+                <a href="{% url 'student_logout' %}" class="action-btn">Logout</a>
+            </div>
+        </header>
+
+        <main>
+            <!-- Profile Header Card - Hidden during printing -->
+            <div class="profile-header-card no-print">
+                {% if student.studentdocuments.student_photo %}
+                    <img src="{{ student.studentdocuments.student_photo.url }}" alt="Student Photo" class="profile-photo">
+                {% else %}
+                    <img src="https://placehold.co/180x180/EFEFEF/AAAAAA?text=No+Photo" alt="No Photo Available" class="profile-photo">
+                {% endif %}
+                <div class="profile-info">
+                    <h2>{{ student.student_name }}</h2>
+                    <p>{{ student.roll_number }} | {{ student.get_program_level_display }}</p>
+                    
+                    <!-- Quick action links for students -->
+                    <div class="essential-links">
+                        <a href="{% url 'exam_timetable' %}">📅 Timetable</a>
+                        <a href="https://annamalaiuniversity.ac.in/aucoe/rs_view.php" target="_blank">🎓 Results</a>
+                        <a href="#">✅ Attendance</a>
+                        <a href="https://annamalaiuniversity.ac.in/" target="_blank">🏫 AU Main Site</a>
+                        <a href="https://annamalaiuniversity.ac.in/studport/epayment_rgl_hfee.php?mode=oNln" target="_blank">🏫 Hostel Fees Payment </a>
+                        <a href="https://annamalaiuniversity.ac.in/studport/tf_general_pharmacy.php?fee=tf" target="_blank">🏫 Tution Fees Payment</a>
+                        <a href="{% url 'student_editprofile' %}">Edit Profile</a>
+                        <a href="{% url 'help_and_support' %}">❓ Help & Support</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main two-column grid for dashboard content -->
+            <div class="dashboard-grid">
+                <!-- Left Column: Main details -->
+                <div class="main-content">
+                    <div class="card">
+                        <h2 class="card-title">Personal & Contact Info</h2>
+                        <div class="details-grid">
+                            <div class="detail-item"><strong>Name</strong> <span>{{ student.student_name }}</span></div>
+                            <div class="detail-item"><strong>Email</strong> <span>{{ student.student_email }}</span></div>
+                            <div class="detail-item"><strong>Mobile</strong> <span>{{ student.personalinfo.student_mobile|default:"N/A" }}</span></div>
+                            <div class="detail-item"><strong>Date of Birth</strong> <span>{{ student.personalinfo.date_of_birth|date:"d M Y"|default:"N/A" }}</span></div>
+                            <div class="detail-item"><strong>Gender</strong> <span>{{ student.personalinfo.get_gender_display|default:"N/A" }}</span></div>
+                            <div class="detail-item"><strong>Blood Group</strong> <span>{{ student.personalinfo.get_blood_group_display|default:"N/A" }}</span></div>
+                            
+                            <div class="detail-item">
+                                <strong>Community</strong> 
+                                <span>{{ student.personalinfo.community.name|default:"N/A" }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong>Caste</strong>
+                                <span>
+                                    {% if student.personalinfo.caste %}
+                                        {{ student.personalinfo.caste.name }}
+                                    {% elif student.personalinfo.caste_other %}
+                                        {{ student.personalinfo.caste_other }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <div class="detail-item"><strong>Religion</strong> <span>{{ student.personalinfo.get_religion_display|default:"N/A" }}</span></div>
+                            <div class="detail-item"><strong>UMIS ID</strong> <span>{{ student.personalinfo.umis_id|default:"N/A" }}</span></div>
+                            <div class="detail-item"><strong>EMIS ID</strong> <span>{{ student.personalinfo.emis_id|default:"N/A" }}</span></div>
+                            <div class="detail-item"><strong>ABC ID</strong> <span>{{ student.personalinfo.abc_id|default:"N/A" }}</span></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2 class="card-title">Parent Details</h2>
+                        <div class="details-grid">
+                            <div class="detail-item"><strong>Father's Name</strong> <span>{{ student.personalinfo.father_name|default:"N/A" }}</span></div>
+                            <div class="detail-item"><strong>Father's Mobile</strong> <span>{{ student.personalinfo.father_mobile|default:"N/A" }}</span></div>
+                            <div class="detail-item"><strong>Mother's Name</strong> <span>{{ student.personalinfo.mother_name|default:"N/A" }}</span></div>
+                            <div class="detail-item"><strong>Mother's Mobile</strong> <span>{{ student.personalinfo.mother_mobile|default:"N/A" }}</span></div>
+                            <div class="detail-item"><strong>Parent's Annual Income</strong> <span>Rs. {{ student.personalinfo.parent_annual_income|default:"N/A" }}</span></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2 class="card-title">Academic History</h2>
+                        {% with history=student.academichistory %}
+                            {% if history.sslc_school_name %}
+                            <div class="academic-section">
+                                <h4>SSLC Details</h4>
+                                <div class="details-grid">
+                                    <div class="detail-item"><strong>School</strong> <span>{{ history.sslc_school_name }}</span></div>
+                                    <div class="detail-item"><strong>Percentage</strong> <span>{{ history.sslc_percentage }}%</span></div>
+                                    <div class="detail-item"><strong>Year of Passing</strong> <span>{{ history.sslc_year_of_passing }}</span></div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if history.hsc_school_name %}
+                            <div class="academic-section">
+                                <h4>HSC Details</h4>
+                                <div class="details-grid">
+                                    <div class="detail-item"><strong>School</strong> <span>{{ history.hsc_school_name }}</span></div>
+                                    <div class="detail-item"><strong>Percentage</strong> <span>{{ history.hsc_percentage }}%</span></div>
+                                    <div class="detail-item"><strong>Year of Passing</strong> <span>{{ history.hsc_year_of_passing }}</span></div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+                
+                <!-- Right Column: Supplementary details -->
+                <div class="side-content">
+                    <div class="card">
+                        <h2 class="card-title">Scholarship Details</h2>
+                        <div class="details-grid">
+                            {% with scholarship=student.scholarshipinfo %}
+                                <div class="detail-item"><strong>Applying for Scholarship?</strong> <span>{% if student.personalinfo.has_scholarship %}Yes{% else %}No{% endif %}</span></div>
+                                {% if student.personalinfo.has_scholarship %}
+                                <div class="detail-item">
+                                    <strong>Scholarships</strong>
+                                    <ul class="scholarship-list">
+                                        {% if scholarship.is_first_graduate %}<li>First Graduate</li>{% endif %}
+                                        {% if scholarship.sch_bcmbc %}<li>BC/MBC</li>{% endif %}
+                                        <!-- Add other scholarship flags here -->
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+
+                    <div class="card" id="documents-card">
+                        <h2 class="card-title">Uploaded Documents</h2>
+                        <div class="details-grid">
+                            {% with doc=student.studentdocuments %}
+                                <div class="detail-item"><strong>ID Card</strong> {% if doc.student_id_card %}<a href="{{ doc.student_id_card.url }}" target="_blank">View</a>{% else %}<span>N/A</span>{% endif %}</div>
+                                <div class="detail-item"><strong>Community Cert.</strong> {% if doc.community_certificate %}<a href="{{ doc.community_certificate.url }}" target="_blank">View</a>{% else %}<span>N/A</span>{% endif %}</div>
+                                <div class="detail-item"><strong>Aadhaar Card</strong> {% if doc.aadhaar_card %}<a href="{{ doc.aadhaar_card.url }}" target="_blank">View</a>{% else %}<span>N/A</span>{% endif %}</div>
+                                <div class="detail-item"><strong>SSLC Marksheet</strong> {% if doc.sslc_marksheet %}<a href="{{ doc.sslc_marksheet.url }}" target="_blank">View</a>{% else %}<span>N/A</span>{% endif %}</div>
+                                <div class="detail-item"><strong>HSC Marksheet</strong> {% if doc.hsc_marksheet %}<a href="{{ doc.hsc_marksheet.url }}" target="_blank">View</a>{% else %}<span>N/A</span>{% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+
+                    <!-- This card will be hidden during printing -->
+                    <div class="card no-print">
+                        <h2 class="card-title">Other Details</h2>
+                        <div class="details-grid">
+                            <div class="detail-item"><strong>Ambition</strong> <span>{{ student.otherdetails.ambition|default:"N/A" }}</span></div>
+                            <div class="detail-item"><strong>Role Model</strong> <span>{{ student.otherdetails.role_model|default:"N/A" }}</span></div>
+                            <div class="detail-item"><strong>Hobbies</strong> <span>{{ student.otherdetails.hobbies|default:"N/A" }}</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
+
