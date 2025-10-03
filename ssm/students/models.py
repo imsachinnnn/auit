@@ -48,6 +48,7 @@ class Student(models.Model):
     def __str__(self):
         return f"{self.student_name} ({self.roll_number})"
 
+
 class PersonalInfo(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, primary_key=True)
     umis_id = models.CharField(max_length=50, blank=True)

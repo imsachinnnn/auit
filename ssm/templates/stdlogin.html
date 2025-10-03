@@ -289,7 +289,7 @@
                     <div class="input-group">
                         <div class="password-header">
                             <label for="password">Password</label>
-                            <a href="{% url 'password_reset' %}" class="forgot-password-link">Forgot Password?</a>
+                            <a href="{% url 'password_reset_identify' %}" class="forgot-password-link">Forgot Password?</a>
                         </div>
                         <input type="password" id="password" name="password" required />
                     </div>
@@ -316,4 +316,7 @@
     </footer>
 
 </body>
+{% comment %} <div class="back-link" style="text-align: center; margin-top: 15px;">
+    <a href="{% url 'password_reset_identify' %}" style="color: var(--accent-color); text-decoration: none; font-weight: 500;">Forgot Password?</a>
+</div> {% endcomment %}
 </html>

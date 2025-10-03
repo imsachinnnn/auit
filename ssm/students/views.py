@@ -226,18 +226,146 @@ def student_logout(request):
         pass
     return redirect('student_login')
 
+from django.contrib import messages
+
 @student_login_required
 def student_editprofile(request):
     roll_number = request.session.get('student_roll_number')
     student = Student.objects.get(roll_number=roll_number)
     
+    personal_info, _ = PersonalInfo.objects.get_or_create(student=student)
+    student_docs, _ = StudentDocuments.objects.get_or_create(student=student)
+    bank_details, _ = BankDetails.objects.get_or_create(student=student)
+    other_details, _ = OtherDetails.objects.get_or_create(student=student)
+
     if request.method == 'POST':
-        # Add logic here to update the student's profile from request.POST
-        # For example:
-        student.personalinfo.student_mobile = request.POST.get('student_mobile')
-        student.personalinfo.save()
+        # Update student email
+        student.student_email = request.POST.get('student_email')
+        student.save()
         
-        # After saving, redirect back to the dashboard
+        # Update personal info - contact numbers and addresses
+        personal_info.student_mobile = request.POST.get('student_mobile')
+        personal_info.father_mobile = request.POST.get('father_mobile')
+        personal_info.mother_mobile = request.POST.get('mother_mobile')
+        personal_info.present_address = request.POST.get('present_address')
+        personal_info.permanent_address = request.POST.get('permanent_address')
+        personal_info.save()
+        
+        # Update bank details
+        bank_details.account_holder_name = request.POST.get('account_holder_name')
+        bank_details.account_number = request.POST.get('account_number')
+        bank_details.bank_name = request.POST.get('bank_name')
+        bank_details.branch_name = request.POST.get('branch_name')
+        bank_details.ifsc_code = request.POST.get('ifsc_code')
+        bank_details.save()
+        
+        # Update document uploads
+        if 'student_photo' in request.FILES:
+            student_docs.student_photo = request.FILES['student_photo']
+        if 'aadhaar_card' in request.FILES:
+            student_docs.aadhaar_card = request.FILES['aadhaar_card']
+        if 'community_certificate' in request.FILES:
+            student_docs.community_certificate = request.FILES['community_certificate']
+        if 'sslc_marksheet' in request.FILES:
+            student_docs.sslc_marksheet = request.FILES['sslc_marksheet']
+        if 'hsc_marksheet' in request.FILES:
+            student_docs.hsc_marksheet = request.FILES['hsc_marksheet']
+        if 'income_certificate' in request.FILES:
+            student_docs.income_certificate = request.FILES['income_certificate']
+        if 'bank_passbook' in request.FILES:
+            student_docs.bank_passbook = request.FILES['bank_passbook']
+        if 'driving_license' in request.FILES:
+            student_docs.driving_license = request.FILES['driving_license']
+        
+        student_docs.save()
+
+        messages.success(request, 'Your profile has been updated successfully!')
         return redirect('student_dashboard')
 
-    return render(request, 'studedit.html', {'student': student})
+    context = {
+        'student': student,
+        'personalinfo': personal_info,
+        'studentdocuments': student_docs,
+        'bankdetails': bank_details,
+        'otherdetails': other_details,
+    }
+    return render(request, 'studedit.html', context)
+
+# --- NEW PASSWORD RESET WORKFLOW (MOBILE & AADHAAR) ---
+
+def password_reset_identify(request):
+    """Step 1: User provides their Roll Number."""
+    student = None
+    if request.method == 'POST':
+        roll_number = request.POST.get('roll_number')
+        try:
+            student = Student.objects.get(roll_number=roll_number)
+            request.session['reset_student_pk'] = student.pk
+            return redirect('password_reset_verify')
+        except Student.DoesNotExist:
+            messages.error(request, 'No student found with that Roll Number.')
+
+    return render(request, 'p1.html', {'student': student})
+
+
+def password_reset_verify(request):
+    """Step 2: User verifies with Mobile and Aadhaar numbers."""
+    student_pk = request.session.get('reset_student_pk')
+    if not student_pk:
+        return redirect('password_reset_identify')
+
+    try:
+        student = Student.objects.get(pk=student_pk)
+    except Student.DoesNotExist:
+        return redirect('password_reset_identify')
+
+    if request.method == 'POST':
+        mobile_number = request.POST.get('student_mobile')
+        aadhaar_number = request.POST.get('aadhaar_number')
+
+        if (hasattr(student, 'personalinfo') and
+            student.personalinfo.student_mobile == mobile_number and 
+            student.personalinfo.aadhaar_number == aadhaar_number):
+            
+            request.session['reset_verified'] = True
+            return redirect('password_reset_confirm')
+        else:
+            messages.error(request, 'The details you entered do not match our records.')
+
+    # Pass student to template to display their name
+    return render(request, 'p2.html', {'student': student})
+
+
+def password_reset_confirm(request):
+    """Step 3: If verified, the user sets a new password."""
+    student_pk = request.session.get('reset_student_pk')
+    is_verified = request.session.get('reset_verified')
+
+    if not student_pk or not is_verified:
+        return redirect('password_reset_identify')
+
+    try:
+        student = Student.objects.get(pk=student_pk)
+    except Student.DoesNotExist:
+        return redirect('password_reset_identify')
+
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if not password or password != confirm_password:
+            messages.error(request, 'Passwords do not match or are empty.')
+            return render(request, 'p3.html', {'student': student})
+
+        student.set_password(password)
+        student.save()
+
+        del request.session['reset_student_pk']
+        del request.session['reset_verified']
+        
+        # Log them in manually by setting the session
+        request.session['student_roll_number'] = student.roll_number
+        messages.success(request, 'Your password has been reset successfully!')
+        return redirect('student_login')
+        
+    return render(request, 'p3.html', {'student': student})

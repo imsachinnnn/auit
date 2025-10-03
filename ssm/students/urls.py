@@ -43,4 +43,11 @@ urlpatterns = [
     path('edit_profile/', views.student_editprofile, name='student_editprofile'),
     #path('api/get-castes/', views.get_castes, name='get_castes'),
     path('api/get-castes/', views.get_caste_data_api, name='api_get_castes'),
+   # path('reset-password-request/', views.password_reset_request, name='password_reset_request'),
+    #path('reset-password/<uuid:token>/', views.password_reset_confirmm, name='password_reset_confirm'),
+    #path('reset-password/', views.password_reset_security, name='password_reset_security'),
+    path('password-reset/identify/', views.password_reset_identify, name='password_reset_identify'),
+    path('password-reset/verify/', views.password_reset_verify, name='password_reset_verify'),
+    path('password-reset/confirm/', views.password_reset_confirm, name='password_reset_confirm'),
+
 ]
