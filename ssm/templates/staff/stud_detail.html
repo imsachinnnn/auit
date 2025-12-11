@@ -152,10 +152,35 @@
             margin-bottom: 15px;
             border: 1px solid var(--border-color);
         }
+                /* --- SCROLL TO TOP BUTTON STYLES --- */
+        #scrollToTopBtn {
+            display: none; /* Hidden by default */
+            position: fixed; /* Fixed/sticky position */
+            bottom: 30px; /* Place the button at the bottom of the page */
+            right: 30px; /* Place the button 30px from the right */
+            z-index: 99; /* Make sure it does not overlap */
+            border: none;
+            outline: none;
+            background-color: var(--accent-color);
+            color: white;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%; /* Circle shape */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            font-size: 24px;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s, transform 0.3s, opacity 0.3s;
+        }
+
     </style>
 </head>
 
 <body>
+    <!-- Scroll To Top Button -->
+    <button onclick="topFunction()" id="scrollToTopBtn" title="Go to top">↑</button>
+
     <div class="container">
 
         <!-- Header with Back Button -->
@@ -417,6 +442,29 @@
         </section>
 
     </div>
+    <!-- JavaScript for Scroll To Top -->
+    <script>
+        // Get the button
+        let mybutton = document.getElementById("scrollToTopBtn");
+
+        // When the user scrolls down 300px from the top of the document, show the button
+        window.onscroll = function() {scrollFunction()};
+
+        function scrollFunction() {
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                mybutton.style.display = "flex"; // Use flex to keep the arrow centered
+            } else {
+                mybutton.style.display = "none";
+            }
+        }
+
+        // When the user clicks on the button, scroll to the top of the document
+        function topFunction() {
+            // Smooth scroll is also handled by CSS 'scroll-behavior: smooth' on body
+            document.body.scrollTop = 0; // For Safari
+            document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+        }
+    </script>
 </body>
 
 </html>

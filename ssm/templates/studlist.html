@@ -29,6 +29,7 @@
             margin: 0;
             padding: 40px 20px;
             line-height: 1.6;
+            scroll-behavior: smooth; /* Enables smooth scrolling for the whole page */
         }
 
         .container {
@@ -185,6 +186,33 @@
             text-decoration: none;
         }
 
+        /* --- SCROLL TO TOP BUTTON STYLES --- */
+        #scrollToTopBtn {
+            display: none; /* Hidden by default */
+            position: fixed; /* Fixed/sticky position */
+            bottom: 30px; /* Place the button at the bottom of the page */
+            right: 30px; /* Place the button 30px from the right */
+            z-index: 99; /* Make sure it does not overlap */
+            border: none;
+            outline: none;
+            background-color: var(--accent-color);
+            color: white;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%; /* Circle shape */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            font-size: 24px;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s, transform 0.3s, opacity 0.3s;
+        }
+
+        #scrollToTopBtn:hover {
+            background-color: var(--accent-color-hover);
+            transform: translateY(-3px); /* Slight lift effect */
+        }
+
         /* Responsive */
         @media (max-width: 800px) {
             .search-container {
@@ -200,11 +228,22 @@
             .student-card {
                 grid-template-columns: auto 1fr;
             }
+            /* Adjust button position for mobile */
+            #scrollToTopBtn {
+                bottom: 20px;
+                right: 20px;
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
         }
     </style>
 </head>
 
 <body>
+    <!-- Scroll To Top Button -->
+    <button onclick="topFunction()" id="scrollToTopBtn" title="Go to top">↑</button>
+
     <div class="container">
         <header class="page-header">
             <div class="title-group">
@@ -252,6 +291,30 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- JavaScript for Scroll To Top -->
+    <script>
+        // Get the button
+        let mybutton = document.getElementById("scrollToTopBtn");
+
+        // When the user scrolls down 300px from the top of the document, show the button
+        window.onscroll = function() {scrollFunction()};
+
+        function scrollFunction() {
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                mybutton.style.display = "flex"; // Use flex to keep the arrow centered
+            } else {
+                mybutton.style.display = "none";
+            }
+        }
+
+        // When the user clicks on the button, scroll to the top of the document
+        function topFunction() {
+            // Smooth scroll is also handled by CSS 'scroll-behavior: smooth' on body
+            document.body.scrollTop = 0; // For Safari
+            document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+        }
+    </script>
 </body>
 
 </html>
