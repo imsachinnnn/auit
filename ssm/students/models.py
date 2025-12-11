@@ -3,7 +3,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.hashers import make_password, check_password
 import datetime
 
-# --- Choices and Utility Functions ---
 
 def get_year_choices():
     """Generates a list of years for dropdown choices."""
@@ -17,9 +16,6 @@ GENDER_CHOICES = [('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')]
 BLOOD_GROUP_CHOICES = [('O+', 'O+'), ('O-', 'O-'), ('A+', 'A+'), ('A-', 'A-'), ('B+', 'B+'), ('B-', 'B-'), ('AB+', 'AB+'), ('AB-', 'AB-')]
 RELIGION_CHOICES = [('Hindu', 'Hindu'), ('Christian', 'Christian'), ('Muslim', 'Muslim')]
 COMMUNITY_CHOICES = [('OC', 'OC'), ('BC', 'BC'), ('MBC', 'MBC'), ('SC', 'SC'), ('ST', 'ST'),('BC MUSLIM','BC MUSLIM')]
-
-
-# --- Model Definitions ---
 
 class Caste(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -35,6 +31,14 @@ class Student(models.Model):
     password = models.CharField(max_length=128) # Stores the hashed password
     program_level = models.CharField(max_length=10, choices=PROGRAM_LEVEL_CHOICES, blank=True)
     ug_entry_type = models.CharField(max_length=10, choices=UG_ENTRY_CHOICES, blank=True)
+    
+    current_semester = models.PositiveIntegerField(default=1) # Added for semester management
+    
+    # Security Questions (Added to fix DB sync issue)
+    security_question_1 = models.CharField(max_length=255, blank=True, null=True)
+    security_answer_1 = models.CharField(max_length=255, blank=True, null=True)
+    security_question_2 = models.CharField(max_length=255, blank=True, null=True)
+    security_answer_2 = models.CharField(max_length=255, blank=True, null=True)
 
     def set_password(self, raw_password):
         """Hashes the raw password and sets it."""
@@ -59,7 +63,7 @@ class PersonalInfo(models.Model):
     blood_group = models.CharField(max_length=5, choices=BLOOD_GROUP_CHOICES, blank=True)
     community = models.CharField(max_length=50, choices=COMMUNITY_CHOICES, blank=True)
     caste = models.ForeignKey(Caste, on_delete=models.SET_NULL, blank=True, null=True)
-    caste_other = models.CharField(max_length=100, blank=True, null=True) # For custom "Other" input
+    caste_other = models.CharField(max_length=100, blank=True, null=True) # F
     religion = models.CharField(max_length=50, choices=RELIGION_CHOICES, blank=True)
     aadhaar_number = models.CharField(max_length=12, blank=True)
     permanent_address = models.TextField(blank=True)

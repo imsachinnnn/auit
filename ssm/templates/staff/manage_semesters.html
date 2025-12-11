@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Semesters | Staff Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
+    <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --secondary-bg: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --accent-color: #5a7d7c;
+            --accent-color-hover: #4a6b69;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            background: var(--secondary-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.5em;
+            color: var(--accent-color);
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .filter-card {
+            background: var(--secondary-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .filter-form {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-grow: 1;
+        }
+
+        .input-group label {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-select {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .filter-btn:hover {
+            background: var(--accent-color-hover);
+        }
+
+        .student-table-container {
+            background: var(--secondary-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8fcfc;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .checkbox-col {
+            width: 40px;
+            text-align: center;
+        }
+
+        .actions-bar {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .promote-btn {
+            padding: 12px 25px;
+            background: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .promote-btn:hover {
+            background: #218838;
+        }
+
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="page-header">
+            <h1>Manage Semesters</h1>
+            <a href="{% url 'staffs:staff_dashboard' %}" class="back-btn"> Back to Dashboard</a>
+        </header>
+
+        <section class="filter-card">
+            <form method="GET" class="filter-form">
+                {% if display_semester_selector %}
+                <div class="input-group">
+                    <label for="semester">{{ header_text }}</label>
+                    <select name="semester" id="semester" class="form-select">
+                        <option value="">-- Select Semester --</option>
+                        {% for i in "12345678"|make_list %}
+                        <option value="{{ i }}" {% if selected_semester == i %}selected{% endif %}>Semester {{ i }}
+                        </option>
+                        {% endfor %}
+                        <option value="9" {% if selected_semester == '9' %}selected{% endif %}>Course Completed</option>
+                    </select>
+                </div>
+                <button type="submit" class="filter-btn">Filter Students</button>
+                {% else %}
+                <div class="input-group">
+                    <label style="font-size: 1.2rem; color: var(--accent-color); font-weight: 600;">
+                        {% if selected_semester == '9' %}
+                        Managing Course Completed (Assigned)
+                        {% else %}
+                        Managing Semester {{ selected_semester }} (Assigned)
+                        {% endif %}
+                    </label>
+                    <input type="hidden" name="semester" value="{{ selected_semester }}">
+                    <p style="margin: 5px 0 0 0; color: var(--text-secondary);">You are authorized to manage students in
+                        this semester only.</p>
+                </div>
+                {% endif %}
+            </form>
+        </section>
+
+        {% if students %}
+        <form method="POST">
+            {% csrf_token %}
+            <div class="student-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="checkbox-col"><input type="checkbox" id="selectAll"></th>
+                            <th>Roll Number</th>
+                            <th>Student Name</th>
+                            <th>Current Semester</th>
+                            <th>Program</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td class="checkbox-col">
+                                <input type="checkbox" name="student_ids" value="{{ student.roll_number }}"
+                                    class="student-checkbox">
+                            </td>
+                            <td>{{ student.roll_number }}</td>
+                            <td>{{ student.student_name }}</td>
+                            <td>
+                                {% if student.current_semester > 8 %}
+                                <span style="color: var(--success-color); font-weight: 600;">Course Completed</span>
+                                {% else %}
+                                Semester {{ student.current_semester }}
+                                {% endif %}
+                            </td>
+                            <td>{{ student.program_level }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="actions-bar">
+                {% if selected_semester != '9' %}
+                <div style="display: flex; gap: 10px;">
+                    {% if selected_semester != '1' %}
+                    <button type="submit" name="action" value="demote" class="promote-btn"
+                        style="background-color: var(--danger-color);"
+                        onclick="return confirm('Are you sure you want to DEMOTE selected students to the PREVIOUS semester?')">
+                        Demote Selected
+                    </button>
+                    {% endif %}
+                    <button type="submit" name="action" value="promote" class="promote-btn"
+                        onclick="return confirm('Are you sure you want to PROMOTE selected students to the NEXT semester?')">
+                        Promote Selected
+                    </button>
+                </div>
+                {% else %}
+                <button type="button" class="promote-btn" style="background-color: #6c757d; cursor: not-allowed;"
+                    disabled>
+                    Students Already Completed
+                </button>
+                {% endif %}
+            </div>
+        </form>
+        {% elif selected_semester %}
+        <div class="empty-state">
+            <p>No students found in Semester {{ selected_semester }}.</p>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>Please select a semester to view and manage students.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Select All Checkbox Logic
+        document.getElementById('selectAll')?.addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('.student-checkbox');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+    </script>
+</body>
+
+</html>

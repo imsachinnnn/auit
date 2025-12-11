@@ -29,7 +29,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -37,7 +36,16 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'ssm.middleware.StaticFilesHeadersMiddleware',  # Custom middleware for static file headers
 ]
+
+# Security settings that might block static files
+SECURE_CONTENT_TYPE_NOSNIFF = False  # Allow CSS/JS to load properly
+SECURE_BROWSER_XSS_FILTER = False  # Prevent XSS filter from blocking CSS
+
+# Only use WhiteNoise in production (when DEBUG=False)
+if not DEBUG:
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 ROOT_URLCONF = 'ssm.urls'
 
@@ -86,13 +94,37 @@ USE_I18N = True
 USE_TZ = True
 
 # --- STATIC FILES (for CSS, JS of your project and admin) ---
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
-# --- ADD THIS LINE ---
+# Fix for Windows MIME types issues - CRITICAL for admin CSS
+import mimetypes
+# Ensure CSS and JS files are recognized with correct MIME types
+mimetypes.add_type("text/css", ".css", True)
+mimetypes.add_type("text/css", ".css", False)  # Also add without strict
+mimetypes.add_type("application/javascript", ".js", True)
+mimetypes.add_type("application/javascript", ".js", False)
+mimetypes.add_type("text/javascript", ".js", True)
+
+# --- STATIC FILES CONFIGURATION ---
 # This tells Django where to look for your main static files folder.
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+if os.path.exists(os.path.join(BASE_DIR, 'static')):
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+else:
+    STATICFILES_DIRS = []
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Ensure default static files finders are used (includes admin static files)
+# This is the default, but we're being explicit to ensure admin files are found
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+# Only set storage in production (WhiteNoise)
+# DO NOT set STATICFILES_STORAGE in development - let Django use defaults
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # --- MEDIA FILES (for user-uploaded content) ---
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

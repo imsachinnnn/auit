@@ -66,8 +66,11 @@ class OtherDetailsInline(admin.StackedInline):
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('roll_number', 'student_name', 'student_email', 'program_level')
+    list_display = ('roll_number', 'student_name', 'get_semester_display', 'program_level')
     search_fields = ('roll_number', 'student_name', 'student_email')
+    list_filter = ('current_semester', 'program_level', 'ug_entry_type')
+    actions = ['promote_students']
+    
     inlines = [
         PersonalInfoInline,
         AcademicHistoryInline,
@@ -80,3 +83,17 @@ class StudentAdmin(admin.ModelAdmin):
         BankDetailsInline,
         OtherDetailsInline,
     ]
+
+    @admin.display(description='Current Semester', ordering='current_semester')
+    def get_semester_display(self, obj):
+        if obj.current_semester > 8:
+            return "Course Completed"
+        return obj.current_semester
+
+    @admin.action(description='Promote selected students to next semester')
+    def promote_students(self, request, queryset):
+        from django.db.models import F
+        # Only promote students who are NOT yet completed (current_semester <= 8)
+        # We allow 8 -> 9 (which becomes completed), but not 9 -> 10
+        updated_count = queryset.filter(current_semester__lte=8).update(current_semester=F('current_semester') + 1)
+        self.message_user(request, f"{updated_count} students were successfully promoted.")

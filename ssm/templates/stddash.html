@@ -1,545 +1,686 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Student Dashboard - {{ student.student_name }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" type="image/png">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
     <style>
         :root {
-            --primary-bg: #f8f9fa;
+            --primary-bg: #f0f2f5;
             --secondary-bg: #ffffff;
-            --text-primary: #212529;
-            --text-secondary: #6c757d;
-            --border-color: #dee2e6;
-            --accent-color: #5a7d7c;
-            --accent-color-hover: #4a6b69;
-            --light-accent-bg: #eef2f2;
+            --text-primary: #1a1a1a;
+            --text-secondary: #65676b;
+            --border-color: #e4e6eb;
+            --accent-color: #008080;
+            --accent-color-hover: #006666;
+            --light-accent-bg: #e0f2f1;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            
+            /* Dynamic spacing variables */
+            --sidebar-width: clamp(280px, 20vw, 320px);
+            --container-padding: clamp(15px, 2vw, 25px);
+            --card-padding: clamp(16px, 1.5vw, 22px);
+            --gap-size: clamp(15px, 1.5vw, 22px);
+            --font-scale: clamp(0.85, 1vw, 1);
         }
-        * { box-sizing: border-box; }
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background-color: var(--primary-bg); 
-            color: var(--text-primary); 
-            margin: 0; 
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            font-size: calc(14px * var(--font-scale));
         }
-        main { flex-grow: 1; }
-        
-        .dashboard-container { 
-            max-width: 1600px;
-            margin: auto; 
-            padding: 30px 20px;
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 100vw;
+            margin: 0;
+            padding: var(--container-padding);
+            display: grid;
+            grid-template-columns: var(--sidebar-width) 1fr;
+            gap: var(--gap-size);
+            align-items: start;
+            min-height: 100vh;
         }
-        
-        .page-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 25px;
+
+        /* Sidebar Styling */
+        .profile-sidebar {
+            background: var(--secondary-bg);
+            border-radius: clamp(8px, 1vw, 12px);
+            padding: var(--card-padding);
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: var(--container-padding);
+            height: fit-content;
+            border-top: clamp(3px, 0.4vw, 5px) solid var(--accent-color);
         }
-        .page-header .title-group { display: flex; align-items: center; gap: 15px; }
-        .page-header h1 { margin: 0; font-size: 1.8em; font-weight: 600; }
-        .header-actions { display: flex; align-items: center; gap: 12px; }
-        .action-btn { 
-            display: inline-block; 
-            padding: 10px 18px; 
-            border: none; 
-            border-radius: 6px; 
-            background-color: var(--accent-color); 
-            color: white; 
-            text-decoration: none; 
-            font-size: 0.95em; 
-            font-family: 'Poppins', sans-serif; 
-            cursor: pointer; 
-            transition: background-color 0.3s;
+
+        .profile-photo {
+            width: clamp(100px, 10vw, 130px);
+            height: clamp(100px, 10vw, 130px);
+            border-radius: 50%;
+            object-fit: cover;
+            border: clamp(3px, 0.3vw, 4px) solid var(--light-accent-bg);
+            margin-bottom: clamp(12px, 1.2vw, 18px);
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
-        .action-btn:hover { background-color: var(--accent-color-hover); }
-        
-        .profile-header-card {
-            background-color: var(--secondary-bg);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            padding: 25px;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 25px;
+
+        .profile-name {
+            font-size: clamp(1.1em, 1.4vw, 1.4em);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+            word-wrap: break-word;
+            line-height: 1.3;
         }
-        .profile-photo { 
-            width: 110px; 
-            height: 110px; 
-            border-radius: 50%; 
-            object-fit: cover; 
-            border: 3px solid var(--primary-bg); 
-            flex-shrink: 0;
+
+        .profile-meta {
+            color: var(--text-secondary);
+            font-size: clamp(0.8em, 0.9vw, 0.9em);
+            margin-bottom: 5px;
         }
-        .profile-info { width: 100%; }
-        .profile-info h2 { margin: 0 0 5px 0; font-size: 1.8em; font-weight: 600; }
-        .profile-info p { color: var(--text-secondary); margin: 0 0 15px 0; font-size: 1em; }
-        
+
+        .profile-badge {
+            display: inline-block;
+            background: var(--light-accent-bg);
+            color: var(--accent-color);
+            padding: clamp(4px, 0.5vw, 6px) clamp(10px, 1vw, 14px);
+            border-radius: 20px;
+            font-size: clamp(0.75em, 0.85vw, 0.85em);
+            font-weight: 500;
+            margin-top: clamp(8px, 1vw, 12px);
+        }
+
+        /* Essential Links (Quick Links in Sidebar) */
         .essential-links {
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            padding-top: 15px;
+            flex-direction: column;
+            gap: clamp(6px, 0.8vw, 10px);
+            margin-top: clamp(15px, 1.5vw, 22px);
+            padding-top: clamp(15px, 1.5vw, 22px);
             border-top: 1px solid var(--border-color);
+            text-align: left;
         }
+
         .essential-links a {
             display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
-            background-color: var(--light-accent-bg);
-            color: var(--accent-color);
+            gap: clamp(8px, 0.8vw, 12px);
+            padding: clamp(8px, 0.9vw, 12px) clamp(10px, 1vw, 14px);
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: clamp(6px, 0.7vw, 8px);
             font-weight: 500;
-            font-size: 0.85em;
-            transition: background-color 0.3s, color 0.3s;
+            font-size: clamp(0.8em, 0.85vw, 0.9em);
+            transition: all 0.3s ease;
         }
+
         .essential-links a:hover {
             background-color: var(--accent-color);
             color: white;
-        }
-        
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            align-items: start;
+            transform: translateX(clamp(3px, 0.4vw, 5px));
         }
 
-        .card { 
-            background-color: var(--secondary-bg); 
-            border-radius: 8px; 
-            border: 1px solid var(--border-color); 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-            padding: 20px;
-            margin-bottom: 25px;
-            height: fit-content;
-        }
-        .card:last-child { margin-bottom: 0; }
-        
-        .card-title { 
-            font-size: 1.2em; 
-            font-weight: 600; 
-            margin-top: 0; 
-            margin-bottom: 15px; 
-            padding-bottom: 12px; 
-            border-bottom: 2px solid var(--border-color);
-            color: var(--accent-color);
-        }
-        
-        .details-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px 20px;
+        .essential-links a span.emoji {
+            font-size: clamp(1em, 1.1vw, 1.2em);
+            min-width: clamp(18px, 2vw, 22px);
+            text-align: center;
         }
 
-        .detail-item { 
+        /* Main Content Styling */
+        .main-content {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: var(--gap-size);
         }
-        .detail-item strong { 
-            color: var(--text-secondary); 
-            font-size: 0.85em; 
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .detail-item span, .detail-item a { 
-            word-wrap: break-word;
-            font-size: 0.95em;
-            color: var(--text-primary);
-        }
-        .detail-item a { 
-            color: var(--accent-color); 
-            text-decoration: none; 
-            font-weight: 500;
-        }
-        .detail-item a:hover { text-decoration: underline; }
-        
-        .academic-section { 
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-        }
-        .academic-section:first-child { margin-top: 0; padding-top: 0; border-top: none; }
-        .academic-section h4 { 
-            margin: 0 0 12px 0; 
-            color: var(--accent-color);
-            font-size: 1em;
-            font-weight: 600;
-        }
-        
-        .scholarship-list { 
-            list-style-type: none; 
-            padding: 0; 
-            margin: 0;
-        }
-        .scholarship-list li { 
-            background-color: var(--primary-bg); 
-            padding: 8px 12px; 
-            border-radius: 5px; 
-            margin-bottom: 6px; 
-            font-size: 0.9em;
-        }
-        .scholarship-list li:last-child { margin-bottom: 0; }
 
-        /* Document links styling */
-        .document-links {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .document-link-item {
+        /* Header in Main Content */
+        .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 12px;
+            background: var(--secondary-bg);
+            padding: clamp(15px, 1.5vw, 22px) clamp(18px, 2vw, 28px);
+            border-radius: clamp(8px, 1vw, 12px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            flex-wrap: wrap;
+            gap: clamp(12px, 1.2vw, 16px);
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: clamp(1.3em, 1.6vw, 1.6em);
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: clamp(8px, 1vw, 12px);
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: clamp(8px, 1vw, 12px) clamp(16px, 1.5vw, 22px);
+            border-radius: clamp(5px, 0.6vw, 7px);
+            background-color: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            font-family: inherit;
+            font-size: clamp(0.85em, 0.95vw, 1em);
+            white-space: nowrap;
+        }
+
+        .action-btn:hover {
+            background-color: var(--accent-color-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 128, 128, 0.3);
+        }
+
+        /* Card System */
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(clamp(320px, 35vw, 420px), 1fr));
+            gap: var(--gap-size);
+        }
+
+        .card {
+            background-color: var(--secondary-bg);
+            border-radius: clamp(8px, 1vw, 12px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: var(--card-padding);
+            height: fit-content;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: clamp(1em, 1.1vw, 1.15em);
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: clamp(14px, 1.4vw, 20px);
+            padding-bottom: clamp(8px, 0.9vw, 12px);
+            border-bottom: 2px solid var(--light-accent-bg);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: clamp(8px, 0.9vw, 12px);
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(clamp(150px, 18vw, 200px), 1fr));
+            gap: clamp(12px, 1.3vw, 18px);
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(3px, 0.4vw, 5px);
+        }
+
+        .detail-item strong {
+            color: var(--text-secondary);
+            font-size: clamp(0.7em, 0.75vw, 0.78em);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-item span,
+        .detail-item a {
+            font-size: clamp(0.88em, 0.95vw, 0.98em);
+            color: var(--text-primary);
+            font-weight: 500;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .detail-item a {
+            color: var(--accent-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .detail-item a:hover {
+            color: var(--accent-color-hover);
+            text-decoration: underline;
+        }
+
+        /* Academic Section */
+        .academic-section {
+            margin-top: clamp(14px, 1.4vw, 18px);
+            padding-top: clamp(14px, 1.4vw, 18px);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .academic-section h4 {
+            margin: 0 0 clamp(10px, 1.1vw, 14px) 0;
+            color: var(--text-secondary);
+            font-size: clamp(0.85em, 0.92vw, 0.95em);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Document Links */
+        .document-links {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(8px, 1vw, 12px);
+        }
+
+        .document-link-item {
             background-color: var(--primary-bg);
-            border-radius: 5px;
-            transition: background-color 0.2s;
+            border-radius: clamp(6px, 0.7vw, 8px);
+            padding: clamp(10px, 1.2vw, 14px) clamp(12px, 1.3vw, 16px);
+            border: 1px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
         }
+
         .document-link-item:hover {
-            background-color: var(--light-accent-bg);
+            border-color: var(--accent-color);
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
+
         .document-link-item strong {
             color: var(--text-primary);
-            font-size: 0.9em;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: clamp(0.85em, 0.92vw, 0.95em);
         }
+
         .document-link-item a {
             color: var(--accent-color);
             text-decoration: none;
             font-weight: 500;
-            font-size: 0.9em;
-            padding: 4px 10px;
-            border-radius: 4px;
-            transition: background-color 0.2s;
+            padding: clamp(5px, 0.6vw, 7px) clamp(10px, 1.1vw, 14px);
+            background: var(--light-accent-bg);
+            border-radius: clamp(4px, 0.5vw, 5px);
+            transition: all 0.2s;
+            font-size: clamp(0.82em, 0.9vw, 0.92em);
         }
+
         .document-link-item a:hover {
-            background-color: var(--accent-color);
+            background: var(--accent-color);
             color: white;
         }
+
         .document-link-item span {
             color: var(--text-secondary);
-            font-size: 0.9em;
+            font-style: italic;
+            font-size: clamp(0.82em, 0.9vw, 0.92em);
         }
-        
+
+        /* Scholarship List */
+        .scholarship-list {
+            margin: clamp(8px, 1vw, 12px) 0 0 0;
+            padding-left: clamp(18px, 2vw, 22px);
+            list-style-type: none;
+        }
+
+        .scholarship-list li {
+            padding: clamp(6px, 0.7vw, 8px) 0;
+            position: relative;
+            font-size: clamp(0.88em, 0.95vw, 0.98em);
+        }
+
+        .scholarship-list li::before {
+            content: "✓";
+            position: absolute;
+            left: clamp(-18px, -2vw, -22px);
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1400px) {
+            :root {
+                --sidebar-width: clamp(260px, 22vw, 300px);
+            }
+        }
+
         @media (max-width: 1200px) {
-            .dashboard-grid {
+            .content-grid {
                 grid-template-columns: 1fr;
             }
         }
-        
-        @media (max-width: 768px) {
-            .profile-header-card { 
-                flex-direction: column; 
-                text-align: center;
-                padding: 20px;
+
+        @media (max-width: 900px) {
+            :root {
+                --sidebar-width: 100%;
+                --container-padding: 15px;
             }
-            .page-header { 
-                flex-direction: column; 
-                gap: 15px;
-                align-items: stretch;
+
+            .dashboard-container {
+                grid-template-columns: 1fr;
             }
+
+            .profile-sidebar {
+                position: static;
+                margin-bottom: 15px;
+            }
+
+            .page-header h1 {
+                font-size: 1.4em;
+            }
+
             .header-actions {
-                justify-content: center;
+                width: 100%;
             }
-            .essential-links { 
-                justify-content: center;
+
+            .action-btn {
+                flex: 1;
+                text-align: center;
             }
+        }
+
+        @media (max-width: 600px) {
+            :root {
+                --container-padding: 10px;
+                --card-padding: 15px;
+                --gap-size: 12px;
+            }
+
+            body {
+                font-size: 14px;
+            }
+
+            .profile-photo {
+                width: 100px;
+                height: 100px;
+            }
+
+            .profile-name {
+                font-size: 1.2em;
+            }
+
             .details-grid {
                 grid-template-columns: 1fr;
             }
-            .dashboard-container {
-                padding: 20px 15px;
+
+            .content-grid {
+                grid-template-columns: 1fr;
             }
         }
-        
+
+        /* Ultra-wide screen optimization */
+        @media (min-width: 1920px) {
+            :root {
+                --sidebar-width: 320px;
+            }
+
+            .content-grid {
+                grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            }
+        }
+
+        /* Print Styles */
         @media print {
-            .no-print { display: none !important; }
-            body { 
-                padding: 15px !important; 
-                margin: 0 !important; 
-                background: #ffffff !important; 
-                color: #000000 !important;
+            .no-print {
+                display: none !important;
             }
-            .dashboard-container { 
-                width: 100% !important; 
-                max-width: 100% !important; 
-                padding: 0 !important;
+
+            body {
+                background: white;
+                font-size: 12pt;
             }
-            * { 
-                color: #000000 !important; 
-                background: transparent !important; 
-                box-shadow: none !important;
+
+            .dashboard-container {
+                display: block;
+                max-width: 100%;
+                margin: 0;
+                padding: 20px;
             }
-            .dashboard-grid { 
-                display: block !important;
+
+            .profile-sidebar {
+                display: none;
             }
-            .card { 
-                border: 1px solid #ccc !important; 
-                page-break-inside: avoid; 
-                margin-bottom: 15px !important; 
-                padding: 12px !important;
+
+            .main-content {
+                gap: 15px;
             }
-            a, a:visited { 
-                text-decoration: none !important; 
-                color: #000000 !important;
+
+            .card {
+                border: 1px solid #ddd;
+                box-shadow: none;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+                padding: 15px;
+            }
+
+            .page-header {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+
+            .content-grid {
+                display: block;
+            }
+
+            .card:hover {
+                box-shadow: none;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="dashboard-container">
-        <header class="page-header no-print">
-            <div class="title-group">
-                <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" alt="Annamalai University Logo" style="height:40px;">
-                <h1>Student Dashboard</h1>
-            </div>
-            <div class="header-actions">
-                <button onclick="window.print()" class="action-btn">🖨️ Print</button>
-                <a href="{% url 'student_logout' %}" class="action-btn">Logout</a>
-            </div>
-        </header>
 
-        <main>
-            <div class="profile-header-card no-print">
-                {% if student.studentdocuments.student_photo %}
-                    <img src="{{ student.studentdocuments.student_photo.url }}" alt="Student Photo" class="profile-photo">
+        <!-- Sidebar -->
+        <aside class="profile-sidebar no-print">
+            {% if student.studentdocuments.student_photo %}
+            <img src="{{ student.studentdocuments.student_photo.url }}" alt="Student Photo" class="profile-photo">
+            {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ student.student_name|urlencode }}&background=008080&color=fff&size=200"
+                alt="Profile Photo" class="profile-photo">
+            {% endif %}
+
+            <div class="profile-name">{{ student.student_name }}</div>
+            <div class="profile-meta">{{ student.roll_number }}</div>
+            <div class="profile-meta">{{ student.get_program_level_display }}</div>
+            <div class="profile-badge">
+                {% if student.current_semester > 8 %}
+                Course Completed
                 {% else %}
-                    <img src="https://placehold.co/180x180/EFEFEF/AAAAAA?text=No+Photo" alt="No Photo Available" class="profile-photo">
+                Semester {{ student.current_semester }}
                 {% endif %}
-                <div class="profile-info">
-                    <h2>{{ student.student_name }}</h2>
-                    <p>{{ student.roll_number }} | {{ student.get_program_level_display }}</p>
-                    
-                    <div class="essential-links">
-                        <a href="{% url 'exam_timetable' %}">📅 Timetable</a>
-                        <a href="https://annamalaiuniversity.ac.in/aucoe/rs_view.php" target="_blank">🎓 Results</a>
-                        {% comment %} <a href="{% url 'service_unavailable' %}">✅ Attendance</a> {% endcomment %}
-                        <a href="{% url 'service_unavailable' %}">✅ Attendance</a>
-                        <a href="https://annamalaiuniversity.ac.in/" target="_blank">🏫 AU Main Site</a>
-                        <a href="https://annamalaiuniversity.ac.in/studport/epayment_rgl_hfee.php?mode=oNln" target="_blank">💳 Hostel Fees</a>
-                        <a href="https://annamalaiuniversity.ac.in/studport/tf_general_pharmacy.php?fee=tf" target="_blank">💳 Tuition Fees</a>
-                        <a href="{% url 'student_editprofile' %}">✏️ Edit Profile</a>
-                        <a href="{% url 'help_and_support' %}">❓ Support</a>
-                        <a href="{% url 'service_unavailable' %}">🗒️AI Resume Generation</a>
-                    </div>
-                </div>
             </div>
 
-            <div class="dashboard-grid">
-                <!-- Left Column -->
-                <div class="main-content">
-                    <div class="card">
-                        <h2 class="card-title">Personal & Contact Info</h2>
-                        <div class="details-grid">
-                            <div class="detail-item"><strong>Name</strong> <span>{{ student.student_name }}</span></div>
-                            <div class="detail-item"><strong>Email</strong> <span>{{ student.student_email }}</span></div>
-                            <div class="detail-item"><strong>Mobile</strong> <span>{{ student.personalinfo.student_mobile|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Date of Birth</strong> <span>{{ student.personalinfo.date_of_birth|date:"d M Y"|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Gender</strong> <span>{{ student.personalinfo.get_gender_display|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Blood Group</strong> <span>{{ student.personalinfo.get_blood_group_display|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Community</strong> <span>{{ student.personalinfo.community|default:"N/A" }}</span></div>
+            <nav class="essential-links">
+                <a href="{% url 'exam_timetable' %}"><span class="emoji">📅</span> Exam Timetable</a>
+                <a href="https://annamalaiuniversity.ac.in/aucoe/rs_view.php" target="_blank" rel="noopener"><span
+                        class="emoji">📊</span> Exam Results</a>
+                <a href="{% url 'service_unavailable' %}"><span class="emoji">📝</span> Attendance</a>
+                <a href="https://annamalaiuniversity.ac.in/" target="_blank" rel="noopener"><span
+                        class="emoji">🌐</span> AU Main Site</a>
+                <a href="https://annamalaiuniversity.ac.in/studport/epayment_rgl_hfee.php?mode=oNln"
+                    target="_blank" rel="noopener"><span class="emoji">🏠</span> Hostel Fees</a>
+                <a href="https://annamalaiuniversity.ac.in/studport/tf_general_pharmacy.php?fee=tf"
+                    target="_blank" rel="noopener"><span class="emoji">💰</span> Tuition Fees</a>
+                <a href="{% url 'student_editprofile' %}"><span class="emoji">✏️</span> Edit Profile</a>
+                <a href="{% url 'help_and_support' %}"><span class="emoji">❓</span> Help & Support</a>
+                <a href="{% url 'service_unavailable' %}"><span class="emoji">📄</span> AI Resume Gen</a>
+            </nav>
+        </aside>
 
-                            <div class="detail-item">
-                                <strong>Caste</strong>
-                                <span>
-                                    {% if student.personalinfo.caste %}
-                                        {{ student.personalinfo.caste.name }}
-                                    {% elif student.personalinfo.caste_other %}
-                                        {{ student.personalinfo.caste_other }}
-                                    {% else %}
-                                        N/A
-                                    {% endif %}
-                                </span>
-                            </div>
-                            <div class="detail-item"><strong>Religion</strong> <span>{{ student.personalinfo.get_religion_display|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>UMIS ID</strong> <span>{{ student.personalinfo.umis_id|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>EMIS ID</strong> <span>{{ student.personalinfo.emis_id|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>ABC ID</strong> <span>{{ student.personalinfo.abc_id|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Aadhaar Number</strong> <span>{{ student.personalinfo.aadhaar_number|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Present Address</strong> <span>{{ student.personalinfo.present_address|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Permanent Address</strong> <span>{{ student.personalinfo.permanent_address|default:"N/A" }}</span></div>
+        <!-- Main Content -->
+        <main class="main-content">
 
-                        </div>
-                    </div>
+            <!-- Header -->
+            <header class="page-header no-print">
+                <div class="title-group">
+                    <h1>Student Dashboard</h1>
+                </div>
+                <div class="header-actions">
+                    <button onclick="window.print()" class="action-btn">🖨️ Print Profile</button>
+                    <a href="{% url 'student_logout' %}" class="action-btn"
+                        style="background-color: var(--danger-color);">Logout</a>
+                </div>
+            </header>
 
-                    <div class="card">
-                        <h2 class="card-title">Parent Details</h2>
-                        <div class="details-grid">
-                            <div class="detail-item"><strong>Father's Name</strong> <span>{{ student.personalinfo.father_name|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Father's Mobile</strong> <span>{{ student.personalinfo.father_mobile|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Father's Occupation</strong> <span>{{ student.personalinfo.father_occupation|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Mother's Name</strong> <span>{{ student.personalinfo.mother_name|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Mother's Mobile</strong> <span>{{ student.personalinfo.mother_mobile|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Mother's Occupation</strong> <span>{{ student.personalinfo.mother_occupation|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Annual Income</strong> <span>Rs. {{ student.personalinfo.parent_annual_income|default:"N/A" }}</span></div>
-                        </div>
-                    </div>
-                    
-                    
+            <!-- Cards Grid -->
+            <div class="content-grid">
 
-                    <div class="card">
-                        <h2 class="card-title">Academic History</h2>
-                        {% with history=student.academichistory %}
-                            {% if history.sslc_school_name %}
-                            <div class="academic-section">
-                                <h4>SSLC Details</h4>
-                                <div class="details-grid">
-                                    <div class="detail-item"><strong>School</strong> <span>{{ history.sslc_school_name }}</span></div>
-                                    <div class="detail-item"><strong>Percentage</strong> <span>{{ history.sslc_percentage }}%</span></div>
-                                    <div class="detail-item"><strong>Year of Passing</strong> <span>{{ history.sslc_year_of_passing }}</span></div>
-                                    <div class="detail-item"><strong>School Name</strong> <span>{{ history.sslc_school_name }}</span></div>
-                                    <div class="detail-item"><strong>School Address</strong> <span>{{ history.sslc_school_address }}</span></div>
-                                </div>
-                            </div>
-                            {% endif %}
-                            {% if history.hsc_school_name %}
-                            <div class="academic-section">
-                                <h4>HSC Details</h4>
-                                <div class="details-grid">
-                                    <div class="detail-item"><strong>School</strong> <span>{{ history.hsc_school_name }}</span></div>
-                                    <div class="detail-item"><strong>Percentage</strong> <span>{{ history.hsc_percentage }}%</span></div>
-                                    <div class="detail-item"><strong>Year of Passing</strong> <span>{{ history.hsc_year_of_passing }}</span></div>
-                                    <div class="detail-item"><strong>School Name</strong> <span>{{ history.hsc_school_name }}</span></div>
-                                    <div class="detail-item"><strong>School Address</strong> <span>{{ history.hsc_school_address }}</span></div>
-                                </div>
-                            </div>
-                            {% endif %}
-                        {% endwith %}
+                <!-- Personal Info -->
+                <div class="card">
+                    <h2 class="card-title">👤 Personal Information</h2>
+                    <div class="details-grid">
+                        <div class="detail-item"><strong>Email</strong> <span>{{ student.student_email|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>Mobile</strong> <span>{{ student.personalinfo.student_mobile|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>DOB</strong> <span>{{ student.personalinfo.date_of_birth|date:"d M Y"|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>Gender</strong> <span>{{ student.personalinfo.get_gender_display|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>Community</strong> <span>{{ student.personalinfo.community|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>Caste</strong> <span>{% if student.personalinfo.caste %}{{ student.personalinfo.caste.name }}{% elif student.personalinfo.caste_other %}{{ student.personalinfo.caste_other }}{% else %}-{% endif %}</span></div>
+                        <div class="detail-item"><strong>Blood Group</strong> <span>{{ student.personalinfo.get_blood_group_display|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>Aadhaar</strong> <span>{{ student.personalinfo.aadhaar_number|default:"-" }}</span></div>
+                        <div class="detail-item" style="grid-column: 1 / -1;"><strong>Address</strong> <span>{{ student.personalinfo.present_address|default:"-" }}</span></div>
                     </div>
                 </div>
-                
-                <!-- Right Column -->
-                <div class="side-content">
-                    <div class="card">
-                        <h2 class="card-title">Scholarship Details</h2>
-                        <div class="details-grid">
-                            {% with scholarship=student.scholarshipinfo %}
-                                <div class="detail-item"><strong>Applying for Scholarship?</strong> <span>{% if student.personalinfo.has_scholarship %}Yes{% else %}No{% endif %}</span></div>
-                                {% if student.personalinfo.has_scholarship %}
-                                <div class="detail-item" style="grid-column: 1 / -1;">
-                                    <strong>Scholarships</strong>
-                                    <ul class="scholarship-list">
-                                        {% if scholarship.is_first_graduate %}<li>First Graduate</li>{% endif %}
-                                        {% if scholarship.sch_bcmbc %}<li>BC/MBC</li>{% endif %}
-                                        {% if scholarship.sch_postmetric %}<li>SC/ST POSTMETRIC</li>{% endif %}
-                                        {% if scholarship.sch_pm %}<li>Prime Minister Scholarship</li>{% endif %}
-                                        {% if scholarship.sch_govt %}<li>Govt 7.5% Scholarship</li>{% endif %}
-                                        {% if scholarship.sch_pudhumai %}<li>Pudhumai Penn Scheme</li>{% endif %}
-                                        {% if scholarship.sch_tamizh %}<li>Tamizh Pudalvan Scheme</li>{% endif %}
-                                        {# --- FIX APPLIED HERE --- #}
-                                        {% if scholarship.sch_private %}
-                                        <li>
-                                            Private Scholarship
-                                            {# This checks if a name was provided before showing it #}
-                                        {% if scholarship.private_scholarship_name %}
-                                        : {{ scholarship.private_scholarship_name }}
-                                        {% endif %}
-                                        </li>
-                                        {% endif %}
-                                    </ul>
-                                </div>
+
+                <!-- Academic Info -->
+                <div class="card">
+                    <h2 class="card-title">🎓 Academic History</h2>
+                    <div class="details-grid" style="margin-bottom: clamp(12px, 1.3vw, 16px);">
+                        <div class="detail-item">
+                            <strong>Current Status</strong>
+                            <span>
+                                {% if student.current_semester > 8 %}
+                                <span style="color: var(--success-color); font-weight: 600;">Course Completed</span>
+                                {% else %}
+                                Semester {{ student.current_semester }}
                                 {% endif %}
-                            {% endwith %}
+                            </span>
                         </div>
                     </div>
-
-                    <div class="card no-print">
-                        <h2 class="card-title">Uploaded Documents</h2>
-                        {% with doc=student.studentdocuments %}
-                        <div class="document-links">
-                            <div class="document-link-item">
-                                <strong>ID Card</strong>
-                                {% if doc.student_id_card %}<a href="{{ doc.student_id_card.url }}" target="_blank">View →</a>{% else %}<span>N/A</span>{% endif %}
-                            </div>
-                            <div class="document-link-item">
-                                <strong>Community Certificate</strong>
-                                {% if doc.community_certificate %}<a href="{{ doc.community_certificate.url }}" target="_blank">View →</a>{% else %}<span>N/A</span>{% endif %}
-                            </div>
-                            <div class="document-link-item">
-                                <strong>Aadhaar Card</strong>
-                                {% if doc.aadhaar_card %}<a href="{{ doc.aadhaar_card.url }}" target="_blank">View →</a>{% else %}<span>N/A</span>{% endif %}
-                            </div>
-                            <div class="document-link-item">
-                                <strong>SSLC Marksheet</strong>
-                                {% if doc.sslc_marksheet %}<a href="{{ doc.sslc_marksheet.url }}" target="_blank">View →</a>{% else %}<span>N/A</span>{% endif %}
-                            </div>
-                            <div class="document-link-item">
-                                <strong>HSC Marksheet</strong>
-                                {% if doc.hsc_marksheet %}<a href="{{ doc.hsc_marksheet.url }}" target="_blank">View →</a>{% else %}<span>N/A</span>{% endif %}
-                            </div>
-                                <div class="document-link-item">
-                                <strong>Income Certificate</strong>
-                                {% if doc.income_certificate %}<a href="{{ doc.income_certificate.url }}" target="_blank">View →</a>{% else %}<span>N/A</span>{% endif %}
-                            </div>
-                                <div class="document-link-item">
-                                <strong>Bank Passbook</strong>
-                                {% if doc.bank_passbook %}<a href="{{ doc.bank_passbook.url }}" target="_blank">View →</a>{% else %}<span>N/A</span>{% endif %}
-                            </div>
-                            <!-- === THIS IS THE FIX === -->
-                            <!-- This block will only be rendered if a First Graduate Certificate has been uploaded -->
-                            {% if doc.first_graduate_certificate %}
-                            <div class="document-link-item">
-                                <strong>First Graduate Certificate</strong>
-                                <a href="{{ doc.first_graduate_certificate.url }}" target="_blank">View →</a>
-                            </div>
-        
-                            {% endif %}
-                            <!-- === THIS IS THE FIX END === -->
-
-                             <!-- === THIS IS THE FIX === -->
-                            <!-- This block will only be rendered if a First Graduate Certificate has been uploaded -->
-                            {% if doc.driving_license %}
-                            <div class="document-link-item">
-                                <strong>Driving License</strong>
-                                <a href="{{ doc.driving_license.url }}" target="_blank">View →</a>
-                            </div>
-                            {% endif %}
-                            <!-- === THIS IS THE FIX END === -->
-                        </div>
-                        {% endwith %}
-                    </div>
-
-
-                     <div class="card">
-                        <h2 class="card-title">Bank Account Details</h2>
+                    {% if student.academichistory.hsc_school_name %}
+                    <div class="academic-section">
+                        <h4>HSC / 12th Details</h4>
                         <div class="details-grid">
-                            <div class="detail-item"><strong>Account Holder's Name</strong> <span>{{ student.bankdetails.account_holder_name|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Bank Account Number</strong> <span>{{ student.bankdetails.account_number|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>IFSC Code</strong> <span>{{ student.bankdetails.ifsc_code|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Bank Name</strong> <span>{{ student.bankdetails.bank_name|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Branch Name</strong> <span>{{ student.bankdetails.branch_name|default:"N/A" }}</span></div>
-
+                            <div class="detail-item"><strong>School</strong> <span>{{ student.academichistory.hsc_school_name }}</span></div>
+                            <div class="detail-item"><strong>Percentage</strong> <span>{{ student.academichistory.hsc_percentage }}%</span></div>
                         </div>
                     </div>
-
-                        <div class="card no-print">
-                        <h2 class="card-title">Other Details</h2>
+                    {% endif %}
+                    {% if student.academichistory.sslc_school_name %}
+                    <div class="academic-section">
+                        <h4>SSLC / 10th Details</h4>
                         <div class="details-grid">
-                            <div class="detail-item"><strong>Ambition</strong> <span>{{ student.otherdetails.ambition|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Role Model</strong> <span>{{ student.otherdetails.role_model|default:"N/A" }}</span></div>
-                            <div class="detail-item"><strong>Hobbies</strong> <span>{{ student.otherdetails.hobbies|default:"N/A" }}</span></div>
-                             <div class="detail-item"><strong>Identification Marks</strong> <span>{{ student.otherdetails.identification_marks|default:"N/A" }}</span></div>
-
+                            <div class="detail-item"><strong>School</strong> <span>{{ student.academichistory.sslc_school_name }}</span></div>
+                            <div class="detail-item"><strong>Percentage</strong> <span>{{ student.academichistory.sslc_percentage }}%</span></div>
                         </div>
+                    </div>
+                    {% endif %}
+                </div>
 
+                <!-- Parent Info -->
+                <div class="card">
+                    <h2 class="card-title">👨‍👩‍👦 Parent Details</h2>
+                    <div class="details-grid">
+                        <div class="detail-item"><strong>Father</strong> <span>{{ student.personalinfo.father_name|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>F. Mobile</strong> <span>{{ student.personalinfo.father_mobile|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>Mother</strong> <span>{{ student.personalinfo.mother_name|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>M. Mobile</strong> <span>{{ student.personalinfo.mother_mobile|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>Income</strong> <span>{% if student.personalinfo.parent_annual_income %}Rs. {{ student.personalinfo.parent_annual_income }}{% else %}-{% endif %}</span></div>
                     </div>
                 </div>
+
+                <!-- Uploaded Documents -->
+                <div class="card no-print">
+                    <h2 class="card-title">📂 Uploaded Documents</h2>
+                    <div class="document-links">
+                        <div class="document-link-item">
+                            <strong>ID Card</strong>
+                            {% if student.studentdocuments.student_id_card %}
+                            <a href="{{ student.studentdocuments.student_id_card.url }}" target="_blank" rel="noopener">View</a>
+                            {% else %}
+                            <span>Not Uploaded</span>
+                            {% endif %}
+                        </div>
+                        <div class="document-link-item">
+                            <strong>Community Cert</strong>
+                            {% if student.studentdocuments.community_certificate %}
+                            <a href="{{ student.studentdocuments.community_certificate.url }}" target="_blank" rel="noopener">View</a>
+                            {% else %}
+                            <span>Not Uploaded</span>
+                            {% endif %}
+                        </div>
+                        <div class="document-link-item">
+                            <strong>HSC Marksheet</strong>
+                            {% if student.studentdocuments.hsc_marksheet %}
+                            <a href="{{ student.studentdocuments.hsc_marksheet.url }}" target="_blank" rel="noopener">View</a>
+                            {% else %}
+                            <span>Not Uploaded</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scholarship -->
+                <div class="card">
+                    <h2 class="card-title">🎓 Scholarship</h2>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <strong>Status</strong>
+                            <span>{% if student.personalinfo.has_scholarship %}Applied{% else %}Not Applied{% endif %}</span>
+                        </div>
+                        {% if student.personalinfo.has_scholarship %}
+                        <div class="detail-item" style="grid-column: 1 / -1;">
+                            <strong>Schemes</strong>
+                            <ul class="scholarship-list">
+                                {% if student.scholarshipinfo.is_first_graduate %}<li>First Graduate</li>{% endif %}
+                                {% if student.scholarshipinfo.sch_govt %}<li>Govt 7.5% Quota</li>{% endif %}
+                                {% if student.scholarshipinfo.sch_postmetric %}<li>Post-Matric</li>{% endif %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Bank Info -->
+                <div class="card">
+                    <h2 class="card-title">🏦 Bank Details</h2>
+                    <div class="details-grid">
+                        <div class="detail-item"><strong>Account Name</strong> <span>{{ student.bankdetails.account_holder_name|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>Account No</strong> <span>{{ student.bankdetails.account_number|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>IFSC</strong> <span>{{ student.bankdetails.ifsc_code|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>Bank</strong> <span>{{ student.bankdetails.bank_name|default:"-" }}</span></div>
+                    </div>
+                </div>
+
             </div>
         </main>
     </div>
 </body>
+
 </html>

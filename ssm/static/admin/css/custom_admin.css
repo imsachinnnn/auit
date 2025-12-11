@@ -1,0 +1,420 @@
+/* Custom Admin Panel Styling - Annamalai University Theme */
+
+:root {
+    --primary-color: #5a7d7c;
+    --primary-hover: #4a6b69;
+    --secondary-bg: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --border-color: #dee2e6;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+}
+
+/* Global Font */
+body, input, textarea, select, button {
+    font-family: 'Poppins', sans-serif !important;
+}
+
+/* Header Styling */
+#header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%) !important;
+    color: #fff !important;
+    border-bottom: 3px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    padding: 15px 30px !important;
+}
+
+#header a:link, #header a:visited {
+    color: #fff !important;
+}
+
+#header a:hover {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#branding h1, #branding h1 a:link, #branding h1 a:visited {
+    color: #fff !important;
+    font-weight: 600 !important;
+}
+
+/* User Tools */
+#user-tools {
+    font-weight: 500 !important;
+    font-size: 13px !important;
+}
+
+#user-tools a {
+    padding: 5px 10px !important;
+    border-radius: 4px !important;
+    transition: background-color 0.2s !important;
+}
+
+#user-tools a:hover {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Main Content Area */
+#content {
+    background-color: var(--secondary-bg) !important;
+    padding: 20px 30px !important;
+}
+
+/* Dashboard Cards */
+.dashboard .module {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    margin-bottom: 20px !important;
+    overflow: hidden !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+}
+
+.dashboard .module:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.dashboard .module h2 {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%) !important;
+    color: #fff !important;
+    padding: 15px 20px !important;
+    margin: 0 !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-bottom: none !important;
+}
+
+.dashboard .module table {
+    width: 100% !important;
+}
+
+.dashboard .module th {
+    background-color: var(--secondary-bg) !important;
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+    padding: 12px 15px !important;
+    border-bottom: 2px solid var(--border-color) !important;
+}
+
+.dashboard .module td {
+    padding: 12px 15px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.dashboard .module tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Links */
+.dashboard .module a {
+    color: var(--primary-color) !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    transition: color 0.2s !important;
+}
+
+.dashboard .module a:hover {
+    color: var(--primary-hover) !important;
+    text-decoration: underline !important;
+}
+
+/* Add/Change Links */
+.dashboard .module .addlink,
+.dashboard .module .changelink {
+    color: var(--success-color) !important;
+    font-weight: 600 !important;
+}
+
+.dashboard .module .addlink:hover,
+.dashboard .module .changelink:hover {
+    color: #218838 !important;
+}
+
+/* Buttons */
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 10px 20px !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s, transform 0.1s !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.button:hover, input[type=submit]:hover, input[type=button]:hover, a.button:hover {
+    background-color: var(--primary-hover) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.button:active, input[type=submit]:active {
+    transform: translateY(0) !important;
+}
+
+/* Default Button */
+.default, input[type=submit].default, .submit-row input.default {
+    background-color: var(--success-color) !important;
+}
+
+.default:hover, input[type=submit].default:hover {
+    background-color: #218838 !important;
+}
+
+/* Delete Button */
+.deletelink, .deletelink-box {
+    background-color: var(--danger-color) !important;
+    color: #fff !important;
+}
+
+.deletelink:hover, .deletelink-box:hover {
+    background-color: #c82333 !important;
+}
+
+/* Forms */
+.form-row {
+    padding: 15px 0 !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.form-row:last-child {
+    border-bottom: none !important;
+}
+
+.form-row label {
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    margin-bottom: 5px !important;
+}
+
+input[type=text], input[type=password], input[type=email], input[type=url],
+input[type=number], textarea, select {
+    border: 1px solid var(--border-color) !important;
+    border-radius: 6px !important;
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+input[type=text]:focus, input[type=password]:focus, input[type=email]:focus,
+input[type=url]:focus, input[type=number]:focus, textarea:focus, select:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(90, 125, 124, 0.1) !important;
+    outline: none !important;
+}
+
+/* Tables */
+#result_list {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+#result_list thead th {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%) !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    padding: 15px !important;
+    border: none !important;
+}
+
+#result_list tbody tr {
+    border-bottom: 1px solid var(--border-color) !important;
+    transition: background-color 0.2s !important;
+}
+
+#result_list tbody tr:hover {
+    background-color: var(--secondary-bg) !important;
+}
+
+#result_list tbody td {
+    padding: 12px 15px !important;
+}
+
+/* Messages */
+.messagelist {
+    margin: 20px 0 !important;
+}
+
+.messagelist li {
+    padding: 12px 20px !important;
+    border-radius: 6px !important;
+    margin-bottom: 10px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.messagelist .success {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+    border-left: 4px solid var(--success-color) !important;
+}
+
+.messagelist .error {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+    border-left: 4px solid var(--danger-color) !important;
+}
+
+.messagelist .warning {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+    border-left: 4px solid var(--warning-color) !important;
+}
+
+.messagelist .info {
+    background-color: #d1ecf1 !important;
+    color: #0c5460 !important;
+    border-left: 4px solid var(--info-color) !important;
+}
+
+/* Sidebar */
+#changelist-filter {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    padding: 15px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+#changelist-filter h2 {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%) !important;
+    color: #fff !important;
+    padding: 10px 15px !important;
+    margin: -15px -15px 15px -15px !important;
+    border-radius: 8px 8px 0 0 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+#changelist-filter h3 {
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+    margin-top: 15px !important;
+    margin-bottom: 8px !important;
+    font-size: 13px !important;
+}
+
+#changelist-filter a {
+    color: var(--primary-color) !important;
+}
+
+#changelist-filter a:hover {
+    color: var(--primary-hover) !important;
+}
+
+#changelist-filter li.selected a {
+    color: var(--primary-hover) !important;
+    font-weight: 600 !important;
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 12px 30px !important;
+    margin: 0 !important;
+    font-size: 13px !important;
+}
+
+.breadcrumbs a {
+    color: var(--primary-color) !important;
+    font-weight: 500 !important;
+}
+
+.breadcrumbs a:hover {
+    color: var(--primary-hover) !important;
+}
+
+/* Submit Row */
+.submit-row {
+    background: var(--card-bg) !important;
+    border-top: 2px solid var(--border-color) !important;
+    padding: 20px !important;
+    margin-top: 20px !important;
+    border-radius: 0 0 8px 8px !important;
+}
+
+/* Object Tools */
+.object-tools {
+    margin-bottom: 20px !important;
+}
+
+.object-tools a {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+    padding: 10px 20px !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    transition: background-color 0.2s !important;
+}
+
+.object-tools a:hover {
+    background-color: var(--primary-hover) !important;
+}
+
+.object-tools .addlink {
+    background-color: var(--success-color) !important;
+}
+
+.object-tools .addlink:hover {
+    background-color: #218838 !important;
+}
+
+/* Recent Actions */
+.module ul.actionlist {
+    padding-left: 0 !important;
+}
+
+.module ul.actionlist li {
+    padding: 10px 15px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    transition: background-color 0.2s !important;
+}
+
+.module ul.actionlist li:hover {
+    background-color: var(--secondary-bg) !important;
+}
+
+.module ul.actionlist li:last-child {
+    border-bottom: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #header {
+        padding: 12px 15px !important;
+    }
+    
+    #branding h1 {
+        font-size: 16px !important;
+    }
+    
+    #content {
+        padding: 15px !important;
+    }
+}
+
+/* Dark mode toggle styling */
+.theme-toggle {
+    margin-left: 15px;
+}
+
+/* Loading spinner */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+

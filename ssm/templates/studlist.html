@@ -1,21 +1,257 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- Your head content here, styled with your light theme -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student List | Staff Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
+    <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --secondary-bg: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --accent-color: #5a7d7c;
+            --accent-color-hover: #4a6b69;
+            --light-accent-bg: #eef2f2;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            --card-radius: 8px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--secondary-bg);
+            padding: 20px;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            background-color: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: background-color 0.3s;
+        }
+
+        .action-btn:hover {
+            background-color: var(--accent-color-hover);
+        }
+
+        /* Search Bar */
+        .search-container {
+            margin-bottom: 14px;
+            display: grid;
+            grid-template-columns: 1fr 160px auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .filter-select {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            background: white;
+        }
+
+        .search-btn {
+            padding: 12px 18px;
+            background-color: var(--text-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* List */
+        .student-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+        }
+
+        .student-card {
+            background: var(--secondary-bg);
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 12px;
+            align-items: center;
+            transition: transform 0.15s;
+            min-height: 110px;
+        }
+
+        .student-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .student-img-container {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--light-accent-bg);
+        }
+
+        .student-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .student-info h3 {
+            margin: 0 0 4px 0;
+            font-size: 1em;
+            color: var(--text-primary);
+        }
+
+        .student-info p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .view-link {
+            justify-self: end;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+            border: 1px solid var(--accent-color);
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-size: 0.82em;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .view-link:hover {
+            background-color: var(--accent-color);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .search-container {
+                grid-template-columns: 1fr;
+            }
+
+            .search-btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .student-card {
+                grid-template-columns: auto 1fr;
+            }
+        }
+    </style>
+</head>
+
 <body>
     <div class="container">
-        <h1>Registered Students</h1>
+        <header class="page-header">
+            <div class="title-group">
+                <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" alt="Logo"
+                    style="height:40px;">
+                <h1>Student Directory</h1>
+            </div>
+            <a href="{% url 'staffs:staff_dashboard' %}" class="action-btn">← Back to Dashboard</a>
+        </header>
+
+        <form method="GET" class="search-container">
+            <input type="text" name="q" class="search-input" placeholder="Search by Name, Roll Number, or Email..."
+                value="{{ query|default:'' }}">
+            <select name="semester" class="filter-select">
+                <option value="">All Semesters</option>
+                {% for i in "12345678"|make_list %}
+                <option value="{{ i }}" {% if selected_semester == i %}selected{% endif %}>Semester {{ i }}</option>
+                {% endfor %}
+                <option value="9" {% if selected_semester == '9' %}selected{% endif %}> Completed</option>
+            </select>
+            <button type="submit" class="search-btn">Search</button>
+        </form>
+
         <div class="student-list">
             {% for student in students %}
-                <div class="student-item">
-                    <a href="{% url 'student_detail' student.pk %}">
-                        <h3>{{ student.student_name }}</h3>
-                        <p>Roll Number: {{ student.roll_number }}</p>
-                    </a>
+            <div class="student-card">
+                <div class="student-img-container">
+                    {% if student.studentdocuments.student_photo %}
+                    <img src="{{ student.studentdocuments.student_photo.url }}" alt="{{ student.student_name }}"
+                        class="student-img">
+                    {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ student.student_name }}&background=random&size=200"
+                        alt="{{ student.student_name }}" class="student-img">
+                    {% endif %}
                 </div>
+                <div class="student-info">
+                    <h3>{{ student.student_name }}</h3>
+                    <p>{{ student.roll_number }} ({{ student.program_level }})</p>
+                </div>
+                <a href="{% url 'staffs:student_detail' student.roll_number %}" class="view-link">View Profile</a>
+            </div>
             {% empty %}
-                <p>No students have been registered yet.</p>
+            <p style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 50px;">No students
+                found matching your criteria.</p>
             {% endfor %}
         </div>
     </div>
 </body>
+
 </html>

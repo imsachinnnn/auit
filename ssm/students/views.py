@@ -3,7 +3,6 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from functools import wraps
 
-# Import all your models
 from .models import (
     Student, PersonalInfo, AcademicHistory, DiplomaDetails, UGDetails, PGDetails, 
     PhDDetails, ScholarshipInfo, StudentDocuments, BankDetails, OtherDetails, Caste
@@ -26,7 +25,6 @@ def student_login_required(view_func):
     return _wrapped_view
 
 
-# --- Simple Page Views ---
 def prevhome(request): 
     return render(request, 'prevhome.html')
 
@@ -67,7 +65,8 @@ def register_student(request):
             student_name=data.get('student_name'),
             student_email=data.get('student_email'),
             program_level=data.get('program_level'),
-            ug_entry_type=data.get('ug_entry_type') if data.get('program_level') == 'UG' else ''
+            ug_entry_type=data.get('ug_entry_type') if data.get('program_level') == 'UG' else '',
+            current_semester=data.get('current_semester') or 1  # Add semester, default to 1
         )
         # Use the secure password setting method from your model
         student.set_password(data.get('password')) 
@@ -87,7 +86,6 @@ def register_student(request):
             student=student,
             caste=caste_obj,  # Use the object we found, not the name string
             caste_other=data.get('caste_other'),
-            # ... (all other PersonalInfo fields) ...
             emis_id=data.get('emis_id'),
             umis_id=data.get('umis_id'),
             abc_id=data.get('abc_id'),
@@ -120,8 +118,7 @@ def register_student(request):
             ifsc_code=data.get('ifsc_code'),
         )
         
-        # ... (The rest of your view remains exactly the same) ...
-        # (AcademicHistory, ScholarshipInfo, etc.)
+
 
         if data.get('has_scholarship') == 'yes':
             ScholarshipInfo.objects.create(
@@ -182,7 +179,7 @@ def register_student(request):
             hobbies=data.get('hobbies'), identification_marks=data.get('identification_marks'),
         )
 
-        # ... (Add creation logic for BankDetails, AcademicHistory, etc. here) ...
+  
 
         return JsonResponse({'message': 'Registration successful!'}, status=201)
 

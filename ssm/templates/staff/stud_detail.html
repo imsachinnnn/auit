@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ student.student_name }} - Details | Staff Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
+    <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --secondary-bg: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --accent-color: #5a7d7c;
+            --accent-color-hover: #4a6b69;
+            --light-accent-bg: #eef2f2;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            --card-radius: 8px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--secondary-bg);
+            padding: 20px;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .student-photo-header {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-color);
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        .subtitle {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border: 1px solid var(--accent-color);
+            border-radius: 6px;
+            background-color: transparent;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        /* Sections */
+        .section-card {
+            background: var(--secondary-bg);
+            border-radius: var(--card-radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--light-accent-bg);
+            padding-bottom: 10px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .file-link {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+
+        .photo-large {
+            width: 150px;
+            height: 150px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- Header with Back Button -->
+        <header class="page-header">
+            <div class="header-left">
+                {% if student.studentdocuments.student_photo %}
+                <img src="{{ student.studentdocuments.student_photo.url }}" alt="Photo" class="student-photo-header">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ student.student_name }}&background=random" alt="Photo"
+                    class="student-photo-header">
+                {% endif %}
+                <div>
+                    <h1>{{ student.student_name }}</h1>
+                    <p class="subtitle">{{ student.roll_number }} | {{ student.program_level }}</p>
+                </div>
+            </div>
+            <a href="{% url 'staffs:student_list' %}" class="action-btn">← Back to List</a>
+        </header>
+
+        <!-- Personal Info -->
+        <section class="section-card">
+            <div class="section-title">Personal Information</div>
+            {% if personal_info %}
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Full Name</span>
+                    <span class="info-value">{{ student.student_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Roll Number</span>
+                    <span class="info-value">{{ student.roll_number }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Register Number</span>
+                    <span class="info-value">{{ student.register_number|default_if_none:"-"|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ student.student_email|default_if_none:"-"|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Date of Birth</span>
+                    <span class="info-value">{% if personal_info.date_of_birth %}{{ personal_info.date_of_birth|date:"Y-m-d" }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gender</span>
+                    <span class="info-value">{% if personal_info.gender %}{{ personal_info.gender }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Blood Group</span>
+                    <span class="info-value">{% if personal_info.blood_group %}{{ personal_info.blood_group }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Mobile</span>
+                    <span class="info-value">{% if personal_info.student_mobile %}{{ personal_info.student_mobile }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Aadhaar</span>
+                    <span class="info-value">{% if personal_info.aadhaar_number %}{{ personal_info.aadhaar_number }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Community</span>
+                    <span class="info-value">{% if personal_info.community %}{{ personal_info.community }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Caste</span>
+                    <span class="info-value">{% if personal_info.caste %}{{ personal_info.caste.name }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Religion</span>
+                    <span class="info-value">{% if personal_info.religion %}{{ personal_info.religion }}{% else %}-{% endif %}</span>
+                </div>
+            </div>
+            <div class="info-grid" style="margin-top: 15px;">
+                <div class="info-item">
+                    <span class="info-label">Present Address</span>
+                    <span class="info-value">{% if personal_info.present_address %}{{ personal_info.present_address }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Permanent Address</span>
+                    <span class="info-value">{% if personal_info.permanent_address %}{{ personal_info.permanent_address }}{% else %}-{% endif %}</span>
+                </div>
+            </div>
+            {% else %}
+            <p style="color: var(--text-secondary);">No personal information available.</p>
+            {% endif %}
+        </section>
+
+        <!-- Parent Details -->
+        <section class="section-card">
+            <div class="section-title">Parent / Guardian Details</div>
+            {% if personal_info %}
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Father's Name</span>
+                    <span class="info-value">{{ personal_info.father_name|default_if_none:"-"|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Father's Occupation</span>
+                    <span class="info-value">{% if personal_info.father_occupation %}{{ personal_info.father_occupation }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Father's Mobile</span>
+                    <span class="info-value">{{ personal_info.father_mobile|default_if_none:"-"|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Mother's Name</span>
+                    <span class="info-value">{{ personal_info.mother_name|default_if_none:"-"|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Mother's Occupation</span>
+                    <span class="info-value">{% if personal_info.mother_occupation %}{{ personal_info.mother_occupation }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Mother's Mobile</span>
+                    <span class="info-value">{{ personal_info.mother_mobile|default_if_none:"-"|default:"-" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Annual Income</span>
+                    <span class="info-value">{% if personal_info.parent_annual_income %}{{ personal_info.parent_annual_income }}{% else %}-{% endif %}</span>
+                </div>
+            </div>
+            {% else %}
+            <p style="color: var(--text-secondary);">No parent/guardian details available.</p>
+            {% endif %}
+        </section>
+
+        <!-- Academic History -->
+        <!-- Academic History -->
+        <section class="section-card">
+            <div class="section-title">Academic History</div>
+
+            {% if academic_history %}
+            <div style="margin-bottom: 20px;">
+                <h4 style="margin: 0 0 10px 0; color: var(--text-primary);">SSLC</h4>
+                <div class="info-grid">
+                    <div class="info-item"><span class="info-label">School</span><span class="info-value">{% if academic_history.sslc_school_name %}{{ academic_history.sslc_school_name }}{% else %}-{% endif %}</span></div>
+                    <div class="info-item"><span class="info-label">Percentage</span><span class="info-value">{% if academic_history.sslc_percentage %}{{ academic_history.sslc_percentage }}%{% else %}-{% endif %}</span></div>
+                    <div class="info-item"><span class="info-label">Year</span><span class="info-value">{% if academic_history.sslc_year_of_passing %}{{ academic_history.sslc_year_of_passing }}{% else %}-{% endif %}</span></div>
+                </div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <h4 style="margin: 0 0 10px 0; color: var(--text-primary);">HSC</h4>
+                <div class="info-grid">
+                    <div class="info-item"><span class="info-label">School</span><span class="info-value">{% if academic_history.hsc_school_name %}{{ academic_history.hsc_school_name }}{% else %}-{% endif %}</span></div>
+                    <div class="info-item"><span class="info-label">Percentage</span><span class="info-value">{% if academic_history.hsc_percentage %}{{ academic_history.hsc_percentage }}%{% else %}-{% endif %}</span></div>
+                    <div class="info-item"><span class="info-label">Year</span><span class="info-value">{% if academic_history.hsc_year_of_passing %}{{ academic_history.hsc_year_of_passing }}{% else %}-{% endif %}</span></div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if diploma_details %}
+            <div style="margin-bottom: 20px;">
+                <h4 style="margin: 0 0 10px 0; color: var(--text-primary);">Diploma</h4>
+                <div class="info-grid">
+                    <div class="info-item"><span class="info-label">College</span><span class="info-value">{% if diploma_details.diploma_college_name %}{{ diploma_details.diploma_college_name }}{% else %}-{% endif %}</span></div>
+                    <div class="info-item"><span class="info-label">Percentage</span><span class="info-value">{% if diploma_details.diploma_percentage %}{{ diploma_details.diploma_percentage }}%{% else %}-{% endif %}</span></div>
+                    <div class="info-item"><span class="info-label">Year</span><span class="info-value">{% if diploma_details.diploma_year_of_passing %}{{ diploma_details.diploma_year_of_passing }}{% else %}-{% endif %}</span></div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if ug_details %}
+            <div style="margin-bottom: 20px;">
+                <h4 style="margin: 0 0 10px 0; color: var(--text-primary);">Undergraduate</h4>
+                <div class="info-grid">
+                    <div class="info-item"><span class="info-label">Course</span><span class="info-value">{% if ug_details.ug_course %}{{ ug_details.ug_course }}{% else %}-{% endif %}</span></div>
+                    <div class="info-item"><span class="info-label">University</span><span class="info-value">{% if ug_details.ug_university %}{{ ug_details.ug_university }}{% else %}-{% endif %}</span></div>
+                    <div class="info-item"><span class="info-label">OGPA</span><span class="info-value">{% if ug_details.ug_ogpa %}{{ ug_details.ug_ogpa }}{% else %}-{% endif %}</span></div>
+                    <div class="info-item"><span class="info-label">Year</span><span class="info-value">{% if ug_details.ug_year_of_passing %}{{ ug_details.ug_year_of_passing }}{% else %}-{% endif %}</span></div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if not academic_history and not diploma_details and not ug_details %}
+            <p style="color: var(--text-secondary);">No academic history available.</p>
+            {% endif %}
+        </section>
+
+        <!-- Bank Details -->
+        <section class="section-card">
+            <div class="section-title">Bank Details</div>
+            {% if bank_details %}
+            <div class="info-grid">
+                <div class="info-item"><span class="info-label">Account Holder</span><span class="info-value">{% if bank_details.account_holder_name %}{{ bank_details.account_holder_name }}{% else %}-{% endif %}</span></div>
+                <div class="info-item"><span class="info-label">Account Number</span><span class="info-value">{% if bank_details.account_number %}{{ bank_details.account_number }}{% else %}-{% endif %}</span></div>
+                <div class="info-item"><span class="info-label">Bank Name</span><span class="info-value">{% if bank_details.bank_name %}{{ bank_details.bank_name }}{% else %}-{% endif %}</span></div>
+                <div class="info-item"><span class="info-label">Branch</span><span class="info-value">{% if bank_details.branch_name %}{{ bank_details.branch_name }}{% else %}-{% endif %}</span></div>
+                <div class="info-item"><span class="info-label">IFSC Code</span><span class="info-value">{% if bank_details.ifsc_code %}{{ bank_details.ifsc_code }}{% else %}-{% endif %}</span></div>
+            </div>
+            {% else %}
+            <p style="color: var(--text-secondary);">No bank details available.</p>
+            {% endif %}
+        </section>
+
+        <!-- Documents -->
+        <section class="section-card">
+            <div class="section-title">Uploaded Documents</div>
+            {% if docs %}
+            <div class="info-grid">
+                {% if docs.student_photo %}
+                <div class="info-item">
+                    <span class="info-label">Photo</span>
+                    <a href="{{ docs.student_photo.url }}" class="file-link" target="_blank">View File</a>
+                </div>
+                {% endif %}
+
+                {% if docs.student_id_card %}
+                <div class="info-item">
+                    <span class="info-label">ID Card</span>
+                    <a href="{{ docs.student_id_card.url }}" class="file-link" target="_blank">View File</a>
+                </div>
+                {% endif %}
+
+                {% if docs.community_certificate %}
+                <div class="info-item">
+                    <span class="info-label">Community Cert</span>
+                    <a href="{{ docs.community_certificate.url }}" class="file-link" target="_blank">View File</a>
+                </div>
+                {% endif %}
+
+                {% if docs.aadhaar_card %}
+                <div class="info-item">
+                    <span class="info-label">Aadhaar Card</span>
+                    <a href="{{ docs.aadhaar_card.url }}" class="file-link" target="_blank">View File</a>
+                </div>
+                {% endif %}
+
+                {% if docs.sslc_marksheet %}
+                <div class="info-item">
+                    <span class="info-label">SSLC Marksheet</span>
+                    <a href="{{ docs.sslc_marksheet.url }}" class="file-link" target="_blank">View File</a>
+                </div>
+                {% endif %}
+
+                {% if docs.hsc_marksheet %}
+                <div class="info-item">
+                    <span class="info-label">HSC Marksheet</span>
+                    <a href="{{ docs.hsc_marksheet.url }}" class="file-link" target="_blank">View File</a>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <p style="color: var(--text-secondary);">No documents uploaded.</p>
+            {% endif %}
+        </section>
+
+        <section class="section-card">
+            <div class="section-title">Other Details</div>
+            {% if other_details %}
+            <div class="info-grid">
+                <div class="info-item"><span class="info-label">Ambition</span><span class="info-value">{% if other_details.ambition %}{{ other_details.ambition }}{% else %}-{% endif %}</span></div>
+                <div class="info-item"><span class="info-label">Role Model</span><span class="info-value">{% if other_details.role_model %}{{ other_details.role_model }}{% else %}-{% endif %}</span></div>
+                <div class="info-item"><span class="info-label">Hobbies</span><span class="info-value">{% if other_details.hobbies %}{{ other_details.hobbies }}{% else %}-{% endif %}</span></div>
+            </div>
+            {% else %}
+            <p style="color: var(--text-secondary);">No other details available.</p>
+            {% endif %}
+        </section>
+
+    </div>
+</body>
+
+</html>

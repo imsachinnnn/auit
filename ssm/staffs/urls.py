@@ -4,7 +4,9 @@ from . import views
 
 
 # Set the namespace for this app
+# Set the namespace for this app
 app_name = 'staffs'
+# Force reload
 
 urlpatterns = [
     # The URL will be /staff/login/
@@ -16,5 +18,8 @@ urlpatterns = [
     # The URL will be /staff/logout/
     path('logout/', views.staff_logout, name='staff_logout'),
     path('register/', views.staff_register, name='staff_register'),
+    path('students/', views.student_list, name='student_list'),
+    path('students/<str:roll_number>/', views.student_detail, name='student_detail'),
+    path('semesters/', views.manage_semesters, name='manage_semesters'),
 
 ]

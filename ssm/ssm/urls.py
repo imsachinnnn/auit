@@ -15,17 +15,28 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
-from django.conf import settings              # Import settings
-from django.conf.urls.static import static  # Import static
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
+# Customize admin site
+admin.site.site_header = "Annamalai University"
+admin.site.site_title = "AU Admin Portal"
+admin.site.index_title = "Department of IT - Administration"
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('students.urls')),
     path('staffs/', include('staffs.urls')),
 ]
-    
 
+# Serve static files in development
 if settings.DEBUG:
+    # Serve static files (including admin static files)
+    # staticfiles_urlpatterns() uses Django's static file finders to locate files
+    # from all apps (including django.contrib.admin)
+    urlpatterns += staticfiles_urlpatterns()
+    
+    # Serve media files
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
