@@ -158,3 +158,28 @@ class OtherDetails(models.Model):
     role_model = models.CharField(max_length=100, blank=True)
     hobbies = models.TextField(blank=True)
     identification_marks = models.TextField(blank=True)
+
+class StudentMarks(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='marks')
+    subject = models.ForeignKey('staffs.Subject', on_delete=models.CASCADE, related_name='student_marks')
+    test1_marks = models.IntegerField(null=True, blank=True)
+    test2_marks = models.IntegerField(null=True, blank=True)
+    internal_marks = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('student', 'subject')
+
+    def __str__(self):
+        return f"{self.student.student_name} - {self.subject.code}"
+
+class StudentAttendance(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='attendance')
+    subject = models.ForeignKey('staffs.Subject', on_delete=models.CASCADE, related_name='attendance')
+    date = models.DateField()
+    status = models.CharField(max_length=20, choices=[('Present', 'Present'), ('Absent', 'Absent')], default='Present')
+
+    class Meta:
+        unique_together = ('student', 'subject', 'date')
+
+    def __str__(self):
+        return f"{self.student.student_name} - {self.subject.code} - {self.date}"

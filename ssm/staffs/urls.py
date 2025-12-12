@@ -21,5 +21,11 @@ urlpatterns = [
     path('students/', views.student_list, name='student_list'),
     path('students/<str:roll_number>/', views.student_detail, name='student_detail'),
     path('semesters/', views.manage_semesters, name='manage_semesters'),
+    path('subjects/', views.manage_subjects, name='manage_subjects'),
+    path('subjects/<int:subject_id>/marks/', views.manage_marks, name='manage_marks'),
+    path('subjects/<int:subject_id>/attendance/', views.manage_attendance, name='manage_attendance'),
+    path('subjects/<int:subject_id>/attendance/report/', views.attendance_report, name='attendance_report'),
+    path('subjects/<int:subject_id>/attendance/export/', views.export_attendance_csv, name='export_attendance_csv'),
+    path('staff/list/', views.staff_list, name='staff_list'),
 
 ]

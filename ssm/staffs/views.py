@@ -48,15 +48,21 @@ def staff_dashboard(request):
         if staff.assigned_semester:
             student_count = Student.objects.filter(current_semester=staff.assigned_semester).count()
         else:
-            student_count = 0 # Or handle as "No semester assigned"
+            student_count = 0 
             
     elif staff.role == 'Course Incharge':
         template_name = 'staff/staffdash_course.html'
     else:
-        template_name = 'staff/staffdash_hod.html' # Default HOD
+        template_name = 'staff/staffdash_hod.html'
         
-    return render(request, template_name, {'staff': staff, 'student_count': student_count})
-
+    # Fetch assigned subjects for this staff member
+    assigned_subjects = staff.subjects.all().order_by('semester', 'code')
+        
+    return render(request, template_name, {
+        'staff': staff, 
+        'student_count': student_count,
+        'assigned_subjects': assigned_subjects
+    })
 
 def staff_logout(request):
     """Logs the staff member out."""
@@ -237,4 +243,401 @@ def manage_semesters(request):
         'selected_semester': selected_semester,
         'display_semester_selector': display_semester_selector,
         'header_text': header_text
+    })
+
+def manage_subjects(request):
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+    
+    # Check if HOD
+    try:
+        current_staff = Staff.objects.get(staff_id=request.session['staff_id'])
+        if current_staff.role != 'HOD':
+             messages.error(request, "Access Denied: Only HOD can manage courses.")
+             return redirect('staffs:staff_dashboard')
+    except Staff.DoesNotExist:
+         return redirect('staffs:stafflogin')
+
+    from .models import Subject # Import locally to avoid circularity if any
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'add_subject':
+            name = request.POST.get('name')
+            code = request.POST.get('code')
+            semester = request.POST.get('semester')
+            
+            if name and code and semester:
+                Subject.objects.create(name=name, code=code, semester=semester)
+                messages.success(request, f"Subject '{name}' added successfully.")
+            else:
+                 messages.error(request, "All fields are required to add a subject.")
+                 
+        elif action == 'assign_staff':
+            subject_id = request.POST.get('subject_id')
+            staff_id = request.POST.get('staff_id')
+            
+            if subject_id:
+                subject = get_object_or_404(Subject, id=subject_id)
+                if staff_id:
+                     staff_member = get_object_or_404(Staff, staff_id=staff_id)
+                     
+                     # Check if staff is already assigned to a subject in this semester
+                     existing_assignment = Subject.objects.filter(staff=staff_member, semester=subject.semester).exclude(id=subject.id)
+                     
+                     if existing_assignment.exists():
+                         messages.error(request, f"{staff_member.name} is already assigned to a subject in Semester {subject.semester} ({existing_assignment.first().name}). Cannot assign more than 1 subject per semester.")
+                     else:
+                         subject.staff = staff_member
+                         subject.save()
+                         messages.success(request, f"Assigned {staff_member.name} to {subject.name}.")
+                else:
+                    subject.staff = None
+                    subject.save()
+                    messages.success(request, f"Unassigned staff from {subject.name}.")
+
+        elif action == 'delete_subject':
+            subject_id = request.POST.get('subject_id')
+            if subject_id:
+                subject = get_object_or_404(Subject, id=subject_id)
+                name = subject.name
+                subject.delete()
+                messages.success(request, f"Subject '{name}' deleted successfully.")
+
+        return redirect('staffs:manage_subjects')
+
+    # Group subjects by semester
+    subjects = Subject.objects.all().order_by('semester', 'code')
+    staff_members = Staff.objects.all().order_by('name')
+    
+    # Organize into a dict for easier template iteration: { 1: [subj1, subj2], 2: [...] }
+    subjects_by_sem = {}
+    for i in range(1, 9):
+        subjects_by_sem[i] = []
+        
+    for subj in subjects:
+        if subj.semester in subjects_by_sem:
+            subjects_by_sem[subj.semester].append(subj)
+            
+    return render(request, 'staff/manage_subjects.html', {
+        'subjects_by_sem': subjects_by_sem,
+        'staff_members': staff_members,
+        'current_staff': current_staff
+    })
+
+def manage_marks(request, subject_id):
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+
+    from .models import Subject
+
+    subject = get_object_or_404(Subject, id=subject_id)
+    current_staff = get_object_or_404(Staff, staff_id=request.session['staff_id'])
+
+    # Access Control: HOD or Assigned Staff
+    if current_staff.role != 'HOD' and subject.staff != current_staff:
+        messages.error(request, "Access Denied: You are not assigned to this subject.")
+        return redirect('staffs:staff_dashboard')
+
+    students = Student.objects.filter(current_semester=subject.semester).order_by('roll_number')
+
+    # Import StudentMarks locally to ensure it is available
+    from students.models import StudentMarks
+
+    if request.method == 'POST':
+        for student in students:
+            test1 = request.POST.get(f'test1_{student.roll_number}')
+            test2 = request.POST.get(f'test2_{student.roll_number}')
+            internal = request.POST.get(f'internal_{student.roll_number}')
+            
+            # Clean empty strings to None
+            test1 = int(test1) if test1 else None
+            test2 = int(test2) if test2 else None
+            internal = int(internal) if internal else None
+
+            # Update or Create marks
+            StudentMarks.objects.update_or_create(
+                student=student, 
+                subject=subject,
+                defaults={
+                    'test1_marks': test1,
+                    'test2_marks': test2,
+                    'internal_marks': internal
+                }
+            )
+        messages.success(request, "Marks updated successfully.")
+        return redirect('staffs:manage_marks', subject_id=subject.id)
+    
+    # Determine if read-only
+    # HOD can view all, but should only edit if they are the assigned staff
+    is_readonly = False
+    if current_staff.role == 'HOD' and subject.staff != current_staff:
+        is_readonly = True
+
+    # Pre-fetch existing marks for display
+    student_marks_map = {}
+    marks_entries = StudentMarks.objects.filter(subject=subject, student__in=students)
+    for entry in marks_entries:
+        student_marks_map[entry.student.roll_number] = entry
+
+    return render(request, 'staff/manage_marks.html', {
+        'subject': subject,
+        'students': students,
+        'student_marks_map': student_marks_map,
+        'is_readonly': is_readonly
+    })
+
+def manage_attendance(request, subject_id):
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+    
+    from .models import Subject
+    from students.models import StudentAttendance
+    import datetime
+
+    subject = get_object_or_404(Subject, id=subject_id)
+    current_staff = get_object_or_404(Staff, staff_id=request.session['staff_id'])
+
+    # Access Control
+    if current_staff.role != 'HOD' and subject.staff != current_staff:
+        messages.error(request, "Access Denied: You are not assigned to this subject.")
+        return redirect('staffs:staff_dashboard')
+
+    # Date Handling
+    date_str = request.GET.get('date')
+    if date_str:
+        try:
+            date_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+             date_obj = datetime.date.today()
+    else:
+        date_obj = datetime.date.today()
+    
+    formatted_date = date_obj.strftime('%Y-%m-%d')
+    students = Student.objects.filter(current_semester=subject.semester).order_by('roll_number')
+
+    # Determine if read-only
+    is_readonly = False
+    if current_staff.role == 'HOD' and subject.staff != current_staff:
+        is_readonly = True
+
+    if request.method == 'POST':
+        if is_readonly:
+             messages.error(request, "Read-only access: Cannot save attendance.")
+             return redirect(request.path + f"?date={formatted_date}")
+
+        # If date is changed via POST (e.g. date picker form submission if handled that way, 
+        # but usually date picker is GET for view, POST for save. Let's assume POST includes date or uses current view date)
+        # Better to trust the POSTed date if available, or fall back to view date.
+        
+        post_date_str = request.POST.get('attendance_date')
+        if post_date_str:
+             try:
+                save_date = datetime.datetime.strptime(post_date_str, '%Y-%m-%d').date()
+             except ValueError:
+                save_date = date_obj
+        else:
+            save_date = date_obj
+
+        for student in students:
+            status = request.POST.get(f'status_{student.roll_number}')
+            if status:
+                StudentAttendance.objects.update_or_create(
+                    student=student, 
+                    subject=subject, 
+                    date=save_date,
+                    defaults={'status': status}
+                )
+        messages.success(request, f"Attendance saved for {save_date}.")
+        from django.urls import reverse
+        return redirect(reverse('staffs:manage_attendance', kwargs={'subject_id': subject.id}) + f"?date={save_date}")
+
+    # Fetch existing attendance
+    attendance_map = {}
+    attendance_entries = StudentAttendance.objects.filter(subject=subject, date=date_obj, student__in=students)
+    
+    attendance_map = {entry.student.roll_number: entry.status for entry in attendance_entries}
+
+    return render(request, 'staff/manage_attendance.html', {
+        'subject': subject,
+        'students': students,
+        'attendance_map': attendance_map,
+        'current_date': formatted_date,
+        'is_readonly': is_readonly
+    })
+
+def attendance_report(request, subject_id):
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+        
+    from .models import Subject
+    from students.models import StudentAttendance
+    from django.db.models import Count, Q
+    import datetime
+
+    subject = get_object_or_404(Subject, id=subject_id)
+    current_staff = get_object_or_404(Staff, staff_id=request.session['staff_id'])
+
+    # Access Control
+    if current_staff.role != 'HOD' and subject.staff != current_staff:
+        messages.error(request, "Access Denied: You are not assigned to this subject.")
+        return redirect('staffs:staff_dashboard')
+
+    students = Student.objects.filter(current_semester=subject.semester).order_by('roll_number')
+    
+    # Filter Handling
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+    
+    attendance_qs = StudentAttendance.objects.filter(subject=subject)
+    
+    if month and year:
+        attendance_qs = attendance_qs.filter(date__month=month, date__year=year)
+    elif year:
+         attendance_qs = attendance_qs.filter(date__year=year)
+
+    # Calculate attendance summary
+    summary_data = []
+    
+    # Get total working days (unique dates with attendance for this subject within filter)
+    working_dates_qs = attendance_qs.values_list('date', flat=True).distinct().order_by('date')
+    working_dates = list(working_dates_qs)
+    total_dates = len(working_dates)
+    
+    for student in students:
+        # We need to filter by student AND the previously applied date filters
+        # Ideally we'd aggregate, but doing loop for detailed calculation is fine for class size < 100
+        
+        student_attendance = attendance_qs.filter(student=student)
+        present_count = student_attendance.filter(status='Present').count()
+        absent_count = student_attendance.filter(status='Absent').count()
+        
+        percentage = (present_count / total_dates * 100) if total_dates > 0 else 0
+        
+        summary_data.append({
+            'student': student,
+            'present': present_count,
+            'absent': absent_count,
+            'percentage': round(percentage, 2)
+        })
+
+    return render(request, 'staff/attendance_report.html', {
+        'subject': subject,
+        'summary_data': summary_data,
+        'total_working_days': total_dates,
+        'working_dates': working_dates,
+        'selected_month': int(month) if month else '',
+        'selected_year': int(year) if year else '',
+        'current_year': datetime.date.today().year,
+        'years': range(2024, datetime.date.today().year + 2), # Adjust range as needed
+        'current_staff': current_staff
+    })
+
+def export_attendance_csv(request, subject_id):
+    import csv
+    from django.http import HttpResponse
+    from .models import Subject
+    from students.models import StudentAttendance
+    import datetime
+
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+
+    subject = get_object_or_404(Subject, id=subject_id)
+    # Basic access check (reuse logic or decorator in real app)
+    
+    students = Student.objects.filter(current_semester=subject.semester).order_by('roll_number')
+    
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+    
+    attendance_qs = StudentAttendance.objects.filter(subject=subject)
+    if month and year:
+        attendance_qs = attendance_qs.filter(date__month=month, date__year=year)
+        filename = f"Attendance_{subject.code}_{month}_{year}.csv"
+    elif year:
+        attendance_qs = attendance_qs.filter(date__year=year)
+        filename = f"Attendance_{subject.code}_{year}.csv"
+    else:
+        filename = f"Attendance_{subject.code}_Overall.csv"
+
+    working_dates_qs = attendance_qs.values_list('date', flat=True).distinct().order_by('date')
+    working_dates = list(working_dates_qs)
+    
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+    
+    # Header Row: Roll No, Name, [Dates...], Total Present, Total Absent, %
+    header = ['Roll Number', 'Student Name'] + [d.strftime('%d-%b') for d in working_dates] + ['Total Present', 'Total Absent', 'Percentage']
+    writer.writerow(header)
+
+    for student in students:
+        # User requested last 3 digits of roll number
+        short_roll = str(student.roll_number)[-3:]
+        row = [short_roll, student.student_name]
+        
+        student_attendance_qs = attendance_qs.filter(student=student)
+        # Create a map for quick lookup: date -> status
+        status_map = {att.date: att.status for att in student_attendance_qs}
+        
+        present_count = 0
+        absent_count = 0
+        
+        for date in working_dates:
+            status = status_map.get(date, '-') # '-' if no record for that date (should ideally utilize defaults)
+            # Shorten status for CSV
+            if status == 'Present':
+                row.append('P')
+                present_count += 1
+            elif status == 'Absent':
+                row.append('A')
+                absent_count += 1
+            else:
+                row.append('-')
+        
+        total_days = len(working_dates)
+        percentage = (present_count / total_days * 100) if total_days > 0 else 0
+        
+        row.append(present_count)
+        row.append(absent_count)
+        row.append(f"{round(percentage, 2)}%")
+        
+        writer.writerow(row)
+
+    return response
+
+def staff_list(request):
+    """Displays a list of staff members with search functionality."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+
+    # Basic Check: Is this restricted to HOD? 
+    # User request: "in hod dashboard i want staff directory"
+    # Assuming visible to all staff (like student directory) but definitely HOD.
+    # Let's verify HOD just in case, or leave it open to all staff like student list.
+    # Given the prompt context "in hod dashboard", I'll make it accessible to logged in staff 
+    # but primarily promoted for HOD. 
+    
+    query = request.GET.get('q')
+    department = request.GET.get('department') # Optional filter
+    
+    staff_members = Staff.objects.all().order_by('name')
+
+    if query:
+        staff_members = staff_members.filter(
+            Q(name__icontains=query) | 
+            Q(staff_id__icontains=query) |
+            Q(email__icontains=query)
+        )
+    
+    if department:
+        staff_members = staff_members.filter(department__icontains=department)
+
+    return render(request, 'staff/stafflist.html', {
+        'staff_members': staff_members,
+        'query': query,
+        'departments': Staff.objects.values_list('department', flat=True).distinct()
     })

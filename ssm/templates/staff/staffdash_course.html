@@ -267,6 +267,39 @@
 
             <!-- Personal Information -->
 
+            <!-- Assigned Subjects -->
+            {% if assigned_subjects %}
+            <section class="content-section">
+                <div class="section-title">My Courses</div>
+                <div style="display: grid; gap: 15px;">
+                    {% for subject in assigned_subjects %}
+                    <div
+                        style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 1.05rem; color: var(--text-main);">{{subject.name}}
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                                Code: <strong>{{ subject.code }}</strong> &bull; Semester {{ subject.semester }}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="{% url 'staffs:manage_marks' subject.id %}"
+                                style="text-decoration: none; background: var(--primary-color); color: white; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; transition: 0.3s;"
+                                onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                                Marks
+                            </a>
+                            <a href="{% url 'staffs:manage_attendance' subject.id %}"
+                                style="text-decoration: none; background: var(--primary-color); color: white; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; transition: 0.3s;"
+                                onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                                Attendance
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
             <!-- Personal Info -->
             <section class="content-section">
                 <div class="section-title">Personal Information</div>

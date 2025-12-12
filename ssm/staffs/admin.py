@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import Staff
+from .models import Staff, Subject
+
+@admin.register(Subject)
+class SubjectAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'semester', 'staff')
+    list_filter = ('semester',)
+    search_fields = ('name', 'code')
 
 @admin.register(Staff)
 class StaffAdmin(admin.ModelAdmin):

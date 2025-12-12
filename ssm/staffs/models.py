@@ -46,3 +46,11 @@ class Staff(models.Model):
     def __str__(self):
         return f"{self.salutation} {self.name}"
 
+class Subject(models.Model):
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=50) 
+    semester = models.IntegerField(help_text="1-8")
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, blank=True, related_name='subjects')
+    
+    def __str__(self):
+        return f"{self.code} - {self.name} (Sem {self.semester})"
