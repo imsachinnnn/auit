@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+{% load staff_extras %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Marks | {{ subject.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #5a7d7c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .btn-back {
+            text-decoration: none;
+            color: white;
+            background: var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .btn-back:hover {
+            opacity: 0.9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .btn-save {
+            text-decoration: none;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 20px;
+        }
+
+        .btn-save:hover {
+            opacity: 0.9;
+        }
+
+        .messages {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Manage Marks</h1>
+                <p style="margin: 5px 0 0; color: #7f8c8d;">{{ subject.name }} ({{ subject.code }})</p>
+            </div>
+            <a href="{% url 'staffs:staff_dashboard' %}" class="btn-back">Back to Dashboard</a>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="messages {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Roll Number</th>
+                        <th>Student Name</th>
+                        <th>Mid Term Test - 1</th>
+                        <th>Mid Term Test - 2</th>
+                        <th>Overall Internal Marks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    {% with marks=student_marks_map|get_item:student.roll_number %}
+                    <tr>
+                        <td>{{ student.roll_number }}</td>
+                        <td>{{ student.student_name }}</td>
+                        <td>
+                            <input type="number" name="test1_{{ student.roll_number }}"
+                                value="{{ marks.test1_marks|default:'' }}" class="form-control mark-input" {% if is_readonly %}disabled style="background-color: #f9f9f9; border: none; font-weight: bold;" {% endif %}>
+                        </td>
+                        <td>
+                            <input type="number" name="test2_{{ student.roll_number }}"
+                                value="{{ marks.test2_marks|default:'' }}" class="form-control mark-input" {% if is_readonly %}disabled style="background-color: #f9f9f9; border: none; font-weight: bold;" {% endif %}>
+                        </td>
+                        <td>
+                            <input type="number" name="internal_{{ student.roll_number }}"
+                                value="{{ marks.internal_marks|default:'' }}" class="form-control mark-input" {% if is_readonly %}disabled style="background-color: #f9f9f9; border: none; font-weight: bold;" {% endif %}>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted);">No students found in this
+                            semester.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if not is_readonly %}
+            <div style="margin-top: 20px; text-align: right;">
+                <button type="submit" class="btn-save">Save Marks</button>
+            </div>
+            {% else %}
+            <div style="margin-top: 20px; text-align: right; color: var(--danger-color); font-style: italic;">
+                * Read-only view (You are not the assigned staff)
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</body>
+
+</html>

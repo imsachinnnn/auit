@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Report | {{ subject.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #5a7d7c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .btn-back {
+            text-decoration: none;
+            color: white;
+            background: var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .btn-back:hover {
+            opacity: 0.9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .summary-card {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-brand" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+            <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" alt="Logo"
+                style="height: 40px;">
+            <h1>Attendance Report: {{ subject.name }}</h1>
+        </div>
+        {% if subject.staff == current_staff %}
+        <a href="{% url 'staffs:manage_attendance' subject.id %}" class="btn-back"
+            style="margin-bottom: 20px; display: inline-block;">Back to Attendance</a>
+        {% else %}
+        <a href="{% url 'staffs:manage_subjects' %}" class="btn-back"
+            style="margin-bottom: 20px; display: inline-block;">Back to Courses</a>
+        {% endif %}
+
+        <div class="summary-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <form method="GET" style="display: flex; gap: 10px; align-items: center;">
+                    <select name="month" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="">All Months</option>
+                        <option value="1" {% if selected_month == 1 %}selected{% endif %}>January</option>
+                        <option value="2" {% if selected_month == 2 %}selected{% endif %}>February</option>
+                        <option value="3" {% if selected_month == 3 %}selected{% endif %}>March</option>
+                        <option value="4" {% if selected_month == 4 %}selected{% endif %}>April</option>
+                        <option value="5" {% if selected_month == 5 %}selected{% endif %}>May</option>
+                        <option value="6" {% if selected_month == 6 %}selected{% endif %}>June</option>
+                        <option value="7" {% if selected_month == 7 %}selected{% endif %}>July</option>
+                        <option value="8" {% if selected_month == 8 %}selected{% endif %}>August</option>
+                        <option value="9" {% if selected_month == 9 %}selected{% endif %}>September</option>
+                        <option value="10" {% if selected_month == 10 %}selected{% endif %}>October</option>
+                        <option value="11" {% if selected_month == 11 %}selected{% endif %}>November</option>
+                        <option value="12" {% if selected_month == 12 %}selected{% endif %}>December</option>
+                    </select>
+                    <select name="year" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+                        {% for y in years %}
+                        <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit"
+                        style="background: var(--primary-color); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Filter</button>
+                    {% if selected_month or selected_year %}
+                    <a href="{% url 'staffs:attendance_report' subject.id %}"
+                        style="color: #e74c3c; text-decoration: none; font-size: 0.9rem;">Clear</a>
+                    {% endif %}
+                </form>
+
+                <a href="{% url 'staffs:export_attendance_csv' subject.id %}?month={{ selected_month }}&year={{ selected_year }}"
+                    style="background: #27ae60; color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 0.9rem;">
+                    Export CSV
+                </a>
+            </div>
+
+            <div style="margin-bottom: 10px;">
+                Total Working Days: <span
+                    style="color: var(--primary-color); font-size: 1.2rem; font-weight: bold;">{{total_working_days}}</span>
+            </div>
+
+            {% if working_dates %}
+            <details>
+                <summary style="cursor: pointer; color: #7f8c8d; font-size: 0.9rem;">View Working Dates</summary>
+                <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
+                    {% for date in working_dates %}
+                    <span
+                        style="background: #e0e0e0; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">{{date|date:"d M Y" }}</span>
+                    {% endfor %}
+                </div>
+            </details>
+            {% endif %}
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Roll Number</th>
+                    <th>Student Name</th>
+                    <th>Present</th>
+                    <th>Absent</th>
+                    <th>Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in summary_data %}
+                <tr>
+                    <td>{{ data.student.roll_number }}</td>
+                    <td>{{ data.student.student_name }}</td>
+                    <td style="color: #2ecc71; font-weight: 600;">{{ data.present }}</td>
+                    <td style="color: #7c0c00; font-weight: 600;">{{ data.absent }}</td>
+                    <td>
+                        <span
+                            style="font-weight: 600; color: {% if data.percentage < 75 %}#e74c3c{% else %}#2ecc71{% endif %};">
+                            {{ data.percentage }}%
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Directory | SSM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
+    <style>
+        :root {
+            --primary-color: #5a7d7c;
+            --secondary-color: #4a6b69;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 20px 30px;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-brand h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .back-btn {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 8px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* Search Bar */
+        .search-container {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        .search-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .search-btn:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Staff Grid */
+        .staff-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .staff-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .staff-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #eef2f7;
+            margin-bottom: 15px;
+        }
+
+        .staff-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 5px;
+        }
+
+        .staff-role {
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            background: #eef6f6;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .staff-dept {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .staff-info {
+            width: 100%;
+            border-top: 1px solid #f0f0f0;
+            padding-top: 15px;
+            text-align: left;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: #888;
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 50px;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="page-header">
+        <div class="header-brand">
+            <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" alt="Logo"
+                style="height: 40px;">
+            <h1>Staff Directory</h1>
+        </div>
+        <a href="{% url 'staffs:staff_dashboard' %}" class="back-btn">Back to Dashboard</a>
+    </header>
+
+    <div class="container">
+        <!-- Search Filter -->
+        <form method="GET" class="search-container">
+            <input type="text" name="q" class="search-input" placeholder="Search by name, ID or email..."
+                value="{{ query|default:'' }}">
+            <select name="department" class="search-input" style="flex: 0 0 200px;">
+                <option value="">All Departments</option>
+                {% for dept in departments %}
+                {% if dept %}
+                <option value="{{ dept }}" {% if request.GET.department == dept %}selected{% endif %}>{{ dept }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+            <button type="submit" class="search-btn">Search</button>
+            {% if query or request.GET.department %}
+            <a href="{% url 'staffs:staff_list' %}"
+                style="display:flex; align-items:center; padding: 0 15px; color: #e74c3c; text-decoration: none;">Clear</a>
+            {% endif %}
+        </form>
+
+        <div class="staff-grid">
+            {% for staff in staff_members %}
+            <div class="staff-card">
+                {% if staff.photo %}
+                <img src="{{ staff.photo.url }}" alt="{{ staff.name }}" class="profile-img">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ staff.name }}&background=random&size=200"
+                    alt="{{ staff.name }}" class="profile-img">
+                {% endif %}
+
+                <div class="staff-name">{{ staff.salutation }} {{ staff.name }}</div>
+                <div class="staff-role">{{ staff.designation }}</div>
+                <div class="staff-dept">{{ staff.department }}</div>
+
+                <div class="staff-info">
+                    <div class="info-row">
+                        <span class="info-label">ID:</span>
+                        <span>{{ staff.staff_id }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Email:</span>
+                        <span style="font-size: 0.85rem;">{{ staff.email }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Phone:</span>
+                        <span>{{ staff.phone|default:"-" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Role:</span>
+                        <span>{{ staff.role }}</span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-results">
+                No staff members found matching your search.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+
+</html>
