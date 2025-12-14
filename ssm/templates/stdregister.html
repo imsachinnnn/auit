@@ -313,20 +313,34 @@
                             <option value="PHD">PhD</option>
                         </select>
                     </div>
-                    <div class="input-group">
-                        <label for="current_semester">Current Semester</label>
-                        <select id="current_semester" name="current_semester" required>
-                            <option value="">-- Select Semester --</option>
-                            <option value="1">Semester 1</option>
-                            <option value="2">Semester 2</option>
-                            <option value="3">Semester 3</option>
-                            <option value="4">Semester 4</option>
-                            <option value="5">Semester 5</option>
-                            <option value="6">Semester 6</option>
-                            <option value="7">Semester 7</option>
-                            <option value="8">Semester 8</option>
-                        </select>
+                    <div id="current-program-details-section" class="conditional-section">
+                        <h3>Current Program Details</h3>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="current_semester">Current Semester</label>
+                                <select id="current_semester" name="current_semester" required>
+                                    <option value="">-- Select Semester --</option>
+                                    <option value="1">Semester 1</option>
+                                    <option value="2">Semester 2</option>
+                                    <option value="3">Semester 3</option>
+                                    <option value="4">Semester 4</option>
+                                    <option value="5">Semester 5</option>
+                                    <option value="6">Semester 6</option>
+                                    <option value="7">Semester 7</option>
+                                    <option value="8">Semester 8</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="joining_year">Joining Year</label>
+                                <select id="joining_year" name="joining_year" class="year-picker"></select>
+                            </div>
+                            <div class="input-group">
+                                <label for="ending_year">Ending Year (Batch)</label>
+                                <select id="ending_year" name="ending_year" class="year-picker"></select>
+                            </div>
+                        </div>
                     </div>
+
                     <div id="ug-entry-type-section" class="conditional-section">
                         <div class="input-group">
                             <label for="ug_entry_type">UG Entry Type</label>
@@ -599,12 +613,19 @@
             // --- 2. YEAR PICKER LOGIC (Your code is fine) ---
             document.querySelectorAll('.year-picker').forEach(dropdown => {
                 const currentYear = new Date().getFullYear();
-                const startYear = currentYear - 40;
+                let startLoopYear = currentYear;
+                // Allow future years for Ending Year (Batch)
+                if (dropdown.id === 'ending_year') {
+                    startLoopYear = currentYear + 6;
+                }
+
+                const minYear = currentYear - 40;
                 const placeholder = document.createElement('option');
                 placeholder.value = "";
                 placeholder.textContent = "-- Select Year --";
                 dropdown.appendChild(placeholder);
-                for (let year = currentYear; year >= startYear; year--) {
+
+                for (let year = startLoopYear; year >= minYear; year--) {
                     const option = document.createElement('option');
                     option.value = year;
                     option.textContent = year;
@@ -683,8 +704,15 @@
             const fgCheckbox = document.getElementById('is_first_graduate_sch');
             const fgCertUploadSection = document.getElementById('fg-cert-upload-section');
 
+            const currentDetailsSection = document.getElementById('current-program-details-section');
+
             function handleProgramChange() {
                 const level = programLevelSelect.value;
+                // Show current details if any program is selected
+                if (currentDetailsSection) {
+                    currentDetailsSection.style.display = level ? 'block' : 'none';
+                }
+
                 ugEntryTypeSection.style.display = level === 'UG' ? 'block' : 'none';
                 ugEntryTypeSelect.value = '';
                 handleEntryTypeChange();

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Staff, Subject
+from .models import Staff, Subject, ExamSchedule, Timetable
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
@@ -33,3 +33,17 @@ class StaffAdmin(admin.ModelAdmin):
             'fields': ('is_active',) # Removed password field for security, use set_password via custom form or shell if really needed via admin, but standard is fine
         }),
     )
+
+from .models import ExamSchedule, Timetable
+
+@admin.register(ExamSchedule)
+class ExamScheduleAdmin(admin.ModelAdmin):
+    list_display = ('semester', 'subject', 'date', 'session', 'time')
+    list_filter = ('semester', 'date')
+    ordering = ('date', 'session')
+
+@admin.register(Timetable)
+class TimetableAdmin(admin.ModelAdmin):
+    list_display = ('semester', 'day', 'period', 'subject', 'staff')
+    list_filter = ('semester', 'day')
+    ordering = ('semester', 'day', 'period')

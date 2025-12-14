@@ -281,6 +281,18 @@
                     <div class="action-title">📖 Manage Courses</div>
                     <div class="action-desc">Add semester-wise courses and assign staff.</div>
                 </a>
+                <a href="{% url 'staffs:passed_out_batches' %}" class="action-card">
+                    <div class="action-title">🎓 Passed Out Students</div>
+                    <div class="action-desc">View passed out students batch-wise.</div>
+                </a>
+                <a href="{% url 'staffs:exam_schedule' %}" class="action-card">
+                    <div class="action-title">📅 Exam Schedule</div>
+                    <div class="action-desc">Check upcoming examination dates.</div>
+                </a>
+                <a href="{% url 'staffs:timetable' %}" class="action-card">
+                    <div class="action-title">🗓️ Timetable</div>
+                    <div class="action-desc">View weekly class schedules.</div>
+                </a>
             </section>
 
             <!-- Assigned Subjects -->

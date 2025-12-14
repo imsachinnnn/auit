@@ -34,6 +34,10 @@ class Student(models.Model):
     
     current_semester = models.PositiveIntegerField(default=1) # Added for semester management
     
+    # Batch Info
+    joining_year = models.IntegerField(null=True, blank=True)
+    ending_year = models.IntegerField(null=True, blank=True)
+    
     # Security Questions (Added to fix DB sync issue)
     security_question_1 = models.CharField(max_length=255, blank=True, null=True)
     security_answer_1 = models.CharField(max_length=255, blank=True, null=True)

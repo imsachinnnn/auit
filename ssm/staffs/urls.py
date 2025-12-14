@@ -28,5 +28,11 @@ urlpatterns = [
     path('subjects/<int:subject_id>/attendance/report/', views.attendance_report, name='attendance_report'),
     path('subjects/<int:subject_id>/attendance/export/', views.export_attendance_csv, name='export_attendance_csv'),
     path('staff/list/', views.staff_list, name='staff_list'),
+    
+    # Passed Out Students
+    path('passed-out/', views.passed_out_batches, name='passed_out_batches'),
+    path('passed-out/<int:year>/', views.batch_students, name='batch_students'),
+    path('exam-schedule/', views.exam_schedule, name='exam_schedule'),
+    path('timetable/', views.timetable, name='timetable'),
 
 ]

@@ -40,6 +40,7 @@ urlpatterns = [
     # Other views
     path('support/', views.help_and_support, name='help_and_support'),
     path('exam-timetable/', views.exam_timetable, name='exam_timetable'),
+    path('class-timetable/', views.class_timetable, name='class_timetable'),
     path('edit_profile/', views.student_editprofile, name='student_editprofile'),
     #path('api/get-castes/', views.get_castes, name='get_castes'),
     path('api/get-castes/', views.get_caste_data_api, name='api_get_castes'),
@@ -53,6 +54,8 @@ urlpatterns = [
     
     # Student attendance and marks
     path('attendance/', views.student_attendance, name='student_attendance'),
-    path('marks/', views.student_marks, name='student_marks'),
-
+    path('student/marks/', views.student_marks, name='student_marks'),
+    
+    path('student/export/marks/', views.export_student_marks_csv, name='export_marks_csv'),
+    path('student/export/attendance/', views.export_student_attendance_csv, name='export_attendance_csv'),
 ]

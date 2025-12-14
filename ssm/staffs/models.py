@@ -54,3 +54,37 @@ class Subject(models.Model):
     
     def __str__(self):
         return f"{self.code} - {self.name} (Sem {self.semester})"
+
+class ExamSchedule(models.Model):
+    semester = models.IntegerField()
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    date = models.DateField()
+    session = models.CharField(max_length=2, choices=[('FN', 'Forenoon'), ('AN', 'Afternoon')])
+    time = models.CharField(max_length=50, blank=True) # e.g. "10:00 AM - 01:00 PM"
+
+    class Meta:
+        ordering = ['date', 'session']
+
+    def __str__(self):
+        return f"Sem {self.semester} - {self.subject.code}"
+
+class Timetable(models.Model):
+    DAYS_OF_WEEK = [
+        ('Monday', 'Monday'),
+        ('Tuesday', 'Tuesday'),
+        ('Wednesday', 'Wednesday'),
+        ('Thursday', 'Thursday'),
+        ('Friday', 'Friday'),
+    ]
+    semester = models.IntegerField()
+    day = models.CharField(max_length=10, choices=DAYS_OF_WEEK)
+    period = models.IntegerField(help_text="1 to 7")
+    subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True)
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, blank=True) # Optional: Assign staff directly
+
+    class Meta:
+        ordering = ['semester', 'day', 'period']
+        unique_together = ('semester', 'day', 'period')
+
+    def __str__(self):
+        return f"Sem {self.semester} - {self.day} - Period {self.period}"

@@ -263,7 +263,17 @@
         <!-- Main Content -->
         <main class="main-content">
 
-            <!-- Quick Actions Removed for Course Incharge as per request -->
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <a href="{% url 'staffs:exam_schedule' %}" class="action-card">
+                    <div class="action-title">📅 Exam Schedule</div>
+                    <div class="action-desc">Check upcoming examination dates.</div>
+                </a>
+                <a href="{% url 'staffs:timetable' %}" class="action-card">
+                    <div class="action-title">🗓️ Timetable</div>
+                    <div class="action-desc">View weekly class schedules.</div>
+                </a>
+            </section>
 
             <!-- Personal Information -->
 

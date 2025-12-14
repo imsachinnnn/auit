@@ -37,8 +37,42 @@ def registration_success(request):
 def help_and_support(request):
     return render(request, 'studhelp.html')
 
+from staffs.models import ExamSchedule, Timetable
+
 def exam_timetable(request):
-    return render(request, 'timetable.html')
+    if 'student_roll_number' not in request.session:
+        return redirect('student_login')
+    
+    student = Student.objects.get(roll_number=request.session['student_roll_number'])
+    schedule = ExamSchedule.objects.filter(semester=student.current_semester).order_by('date', 'session')
+    
+    return render(request, 'student_exam_schedule.html', {
+        'student': student,
+        'schedule': schedule
+    })
+
+def class_timetable(request):
+    if 'student_roll_number' not in request.session:
+        return redirect('student_login')
+        
+    student = Student.objects.get(roll_number=request.session['student_roll_number'])
+    entries = Timetable.objects.filter(semester=student.current_semester)
+    
+    days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    timetable_data = {day: [None]*7 for day in days}
+    
+    for entry in entries:
+        if 1 <= entry.period <= 7:
+             timetable_data[entry.day][entry.period-1] = entry
+
+    timetable_rows = []
+    for day in days:
+        timetable_rows.append((day, timetable_data[day]))
+    
+    return render(request, 'student_class_timetable.html', {
+        'student': student,
+        'timetable_rows': timetable_rows
+    })
 def service_unavailable(request):
     return render(request, 'service.html')
 
@@ -66,7 +100,9 @@ def register_student(request):
             student_email=data.get('student_email'),
             program_level=data.get('program_level'),
             ug_entry_type=data.get('ug_entry_type') if data.get('program_level') == 'UG' else '',
-            current_semester=data.get('current_semester') or 1  # Add semester, default to 1
+            current_semester=data.get('current_semester') or 1,  # Add semester, default to 1
+            joining_year=data.get('joining_year') or None,
+            ending_year=data.get('ending_year') or None
         )
         # Use the secure password setting method from your model
         student.set_password(data.get('password')) 
@@ -564,4 +600,82 @@ def student_marks(request):
     }
     
     return render(request, 'student_marks.html', context)
+
+
+@student_login_required
+def export_student_marks_csv(request):
+    """Export student marks to CSV."""
+    import csv
+    from django.http import HttpResponse
+    from staffs.models import Subject
+    from .models import StudentMarks
+
+    roll_number = request.session.get('student_roll_number')
+    student = Student.objects.get(roll_number=roll_number)
+    
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="Marks_{student.roll_number}.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['Subject Code', 'Subject Name', 'Test 1', 'Test 2', 'Internal'])
+    
+    subjects = Subject.objects.filter(semester=student.current_semester).order_by('code')
+    
+    for subject in subjects:
+        try:
+            marks = StudentMarks.objects.get(student=student, subject=subject)
+            writer.writerow([
+                subject.code,
+                subject.name,
+                marks.test1_marks if marks.test1_marks is not None else '-',
+                marks.test2_marks if marks.test2_marks is not None else '-',
+                marks.internal_marks if marks.internal_marks is not None else '-'
+            ])
+        except StudentMarks.DoesNotExist:
+            writer.writerow([subject.code, subject.name, '-', '-', '-'])
+            
+    return response
+
+
+@student_login_required
+def export_student_attendance_csv(request):
+    """Export student attendance summary to CSV."""
+    import csv
+    from django.http import HttpResponse
+    from staffs.models import Subject
+    from .models import StudentAttendance
+    
+    roll_number = request.session.get('student_roll_number')
+    student = Student.objects.get(roll_number=roll_number)
+    
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="Attendance_{student.roll_number}.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['Subject Code', 'Subject Name', 'Total Classes', 'Present', 'Absent', 'Percentage', 'Status'])
+    
+    subjects = Subject.objects.filter(semester=student.current_semester).order_by('code')
+    
+    for subject in subjects:
+        attendance_entries = StudentAttendance.objects.filter(student=student, subject=subject)
+        total = attendance_entries.count()
+        present = attendance_entries.filter(status='Present').count()
+        absent = attendance_entries.filter(status='Absent').count()
+        
+        percentage = (present / total * 100) if total > 0 else 0
+        percentage_str = f"{percentage:.2f}%"
+        
+        status = 'Good' if percentage >= 75 else 'Average' if percentage >= 65 else 'Low'
+        
+        writer.writerow([
+            subject.code,
+            subject.name,
+            total,
+            present,
+            absent,
+            percentage_str,
+            status
+        ])
+            
+    return response
 

@@ -182,7 +182,15 @@
     <div class="container">
         <header class="page-header">
             <h1>📈 My Marks</h1>
-            <a href="{% url 'student_dashboard' %}" class="btn-back">← Back to Dashboard</a>
+            <div style="display: flex; gap: 10px;">
+                <a href="{% url 'export_marks_csv' %}" class="btn-back"
+                    style="background: white; color: var(--accent-color); border: 1px solid var(--accent-color);">
+                    📥 Export CSV
+                </a>
+                <a href="{% url 'student_dashboard' %}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
         </header>
 
         {% if has_any_data %}

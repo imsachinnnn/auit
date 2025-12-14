@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Staff
+
+from .models import Staff, ExamSchedule, Timetable
 from students.models import Student
 from django.db.models import Q
 
@@ -703,4 +704,98 @@ def staff_list(request):
         'staff_members': staff_members,
         'query': query,
         'departments': Staff.objects.values_list('department', flat=True).distinct()
+    })
+def passed_out_batches(request):
+    """View to list batches (Ending Years) of passed out students."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+        
+    staff = Staff.objects.get(staff_id=request.session['staff_id'])
+    
+    # Simple access check: Only HOD should ideally access this, but can be open to staff
+    if staff.role != 'HOD':
+         messages.error(request, "Access Restricted to HOD.")
+         return redirect('staffs:staff_dashboard')
+
+    # Get distinct ending years
+    batches = Student.objects.values_list('ending_year', flat=True).distinct().order_by('-ending_year')
+    # Filter out None and future years if needed, though user might want to see upcoming
+    batches = [year for year in batches if year is not None]
+
+    return render(request, 'staff/passed_out_batches.html', {'batches': batches, 'staff': staff})
+
+def batch_students(request, year):
+    """View to list students of a specific passed out batch."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+    
+    staff = Staff.objects.get(staff_id=request.session['staff_id'])
+    
+    students = Student.objects.filter(ending_year=year).order_by('roll_number')
+    
+    return render(request, 'staff/batch_students.html', {
+        'year': year, 
+        'students': students, 
+        'student_count': students.count(),
+        'staff': staff
+    })
+
+def exam_schedule(request):
+    """View to display exam schedule."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+        
+    staff = Staff.objects.get(staff_id=request.session['staff_id'])
+    
+    # Get semester from GET request or default to 1
+    selected_semester = request.GET.get('semester', 1)
+    try:
+        selected_semester = int(selected_semester)
+    except ValueError:
+        selected_semester = 1
+        
+    schedule = ExamSchedule.objects.filter(semester=selected_semester).order_by('date')
+    
+    return render(request, 'staff/exam_schedule.html', {
+        'staff': staff,
+        'schedule': schedule,
+        'selected_semester': selected_semester,
+        'semesters': range(1, 9)
+    })
+
+def timetable(request):
+    """View to display weekly timetable."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+        
+    staff = Staff.objects.get(staff_id=request.session['staff_id'])
+    
+    selected_semester = request.GET.get('semester', 1)
+    try:
+        selected_semester = int(selected_semester)
+    except ValueError:
+        selected_semester = 1
+        
+    # Fetch timetable entries
+    entries = Timetable.objects.filter(semester=selected_semester)
+    
+    # Structure data for the template: { 'Day': { periods... } }
+    # Or just pass entries and let template handle filtering, but structured is better
+    days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    timetable_data = {day: [None]*7 for day in days} # 7 Periods
+    
+    for entry in entries:
+        if 1 <= entry.period <= 7:
+             timetable_data[entry.day][entry.period-1] = entry
+
+    # Convert to list of tuples for template iteration: [('Monday', [p1, p2...]), ...]
+    timetable_rows = []
+    for day in days:
+        timetable_rows.append((day, timetable_data[day]))
+             
+    return render(request, 'staff/timetable.html', {
+        'staff': staff,
+        'timetable_rows': timetable_rows,
+        'selected_semester': selected_semester,
+        'semesters': range(1, 9),
     })
