@@ -680,7 +680,8 @@
                     <h2 class="card-title"><span class="no-print">👤</span> Personal Information</h2>
                     <div class="details-grid">
                         <div class="detail-item"><strong>Email</strong>
-                            <span>{{student.student_email|default:"-"}}</span></div>
+                            <span>{{student.student_email|default:"-"}}</span>
+                        </div>
                         <div class="detail-item"><strong>Mobile</strong>
                             <span>{{student.personalinfo.student_mobile|default:"-" }}</span>
                         </div>
@@ -715,6 +716,16 @@
                                 <span style="color: var(--success-color); font-weight: 600;">Course Completed</span>
                                 {% else %}
                                 Semester {{ student.current_semester }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Batch</strong>
+                            <span>
+                                {% if student.joining_year and student.ending_year %}
+                                {{ student.joining_year }} - {{ student.ending_year }}
+                                {% else %}
+                                -
                                 {% endif %}
                             </span>
                         </div>
@@ -835,9 +846,11 @@
                             <span>{{student.bankdetails.account_number|default:"-" }}</span>
                         </div>
                         <div class="detail-item"><strong>IFSC</strong>
-                            <span>{{student.bankdetails.ifsc_code|default:"-"}}</span></div>
+                            <span>{{student.bankdetails.ifsc_code|default:"-"}}</span>
+                        </div>
                         <div class="detail-item"><strong>Bank</strong>
-                            <span>{{student.bankdetails.bank_name|default:"-"}}</span></div>
+                            <span>{{student.bankdetails.bank_name|default:"-"}}</span>
+                        </div>
                     </div>
                 </div>
 
