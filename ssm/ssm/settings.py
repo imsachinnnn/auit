@@ -17,7 +17,7 @@ ALLOWED_HOSTS = ['10.165.244.80', 'localhost', '127.0.0.1','*','401dea466adf.ngr
 INSTALLED_APPS = [
     'jazzmin',
     'django.contrib.admin',
-    'django.contrib.auth',
+    'ssm.apps.AuthConfig', # Replaces 'django.contrib.auth' to rename label
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',

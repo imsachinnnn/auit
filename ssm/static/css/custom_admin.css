@@ -122,22 +122,31 @@ body {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
 }
 
-.card-header {
+/* NUCLEAR OVERRIDE for Dashboard Headers */
+html body .card-header {
     background-color: transparent !important;
     border-bottom: 2px solid var(--light-accent-bg) !important;
     padding: 12px 15px !important;
-    /* Slightly tighter padding */
+    height: auto !important;
+    /* Allow expansion */
+    min-height: 50px !important;
 }
 
-.card-title {
+html body .card-title,
+html body .card-primary .card-header .card-title,
+html body .card-header span,
+html body .card-header h3 {
     color: var(--text-primary) !important;
     font-weight: 600 !important;
     font-size: 1rem !important;
-    /* Reduced from 1.1em to fit long names */
-    white-space: nowrap;
-    /* Keep it on one line if possible */
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal !important;
+    /* Force Wrap */
+    overflow: visible !important;
+    text-overflow: clip !important;
+    line-height: 1.3 !important;
+    display: block !important;
+    /* Ensure it takes width */
+    width: 100% !important;
 }
 
 /* Buttons */
