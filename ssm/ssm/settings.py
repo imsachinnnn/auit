@@ -15,6 +15,7 @@ ALLOWED_HOSTS = ['10.165.244.80', 'localhost', '127.0.0.1','*','401dea466adf.ngr
 
 # --- APPLICATION DEFINITION ---
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -170,3 +171,75 @@ CORS_ALLOWED_ORIGINS = ["null"]
 # }
 # DEFAULT_FROM_EMAIL = config('sam@sandboxb5c88b3d41574fd2b90292f18775d58e.mailgun.org', default='rash@sandboxb5c88b3d41574fd2b90292f18775d58e.mailgun.org')
 # SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Annamalai University Admin",
+    "site_header": "Annamalai University",
+    "site_brand": "Annamalai University",
+    "site_logo": "imgs/annamalai.png",
+    "login_logo": "imgs/annamalai.png",
+    "login_logo_dark": "imgs/annamalai.png",
+    "site_logo_classes": "img-circle",
+    "site_icon": "imgs/annamalai.png",
+    "welcome_sign": "Welcome to the Admin Portal",
+    "copyright": "Annamalai University",
+    "search_model": ["students.Student", "auth.User"],
+    "user_avatar": None,
+    # Top Menu
+    "topmenu_links": [
+        {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Main Site", "url": "/", "new_window": True},
+    ],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "students.Student": "fas fa-user-graduate",
+        "staffs.Staff": "fas fa-chalkboard-teacher",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+    "related_modal_active": False,
+    "custom_css": "css/custom_admin.css",
+    "custom_js": None,
+    "use_google_fonts_cdn": True,
+    "show_ui_builder": False,
+    "changeform_format": "horizontal_tabs",
+    "changeform_format_overrides": {"auth.user": "collapsible", "auth.group": "vertical_tabs"},
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-teal",  # Matches the teal theme
+    "accent": "accent-teal",
+    "navbar": "navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": False,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-light-teal", # Light sidebar with teal accents
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": False,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "flatly", # Clean modern theme
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
+}
