@@ -1,6 +1,14 @@
 {% extends 'stddash.html' %}
 {% load static %}
 
+{% block header_actions %}
+<a href="{% url 'student_dashboard' %}" class="action-btn"
+    style="background-color: var(--secondary-bg); color: var(--text-primary); border: 1px solid var(--border-color); margin-right: 10px;">
+    ⬅️ Back to Dashboard
+</a>
+<a href="{% url 'student_logout' %}" class="action-btn" style="background-color: var(--danger-color);">Logout</a>
+{% endblock %}
+
 {% block content %}
 <!-- Custom Form Styles to match Dashboard Theme -->
 <style>
@@ -93,7 +101,7 @@
 </style>
 
 <div class="rb-header">
-    <h2 style="margin:0; color:var(--accent-color);"> Resume Builder</h2>
+    <h2 style="margin:0; color:var(--accent-color);">Resume Builder</h2>
     <div class="header-actions">
         <!-- New Feature Link -->
         <a href="{% url 'service_unavailable' %}" class="action-btn"
