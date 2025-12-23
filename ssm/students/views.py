@@ -12,15 +12,21 @@ import csv
 
 from .models import (
     Student, PersonalInfo, BankDetails, AcademicHistory, DiplomaDetails, UGDetails, PGDetails, PhDDetails,
-    ScholarshipInfo, StudentDocuments, OtherDetails, Caste, StudentMarks, StudentAttendance
+    ScholarshipInfo, StudentDocuments, OtherDetails, Caste, StudentMarks, StudentAttendance,
+    StudentSkill, StudentProject
 )
 # Import the caste data for the API
 from .caste_data import CASTE_DATA
 from .forms import (
     StudentForm, PersonalInfoForm, BankDetailsForm, AcademicHistoryForm,
     DiplomaDetailsForm, UGDetailsForm, PGDetailsForm, PhDDetailsForm,
-    ScholarshipInfoForm, StudentDocumentsForm, OtherDetailsForm
+    ScholarshipInfoForm, StudentDocumentsForm, OtherDetailsForm,
+    StudentSkillForm, StudentProjectForm
 )
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.conf import settings
+import os
 
 
 # --- Custom Decorator for Session-Based Login ---
@@ -671,5 +677,97 @@ def export_student_attendance_csv(request):
             status
         ])
             
+    return response
+
+
+@student_login_required
+def resume_builder(request):
+    roll_number = request.session.get('student_roll_number')
+    student = Student.objects.get(roll_number=roll_number)
+    
+    # Forms
+    skill_form = StudentSkillForm()
+    project_form = StudentProjectForm()
+
+    if request.method == 'POST':
+        if 'add_skill' in request.POST:
+            skill_form = StudentSkillForm(request.POST)
+            if skill_form.is_valid():
+                skill = skill_form.save(commit=False)
+                skill.student = student
+                skill.save()
+                messages.success(request, 'Skill added successfully!')
+                return redirect('resume_builder')
+        
+        elif 'add_project' in request.POST:
+            project_form = StudentProjectForm(request.POST)
+            if project_form.is_valid():
+                project = project_form.save(commit=False)
+                project.student = student
+                project.save()
+                messages.success(request, 'Project added successfully!')
+                return redirect('resume_builder')
+                
+        elif 'delete_skill' in request.POST:
+            skill_id = request.POST.get('skill_id')
+            StudentSkill.objects.filter(id=skill_id, student=student).delete()
+            messages.success(request, 'Skill deleted.')
+            return redirect('resume_builder')
+            
+        elif 'delete_project' in request.POST:
+            project_id = request.POST.get('project_id')
+            StudentProject.objects.filter(id=project_id, student=student).delete()
+            messages.success(request, 'Project deleted.')
+            return redirect('resume_builder')
+
+    context = {
+        'student': student,
+        'skills': student.skills.all(),
+        'projects': student.projects.all(),
+        'skill_form': skill_form,
+        'project_form': project_form,
+    }
+    return render(request, 'resume_builder.html', context)
+
+@student_login_required
+def generate_resume_pdf(request):
+    roll_number = request.session.get('student_roll_number')
+    student = Student.objects.get(roll_number=roll_number)
+    
+    # Fetch subjects for coursework section
+    from staffs.models import Subject
+    subjects = Subject.objects.filter(semester=student.current_semester)
+    
+    # Gather all data
+    context = {
+        'student': student,
+        'personal': getattr(student, 'personalinfo', None),
+        'academic': getattr(student, 'academichistory', None),
+        'diploma': getattr(student, 'diplomadetails', None),
+        'ug': getattr(student, 'ugdetails', None),
+        'pg': getattr(student, 'pgdetails', None),
+        'phd': getattr(student, 'phddetails', None),
+        'skills': student.skills.all(),
+        'projects': student.projects.all(),
+        'other': getattr(student, 'otherdetails', None),
+        'coursework': subjects, # Added coursework
+        'MEDIA_ROOT': settings.MEDIA_ROOT,
+    }
+    
+    template_path = 'resume_template.html'
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Resume_{student.roll_number}.pdf"'
+    
+    # Find the template and render it.
+    template = get_template(template_path)
+    html = template.render(context)
+
+    # create a pdf
+    pisa_status = pisa.CreatePDF(
+       html, dest=response
+    )
+    # if error then show some funny view
+    if pisa_status.err:
+       return HttpResponse(f'We had some errors <pre>{html}</pre>')
     return response
 

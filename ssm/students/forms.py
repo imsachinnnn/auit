@@ -3,7 +3,8 @@ from django.core.validators import RegexValidator, MinValueValidator, MaxValueVa
 from .models import (
     Student, PersonalInfo, BankDetails, AcademicHistory, 
     DiplomaDetails, UGDetails, PGDetails, PhDDetails, 
-    ScholarshipInfo, StudentDocuments, OtherDetails, Caste
+    ScholarshipInfo, StudentDocuments, OtherDetails, Caste,
+    StudentSkill, StudentProject
 )
 import datetime
 
@@ -177,3 +178,16 @@ class OtherDetailsForm(forms.ModelForm):
     class Meta:
         model = OtherDetails
         exclude = ['student']
+
+class StudentSkillForm(forms.ModelForm):
+    class Meta:
+        model = StudentSkill
+        fields = ['skill_name', 'proficiency']
+
+class StudentProjectForm(forms.ModelForm):
+    class Meta:
+        model = StudentProject
+        fields = ['title', 'description', 'role', 'technologies', 'project_link']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }

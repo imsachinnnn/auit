@@ -1,0 +1,334 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+    <title>{{ student.student_name }} - Resume</title>
+    <style type="text/css">
+        @page {
+            size: A4;
+            margin: 0.75in;
+            /* Standard margin */
+        }
+
+        body {
+            font-family: "Helvetica", "Arial", sans-serif;
+            font-size: 11pt;
+            color: #222;
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #5a7d7c;
+            /* Teal accent */
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .name {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #2c3e50;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .contact-info {
+            font-size: 10pt;
+            color: #555;
+        }
+
+        .contact-separator {
+            margin: 0 5px;
+            color: #5a7d7c;
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 13pt;
+            font-weight: bold;
+            color: #5a7d7c;
+            /* Teal accent */
+            text-transform: uppercase;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 3px;
+            margin-bottom: 12px;
+        }
+
+        /* Content */
+        .content-block {
+            margin-bottom: 12px;
+        }
+
+        .block-title {
+            font-weight: bold;
+            font-size: 11.5pt;
+            color: #333;
+        }
+
+        .block-subtitle {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 2px;
+            font-size: 10.5pt;
+        }
+
+        .block-desc {
+            text-align: justify;
+        }
+
+        /* Tables */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-table th {
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 1px solid #ccc;
+            padding: 4px 0;
+            color: #444;
+            font-size: 10.5pt;
+        }
+
+        .info-table td {
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .grade-col {
+            text-align: right;
+        }
+
+        /* Skills */
+        .skills-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .skill-item {
+            display: inline-block;
+            margin-right: 15px;
+            background-color: #f0f4f4;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10pt;
+            border: 1px solid #e0e6e6;
+            margin-bottom: 5px;
+        }
+
+        /* Coursework */
+        .course-grid {
+            display: block;
+        }
+
+        .course-item {
+            display: inline-block;
+            width: 45%;
+            margin-bottom: 3px;
+        }
+
+        .bullet {
+            color: #5a7d7c;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        /* Declaration */
+        .declaration {
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            font-size: 10pt;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="name">{{ student.student_name }}</div>
+        <div class="contact-info">
+            {{ student.student_email }}
+            <span class="contact-separator">|</span>
+            {{ personal.student_mobile }}
+            {% if personal.present_address %}
+            <span class="contact-separator">|</span>
+            {{ personal.present_address|truncatechars:40 }}
+            {% endif %}
+        </div>
+        {% if projects %}
+        <div class="contact-info" style="margin-top:4px;">
+            <!-- Placeholder for LinkedIn or Portfolio if we had those fields -->
+            <!-- <a href="#" style="color: #555; text-decoration: none;">linkedin.com/in/{{student.student_name|slugify}}</a> -->
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Objective / Summary -->
+    {% if other.ambition %}
+    <div class="section">
+        <div class="section-title">Professional Summary</div>
+        <div class="content-block" style="text-align: justify;">
+            {{ other.ambition }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Education (Priority High) -->
+    <div class="section">
+        <div class="section-title">Education</div>
+        <table class="info-table">
+            <tr>
+                <th width="35%">Degree / Course</th>
+                <th width="35%">Institution</th>
+                <th width="15%">Year</th>
+                <th width="15%" class="grade-col">Grade</th>
+            </tr>
+            <!-- Higher Education First -->
+            {% if phd %}
+            <tr>
+                <td><strong>PhD ({{ phd.phd_specialization }})</strong></td>
+                <td>{{ phd.phd_university }}</td>
+                <td>{{ phd.phd_year_of_joining }}</td>
+                <td class="grade-col">Pursuing</td>
+            </tr>
+            {% endif %}
+
+            {% if pg %}
+            <tr>
+                <td><strong>{{ pg.pg_course }}</strong></td>
+                <td>{{ pg.pg_university }}</td>
+                <td>{{ pg.pg_year_of_passing }}</td>
+                <td class="grade-col">{{ pg.pg_ogpa }} OGPA</td>
+            </tr>
+            {% endif %}
+
+            {% if ug %}
+            <tr>
+                <td><strong>{{ ug.ug_course }}</strong></td>
+                <td>{{ ug.ug_university }}</td>
+                <td>{{ ug.ug_year_of_passing }}</td>
+                <td class="grade-col">{{ ug.ug_ogpa }} OGPA</td>
+            </tr>
+            {% endif %}
+
+            {% if diploma %}
+            <tr>
+                <td>Diploma</td>
+                <td>{{ diploma.diploma_college_name }}</td>
+                <td>{{ diploma.diploma_year_of_passing }}</td>
+                <td class="grade-col">{{ diploma.diploma_percentage }}%</td>
+            </tr>
+            {% endif %}
+
+            {% if academic.hsc_percentage %}
+            <tr>
+                <td>HSC / 12th Grade</td>
+                <td>{{ academic.hsc_school_name }}</td>
+                <td>{{ academic.hsc_year_of_passing }}</td>
+                <td class="grade-col">{{ academic.hsc_percentage }}%</td>
+            </tr>
+            {% endif %}
+
+            {% if academic.sslc_percentage %}
+            <tr>
+                <td>SSLC / 10th Grade</td>
+                <td>{{ academic.sslc_school_name }}</td>
+                <td>{{ academic.sslc_year_of_passing }}</td>
+                <td class="grade-col">{{ academic.sslc_percentage }}%</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+
+    <!-- Technical Skills -->
+    {% if skills %}
+    <div class="section">
+        <div class="section-title">Technical Skills</div>
+        <div class="skills-list">
+            {% for skill in skills %}
+            <span class="skill-item">
+                <span class="bullet">&bull;</span> {{ skill.skill_name }}
+                <span style="color:#777; font-size:9pt;">({{ skill.proficiency }})</span>
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Academic Projects -->
+    {% if projects %}
+    <div class="section">
+        <div class="section-title">Academic Projects</div>
+        {% for project in projects %}
+        <div class="content-block">
+            <div class="block-title">
+                {{ project.title }}
+                {% if project.link %}
+                <a href="{{ project.link }}"
+                    style="font-size:9pt; color:#5a7d7c; text-decoration:none; margin-left:5px;">[Link]</a>
+                {% endif %}
+            </div>
+            <div class="block-subtitle">Role: {{ project.role }} | Tech: {{ project.technologies }}</div>
+            <div class="block-desc">
+                {{ project.description }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Relevant Coursework (New Filler Section) -->
+    {% if coursework %}
+    <div class="section">
+        <div class="section-title">Relevant Coursework</div>
+        <div class="course-grid">
+            {% for subject in coursework %}
+            <div class="course-item">
+                <span class="bullet">&raquo;</span> {{ subject.name }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Hobbies & Interests -->
+    {% if other.hobbies %}
+    <div class="section">
+        <div class="section-title">Interests</div>
+        <div>{{ other.hobbies }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Declaration -->
+    <div class="section declaration">
+        <div class="section-title" style="font-size: 11pt; border: none; color: #444;">Declaration</div>
+        <p>I hereby declare that the details furnished above are true and correct to the best of my knowledge and
+            belief.</p>
+        <br>
+        <table width="100%">
+            <tr>
+                <td align="left"><strong>Place:</strong> {{ personal.present_address|truncatewords:2|default:"Annamalai Nagar" }}</td>
+                <td align="right"><strong>({{ student.student_name }})</strong></td>
+            </tr>
+            <tr>
+                <td align="left"><strong>Date:</strong> {% now "d F Y" %}</td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+
+</html>

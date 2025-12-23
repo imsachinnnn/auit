@@ -1,0 +1,213 @@
+{% extends 'stddash.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Custom Form Styles to match Dashboard Theme -->
+<style>
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95em;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px var(--light-accent-bg);
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .list-item {
+        background: var(--light-accent-bg);
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .list-item-content {
+        flex: 1;
+    }
+
+    .list-item-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.95em;
+    }
+
+    .list-item-subtitle {
+        font-size: 0.85em;
+        color: var(--text-secondary);
+    }
+
+    .delete-btn {
+        background: none;
+        border: none;
+        color: var(--danger-color);
+        cursor: pointer;
+        padding: 5px;
+        font-size: 1.1em;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+
+    .delete-btn:hover {
+        opacity: 1;
+    }
+
+    /* Layout overrides */
+    .rb-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="rb-header">
+    <h2 style="margin:0; color:var(--accent-color);">Resume Builder</h2>
+    <a href="{% url 'generate_resume_pdf' %}" class="action-btn">
+        <span class="emoji">📄</span> Download PDF
+    </a>
+</div>
+
+<div class="content-grid">
+    <!-- Skills Section -->
+    <div class="card">
+        <h2 class="card-title">
+            <span>🛠️</span> Technical Skills
+            <button onclick="autoGenerateSummary()" style="margin-left:auto; font-size: 0.7em;" class="action-btn">
+                ✨ AI Suggest
+            </button>
+        </h2>
+
+        <form method="post"
+            style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Skill Name</label>
+                <input type="text" name="skill_name" class="form-control" placeholder="e.g. Python, Java, Leadership"
+                    required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Proficiency</label>
+                <select name="proficiency" class="form-control">
+                    {% for value, text in skill_form.fields.proficiency.choices %}
+                    <option value="{{ value }}">{{ text }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" name="add_skill" class="action-btn" style="width:100%">+ Add Skill</button>
+        </form>
+
+        <div class="skills-list">
+            {% for skill in skills %}
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-title">{{ skill.skill_name }}</div>
+                    <div class="list-item-subtitle">{{ skill.proficiency }}</div>
+                </div>
+                <form method="post" style="margin:0;">
+                    {% csrf_token %}
+                    <input type="hidden" name="skill_id" value="{{ skill.id }}">
+                    <button type="submit" name="delete_skill" class="delete-btn" title="Delete">🗑️</button>
+                </form>
+            </div>
+            {% empty %}
+            <p style="color: var(--text-secondary); text-align: center; font-style: italic;">No skills added yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Projects Section -->
+    <div class="card">
+        <h2 class="card-title"><span>🚀</span> Academic Projects</h2>
+
+        <form method="post"
+            style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Project Title</label>
+                <input type="text" name="title" class="form-control" placeholder="Project Name" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control" rows="3"
+                    placeholder="Briefly describe what you built..." required></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <input type="text" name="role" class="form-control" placeholder="e.g. Developer">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tech Stack</label>
+                    <input type="text" name="technologies" class="form-control" placeholder="e.g. Django">
+                </div>
+            </div>
+            <button type="submit" name="add_project" class="action-btn" style="width:100%">+ Add Project</button>
+        </form>
+
+        <div class="projects-list">
+            {% for project in projects %}
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-title">{{ project.title }} <span
+                            style="font-weight:normal; color:var(--text-secondary);">({{ project.role }})</span></div>
+                    <div class="list-item-subtitle">{{ project.technologies }}</div>
+                    <div style="font-size: 0.85em; margin-top: 4px; color: var(--text-primary);">{{ project.description|truncatechars:60 }}</div>
+                </div>
+                <form method="post" style="margin:0;">
+                    {% csrf_token %}
+                    <input type="hidden" name="project_id" value="{{ project.id }}">
+                    <button type="submit" name="delete_project" class="delete-btn" title="Delete">🗑️</button>
+                </form>
+            </div>
+            {% empty %}
+            <p style="color: var(--text-secondary); text-align: center; font-style: italic;">No projects added yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function autoGenerateSummary() {
+        let skills = [];
+        {% for skill in skills %}
+        skills.push("{{ skill.skill_name }}");
+        {% endfor %}
+
+        let summary = "Motivated student";
+        if (skills.length > 0) {
+            summary += " with proficiency in " + skills.join(", ");
+        }
+        summary += ". Eager to apply academic knowledge to real-world projects.";
+
+        // Copy to clipboard or alert
+        alert("Suggested Summary (Copy to Edit Profile -> Ambition):\n\n" + summary);
+    }
+</script>
+{% endblock %}

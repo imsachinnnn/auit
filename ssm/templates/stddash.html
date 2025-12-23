@@ -624,6 +624,7 @@
                 <a href="{% url 'class_timetable' %}"><span class="emoji">👩🏻‍🏫</span> Class Timetable</a>
                 <a href="{% url 'student_attendance' %}"><span class="emoji">📝</span> Attendance</a>
                 <a href="{% url 'student_marks' %}"><span class="emoji">📈</span> Marks</a>
+                <a href="{% url 'resume_builder' %}"><span class="emoji">📄</span> Resume Builder</a>
                 <a href="{% url 'student_editprofile' %}"><span class="emoji">✏️</span> Edit Profile</a>
                 <a href="https://annamalaiuniversity.ac.in/" target="_blank" rel="noopener"><span
                         class="emoji">🌐</span> AU Main Site</a>
@@ -673,6 +674,7 @@
             </header>
 
             <!-- Cards Grid -->
+            {% block content %}
             <div class="content-grid">
 
                 <!-- Personal Info -->
@@ -685,7 +687,8 @@
                         <div class="detail-item"><strong>Mobile</strong>
                             <span>{{student.personalinfo.student_mobile|default:"-" }}</span>
                         </div>
-                        <div class="detail-item"><strong>DOB</strong> <span>{{student.personalinfo.date_of_birth|date:"d M Y"|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>DOB</strong> <span>{{student.personalinfo.date_of_birth|date:"d
+                                M Y"|default:"-" }}</span></div>
                         <div class="detail-item"><strong>Gender</strong>
                             <span>{{student.personalinfo.get_gender_display|default:"-" }}</span>
                         </div>
@@ -860,6 +863,7 @@
                 </div>
 
             </div>
+            {% endblock %}
         </main>
     </div>
 </body>

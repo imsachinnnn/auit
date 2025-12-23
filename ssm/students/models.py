@@ -187,3 +187,27 @@ class StudentAttendance(models.Model):
 
     def __str__(self):
         return f"{self.student.student_name} - {self.subject.code} - {self.date}"
+
+class StudentSkill(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='skills')
+    skill_name = models.CharField(max_length=100)
+    proficiency = models.CharField(max_length=20, choices=[
+        ('Beginner', 'Beginner'),
+        ('Intermediate', 'Intermediate'),
+        ('Advanced', 'Advanced'),
+        ('Expert', 'Expert')
+    ], default='Intermediate')
+
+    def __str__(self):
+        return f"{self.skill_name} ({self.proficiency})"
+
+class StudentProject(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='projects')
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    role = models.CharField(max_length=100, blank=True)
+    technologies = models.CharField(max_length=200, blank=True)
+    project_link = models.URLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.title

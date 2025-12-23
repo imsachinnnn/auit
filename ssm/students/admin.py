@@ -1,7 +1,8 @@
 from django.contrib import admin
 from .models import (
     Student, PersonalInfo, AcademicHistory, DiplomaDetails, UGDetails, PGDetails,
-    PhDDetails, ScholarshipInfo, StudentDocuments, BankDetails, OtherDetails
+    PhDDetails, ScholarshipInfo, StudentDocuments, BankDetails, OtherDetails,
+    StudentSkill, StudentProject
 )
 
 class PersonalInfoInline(admin.StackedInline):
@@ -64,6 +65,14 @@ class OtherDetailsInline(admin.StackedInline):
     verbose_name_plural = 'Other Details'
     extra = 0
 
+class StudentSkillInline(admin.TabularInline):
+    model = StudentSkill
+    extra = 1
+
+class StudentProjectInline(admin.StackedInline):
+    model = StudentProject
+    extra = 0
+
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     list_display = ('roll_number', 'student_name', 'get_semester_display', 'program_level')
@@ -82,6 +91,8 @@ class StudentAdmin(admin.ModelAdmin):
         StudentDocumentsInline,
         BankDetailsInline,
         OtherDetailsInline,
+        StudentSkillInline,
+        StudentProjectInline,
     ]
 
     @admin.display(description='Current Semester', ordering='current_semester')
