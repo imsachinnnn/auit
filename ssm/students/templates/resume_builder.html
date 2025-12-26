@@ -214,18 +214,34 @@
     </div>
 </div>
 
+<script id="skills-data" type="application/json">
+    [
+        {% for skill in skills %}
+        "{{ skill.skill_name|escapejs }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]
+</script>
+
 <script>
     function autoGenerateSummary() {
+        const skillsElements = document.getElementById('skills-data');
         let skills = [];
-        {% for skill in skills %}
-        skills.push("{{ skill.skill_name }}");
-        {% endfor %}
+        if (skillsElements) {
+            try {
+                skills = JSON.parse(skillsElements.textContent);
+            } catch (e) {
+                console.error('Error parsing skills data', e);
+            }
+        }
 
         let summary = "Motivated student";
         if (skills.length > 0) {
             summary += " with proficiency in " + skills.join(", ");
         }
         summary += ". Eager to apply academic knowledge to real-world projects.";
+
+        // Display the suggestion to the user
+        alert("Suggested Summary:\n\n" + summary);
     }
 </script>
 {% endblock %}
