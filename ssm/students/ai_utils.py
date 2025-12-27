@@ -4,14 +4,14 @@ from django.conf import settings
 from google.genai import types
 import json
 import logging
-
+import os
 logger = logging.getLogger(__name__)
 
 def generate_resume_content(student_data):
     """
     Generates professional resume content using Gemini AI based on student data.
     """
-    api_key = getattr(settings, 'GEMINI_API_KEY', None)
+    api_key = os.environ.get("GOOGLE_API_KEY")
     if not api_key:
         logger.error("GEMINI_API_KEY is not set in settings.")
         return {"error": "API Key not configured."}
