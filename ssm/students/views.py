@@ -806,7 +806,7 @@ def generate_resume_pdf(request):
     
     template_path = 'resume_template.html'
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="Resume_{student.roll_number}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="{student.student_name}_resume.pdf"'
     
     # Find the template and render it.
     template = get_template(template_path)

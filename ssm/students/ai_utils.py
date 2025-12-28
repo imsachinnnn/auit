@@ -11,24 +11,63 @@ def generate_resume_content(student_data):
     """
     Generates professional resume content using Gemini AI based on student data.
     """
-    api_key = os.environ.get("GOOGLE_API_KEY")
+    api_key = ""
     if not api_key:
         logger.error("GEMINI_API_KEY is not set in settings.")
         return {"error": "API Key not configured."}
 
     client = genai.Client(api_key=api_key)
 
+    # Determine Strategy based on data availability
+    is_fresher_mode = not student_data.get('projects') or not student_data.get('skills')
+    
+    strategy_instruction = ""
+    if is_fresher_mode:
+        strategy_instruction = f"""
+        **SPECIAL SCENARIO: FRESHER / NO DATA ENTRY**
+        The student has provided NO specific skills or projects. 
+        **You MUST ACT as a Career Mentor.**
+        
+        1.  **INFER Skills**: Based on their Degree ({student_data.get('degree')}) and Department ({student_data.get('department')}), list 6-8 high-value, relevant technical skills that a top student in this field *should* have.
+        2.  **CREATE a Capstone Project**: Hallucinate a strong, impressive "Senior Year Capstone Project" relevant to their field. Give it a title, a role (e.g., "Lead Student Developer"), and a rich STAR-method description of what they *could* have built. 
+        3.  **Tone**: Emphasize "Fast Learner," "Academic Excellence," and "High Potential."
+        """
+
     # Construct the Prompt
     prompt = f"""
-    Act as a professional Resume Writer and ATS Optimization Expert. 
-    I will provide you with raw data about a student. 
-    Your task is to expanding this into a high-quality, full-page professional resume content.
+    You are an expert Resume Writer and Career Strategist with decades of experience at top tech firms (FAANG).
+    The user is a student/fresher who needs a **one-page, high-impact resume** that is completely filled but **STRICTLY limited to one page**.
     
-    **Instructions:**
-    1. **Professional Summary**: Write a compelling, paragraph-length summary (60-80 words) highlighting their potential, academic background, and key skills.
-    2. **Projects**: For each project provided, rewrite the description using the **STAR method** (Situation, Task, Action, Result). Expand it to be detailed and multiline (at least 3-4 bullet points per project). Use strong action verbs.
-    3. **Soft Skills**: Infer 4-5 relevant soft skills based on their projects and potential profile.
-    4. **Formatting**: Return ONLY valid JSON.
+    {strategy_instruction}
+
+    **YOUR GOAL:** 
+    Create dense, high-quality content that fits perfectly on a single page. Do not over-generate.
+    
+    **CRITICAL INSTRUCTIONS:**
+    
+    1.  **Professional Summary (concise)**:
+        - Write a robust, 3-4 line summary (max 60-80 words).
+        - Focus on 'Unfair Advantage' and key technical strengths.
+        - Use words like "Results-oriented," "Innovative," "Passionate."
+
+    2.  **Projects (High Impact, Compact)**:
+        - For EACH project (or the created Capstone), generate a **Title** and a **Role**.
+        - Write a **Description** using the **STAR Method**.
+        - **Constraint**: Max 3-4 bullet points per project. Ensure they are punchy and fit on the page.
+        - **Format**:
+            *   **Situation/Task**: "Identified a need for..."
+            *   **Action**: "Architected a solution using [Tech]..."
+            *   **Result**: "Achieved X% improvement..."
+        - Infer plausible technical details if input is sparse.
+
+    3.  **Technical Skills**:
+        - Group them efficiently (e.g., "Languages," "Frameworks").
+
+    4.  **Soft Skills**:
+        - Generate 5-6 high-level soft skills.
+
+    5.  **Coursework**:
+        - List 6-8 relevant subjects.
     
     **Input Data:**
     Name: {student_data.get('name')}
@@ -39,13 +78,17 @@ def generate_resume_content(student_data):
     
     **Required JSON Output Structure:**
     {{
-        "summary": "...", 
+        "summary": "Full text string...", 
         "projects_enhanced": [
-            {{ "title": "Project Title", "role": "Role", "description": "• Bullet 1\n• Bullet 2..." }} 
+            {{ 
+                "title": "Project Name", 
+                "role": "Role Name", 
+                "description": "• **Situation:** [Text]...\\n• **Action:** [Text]...\\n• **Result:** [Text]..." 
+            }} 
         ],
-        "hard_skills": ["Skill1", "Skill2"],
-        "soft_skills": ["SoftSkill1", "SoftSkill2"],
-        "coursework_highlight": ["Subject1", "Subject2"] 
+        "hard_skills": ["Skill1 (Expert)", "Skill2"],
+        "soft_skills": ["Skill1", "Skill2", ...],
+        "coursework_highlight": ["Subject 1", "Subject 2", ...] 
     }}
     """
 

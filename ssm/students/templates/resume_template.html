@@ -6,101 +6,124 @@
     <style type="text/css">
         @page {
             size: A4;
-            margin: 0.75in;
-            /* Standard margin */
+            margin: 0.45in;
+            /* Optimized for 1 page */
         }
 
         body {
             font-family: "Helvetica", "Arial", sans-serif;
-            font-size: 11pt;
-            color: #222;
-            line-height: 1.5;
+            font-size: 10.5pt;
+            /* Optimized font size */
+            color: #000;
+            line-height: 1.35;
         }
 
         /* Header */
         .header {
             text-align: center;
-            border-bottom: 2px solid #5a7d7c;
-            /* Teal accent */
-            padding-bottom: 15px;
-            margin-bottom: 25px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 18px;
         }
 
         .name {
-            font-size: 24pt;
+            font-size: 22pt;
             font-weight: bold;
-            color: #2c3e50;
+            color: #000;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .contact-info {
             font-size: 10pt;
-            color: #555;
+            color: #000;
         }
 
         .contact-separator {
             margin: 0 5px;
-            color: #5a7d7c;
+            color: #000;
         }
 
         /* Sections */
         .section {
-            margin-bottom: 20px;
+            margin-bottom: 14px;
+            /* Reduced section gap */
         }
 
         .section-title {
-            font-size: 13pt;
+            font-size: 12.5pt;
             font-weight: bold;
-            color: #5a7d7c;
-            /* Teal accent */
+            color: #000;
             text-transform: uppercase;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #000;
             padding-bottom: 3px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         /* Content */
         .content-block {
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .block-title {
             font-weight: bold;
-            font-size: 11.5pt;
-            color: #333;
+            font-size: 11pt;
+            color: #000;
+        }
+
+        /* Flex-like table for title + role */
+        .title-row {
+            width: 100%;
+            border: none;
+            margin-bottom: 2px;
+        }
+
+        .title-left {
+            text-align: left;
+            font-weight: bold;
+            font-size: 11pt;
+            vertical-align: bottom;
+        }
+
+        .title-right {
+            text-align: right;
+            font-weight: normal;
+            font-size: 10pt;
+            font-style: italic;
+            vertical-align: bottom;
         }
 
         .block-subtitle {
             font-style: italic;
-            color: #666;
+            color: #000;
+            font-size: 10pt;
             margin-bottom: 2px;
-            font-size: 10.5pt;
         }
 
         .block-desc {
             text-align: justify;
+            font-size: 10.5pt;
         }
 
         /* Tables */
         .info-table {
             width: 100%;
             border-collapse: collapse;
+            font-size: 10.5pt;
         }
 
         .info-table th {
             text-align: left;
             font-weight: bold;
-            border-bottom: 1px solid #ccc;
-            padding: 4px 0;
-            color: #444;
-            font-size: 10.5pt;
+            border-bottom: 1px solid #000;
+            padding: 3px 0;
+            color: #000;
         }
 
         .info-table td {
-            padding: 4px 0;
-            border-bottom: 1px solid #eee;
+            padding: 3px 0;
+            border-bottom: 1px solid #ccc;
         }
 
         .grade-col {
@@ -116,13 +139,10 @@
 
         .skill-item {
             display: inline-block;
-            margin-right: 15px;
-            background-color: #f0f4f4;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 10pt;
-            border: 1px solid #e0e6e6;
-            margin-bottom: 5px;
+            margin-right: 12px;
+            padding: 0;
+            font-size: 10.5pt;
+            font-weight: normal;
         }
 
         /* Coursework */
@@ -132,23 +152,15 @@
 
         .course-item {
             display: inline-block;
-            width: 45%;
-            margin-bottom: 3px;
+            width: 32%;
+            margin-bottom: 4px;
+            font-size: 10pt;
         }
 
         .bullet {
-            color: #5a7d7c;
+            color: #000;
             font-weight: bold;
-            margin-right: 5px;
-        }
-
-        /* Declaration */
-        .declaration {
-            margin-top: 40px;
-            border-top: 1px solid #eee;
-            padding-top: 15px;
-            font-size: 10pt;
-            color: #666;
+            margin-right: 4px;
         }
     </style>
 </head>
@@ -164,15 +176,9 @@
             {{ personal.student_mobile }}
             {% if personal.present_address %}
             <span class="contact-separator">|</span>
-            {{ personal.present_address|truncatechars:40 }}
+            {{ personal.present_address|truncatechars:50 }}
             {% endif %}
         </div>
-        {% if projects %}
-        <div class="contact-info" style="margin-top:4px;">
-            <!-- Placeholder for LinkedIn or Portfolio if we had those fields -->
-            <!-- <a href="#" style="color: #555; text-decoration: none;">linkedin.com/in/{{student.student_name|slugify}}</a> -->
-        </div>
-        {% endif %}
     </div>
 
     <!-- Objective / Summary -->
@@ -185,7 +191,7 @@
     </div>
     {% endif %}
 
-    <!-- Education (Priority High) -->
+    <!-- Education -->
     <div class="section">
         <div class="section-title">Education</div>
         <table class="info-table">
@@ -195,25 +201,59 @@
                 <th width="15%">Year</th>
                 <th width="15%" class="grade-col">Grade</th>
             </tr>
-            <!-- Higher Education First -->
-            {% if phd %}
+
+            <!-- CURRENT EDUCATION LOGIC -->
+            <!-- Check for PhD Pursuing -->
+            {% if student.program_level == 'PHD' %}
             <tr>
-                <td><strong>PhD ({{ phd.phd_specialization }})</strong></td>
-                <td>{{ phd.phd_university }}</td>
-                <td>{{ phd.phd_year_of_joining }}</td>
+                <td><strong>PhD ({{ phd.phd_specialization|default:"Research Scholar" }})</strong></td>
+                <td>{{ phd.phd_university|default:"Annamalai University" }}</td>
+                <td>{{ phd.phd_year_of_joining|default:"Present" }} - Present</td>
                 <td class="grade-col">Pursuing</td>
             </tr>
             {% endif %}
 
-            {% if pg %}
+            <!-- Check for PG Pursuing/Completed -->
+            {% if student.program_level == 'PG' %}
+            <!-- If PG details exist and have passing year, assume completed/final year, else pursuing logic -->
+            {% if pg and pg.pg_year_of_passing %}
             <tr>
                 <td><strong>{{ pg.pg_course }}</strong></td>
                 <td>{{ pg.pg_university }}</td>
                 <td>{{ pg.pg_year_of_passing }}</td>
                 <td class="grade-col">{{ pg.pg_ogpa }} OGPA</td>
             </tr>
+            {% else %}
+            <tr>
+                <!-- Fallback if specific PG obj missing but student is PG -->
+                <td><strong>{{ pg.pg_course|default:"Postgraduate Degree" }}</strong></td>
+                <td>{{ pg.pg_university|default:"Annamalai University" }}</td>
+                <td>{{ student.joining_year|default:"2023" }} - Present</td>
+                <td class="grade-col">Pursuing</td>
+            </tr>
+            {% endif %}
             {% endif %}
 
+            <!-- Check for UG Pursuing - Only show if student is UG level OR if we want to show UG background for PG students -->
+            {% if student.program_level == 'UG' %}
+            <!-- If UG details exist and have passing year -->
+            {% if ug and ug.ug_year_of_passing %}
+            <tr>
+                <td><strong>{{ ug.ug_course }}</strong></td>
+                <td>{{ ug.ug_university }}</td>
+                <td>{{ ug.ug_year_of_passing }}</td>
+                <td class="grade-col">{{ ug.ug_ogpa|default:"-" }} OGPA</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td><strong>B.E. {{ ug.ug_course|default:"Information Technology" }}</strong></td>
+                <td>{{ ug.ug_university|default:"Annamalai University" }}</td>
+                <td>{{ student.joining_year|default:"2023" }} - Present</td>
+                <td class="grade-col">Pursuing</td>
+            </tr>
+            {% endif %}
+            {% elif student.program_level == 'PG' or student.program_level == 'PHD' %}
+            <!-- For PG/PhD, show valid UG history if exists -->
             {% if ug %}
             <tr>
                 <td><strong>{{ ug.ug_course }}</strong></td>
@@ -222,7 +262,9 @@
                 <td class="grade-col">{{ ug.ug_ogpa }} OGPA</td>
             </tr>
             {% endif %}
+            {% endif %}
 
+            <!-- Diploma -->
             {% if diploma %}
             <tr>
                 <td>Diploma</td>
@@ -232,6 +274,7 @@
             </tr>
             {% endif %}
 
+            <!-- HSC -->
             {% if academic.hsc_percentage %}
             <tr>
                 <td>HSC / 12th Grade</td>
@@ -241,6 +284,7 @@
             </tr>
             {% endif %}
 
+            <!-- SSLC -->
             {% if academic.sslc_percentage %}
             <tr>
                 <td>SSLC / 10th Grade</td>
@@ -267,7 +311,7 @@
             {% for skill in skills %}
             <span class="skill-item">
                 <span class="bullet">&bull;</span> {{ skill.skill_name }}
-                <span style="color:#777; font-size:9pt;">({{ skill.proficiency }})</span>
+                <span style="font-size:9.5pt; color:#222;">({{ skill.proficiency }})</span>
             </span>
             {% endfor %}
             {% endif %}
@@ -275,13 +319,13 @@
     </div>
     {% endif %}
 
-    <!-- Soft Skills (AI Only) -->
+    <!-- Soft Skills -->
     {% if ai_data.soft_skills %}
     <div class="section">
         <div class="section-title">Soft Skills</div>
         <div class="skills-list">
             {% for skill in ai_data.soft_skills %}
-            <span class="skill-item" style="background-color: #fcfcfc; border: 1px dashed #ccc;">
+            <span class="skill-item">
                 <span class="bullet">&bull;</span> {{ skill }}
             </span>
             {% endfor %}
@@ -297,26 +341,33 @@
         {% if ai_data.projects_enhanced %}
         {% for project in ai_data.projects_enhanced %}
         <div class="content-block">
-            <div class="block-title">
-                {{ project.title }}
-            </div>
-            <div class="block-subtitle">Role: {{ project.role }}</div>
-            <div class="block-desc">
-                {{ project.description|linebreaksbr }}
+            <!-- Using Table for foolproof alignment check -->
+            <table class="title-row">
+                <tr>
+                    <td class="title-left">{{ project.title }}</td>
+                    <td class="title-right">{{ project.role }}</td>
+                </tr>
+            </table>
+            <div class="block-desc" style="margin-top:2px;">
+                {{ project.description }}
             </div>
         </div>
         {% endfor %}
         {% else %}
         {% for project in projects %}
         <div class="content-block">
-            <div class="block-title">
-                {{ project.title }}
-                {% if project.link %}
-                <a href="{{ project.link }}"
-                    style="font-size:9pt; color:#5a7d7c; text-decoration:none; margin-left:5px;">[Link]</a>
-                {% endif %}
-            </div>
-            <div class="block-subtitle">Role: {{ project.role }} | Tech: {{ project.technologies }}</div>
+            <table class="title-row">
+                <tr>
+                    <td class="title-left">
+                        {{ project.title }}
+                        {% if project.link %}
+                        <a href="{{ project.link }}" style="font-size:9pt; color:#000; text-decoration:none;">[Link]</a>
+                        {% endif %}
+                    </td>
+                    <td class="title-right">{{ project.role }}</td>
+                </tr>
+            </table>
+            <div class="block-subtitle">Tech: {{ project.technologies }}</div>
             <div class="block-desc">
                 {{ project.description }}
             </div>
@@ -326,7 +377,7 @@
     </div>
     {% endif %}
 
-    <!-- Relevant Coursework (New Filler Section) -->
+    <!-- Relevant Coursework -->
     {% if ai_data.coursework_highlight or coursework %}
     <div class="section">
         <div class="section-title">Relevant Coursework</div>
@@ -334,46 +385,19 @@
             {% if ai_data.coursework_highlight %}
             {% for subject in ai_data.coursework_highlight %}
             <div class="course-item">
-                <span class="bullet">&raquo;</span> {{ subject }}
+                <span class="bullet">&bull;</span> {{ subject }}
             </div>
             {% endfor %}
             {% else %}
             {% for subject in coursework %}
             <div class="course-item">
-                <span class="bullet">&raquo;</span> {{ subject.name }}
+                <span class="bullet">&bull;</span> {{ subject.name }}
             </div>
             {% endfor %}
             {% endif %}
         </div>
     </div>
     {% endif %}
-
-    <!-- Hobbies & Interests -->
-    {% if other.hobbies %}
-    <div class="section">
-        <div class="section-title">Interests</div>
-        <div>{{ other.hobbies }}</div>
-    </div>
-    {% endif %}
-
-    <!-- Declaration -->
-    <div class="section declaration">
-        <div class="section-title" style="font-size: 11pt; border: none; color: #444;">Declaration</div>
-        <p>I hereby declare that the details furnished above are true and correct to the best of my knowledge and
-            belief.</p>
-        <br>
-        <table width="100%">
-            <tr>
-                <td align="left"><strong>Place:</strong> {{ personal.present_address|truncatewords:2|default:"Annamalai
-                    Nagar" }}</td>
-                <td align="right"><strong>({{ student.student_name }})</strong></td>
-            </tr>
-            <tr>
-                <td align="left"><strong>Date:</strong> {% now "d F Y" %}</td>
-                <td></td>
-            </tr>
-        </table>
-    </div>
 
 </body>
 

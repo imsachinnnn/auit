@@ -106,7 +106,7 @@
         <!-- New Feature Link -->
         <a href="#" id="ai-generate-btn" class="action-btn"
             style="background-color: #6f42c1; font-size: 0.9em; border: 1px solid #5a32a3;">
-            <span class="emoji">✨</span> Enchance with AI
+            <span class="emoji">✨</span> Enhance with AI
         </a>
         <a href="{% url 'generate_resume_pdf' %}" class="action-btn">
             <span class="emoji">📄</span> Download My Resume
@@ -222,6 +222,9 @@
     ]
 </script>
 
+<!-- SweetAlert2 for Premium Alerts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     function autoGenerateSummary() {
         const skillsElements = document.getElementById('skills-data');
@@ -240,8 +243,16 @@
         }
         summary += ". Eager to apply academic knowledge to real-world projects.";
 
-        // Display the suggestion to the user
-        alert("Suggested Summary:\n\n" + summary);
+        Swal.fire({
+            title: '✨ Suggested Summary',
+            text: summary,
+            icon: 'info',
+
+            showCancelButton: true,
+            confirmButtonColor: '#5a7d7c'
+        }).then((result) => {
+
+        });
     }
 
     document.getElementById('ai-generate-btn').addEventListener('click', function (e) {
@@ -249,40 +260,88 @@
         const btn = this;
         const originalText = btn.innerHTML;
 
-        if (!confirm("This will use AI to expand your projects and skills into a full professional resume. Proceed?")) return;
+        Swal.fire({
+            title: 'Enhance with AI?',
+            text: "This will use advanced AI to expand your projects, skills, and summary into a professional, high-impact resume and your details will be shared with AI for better results, please proceed under your own risk.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#6f42c1',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes,Do It! ✨'
+        }).then((result) => {
+            if (result.isConfirmed) {
 
-        btn.innerHTML = '<span class="emoji">⏳</span> Generating...';
-        btn.style.opacity = '0.7';
-        btn.style.pointerEvents = 'none';
+                // Show Loading
+                btn.innerHTML = '<span class="emoji">⏳</span> Magic in progress...';
+                btn.style.opacity = '0.7';
+                btn.style.pointerEvents = 'none';
 
-        fetch('{% url "ai_generate_resume" %}', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({})
-        })
-            .then(response => response.json())
-            .then(data => {
-                btn.innerHTML = originalText;
-                btn.style.opacity = '1';
-                btn.style.pointerEvents = 'auto';
+                let timerInterval;
+                Swal.fire({
+                    title: 'Crafting Your Masterpiece...',
+                    html: 'Consulting top career strategists... <b></b>%',
+                    timer: 15000, // Fallback timer
+                    timerProgressBar: true,
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    },
+                    willClose: () => {
+                        clearInterval(timerInterval);
+                    }
+                });
 
-                if (data.error) {
-                    alert("Error: " + data.error);
-                } else {
-                    alert("✨ Success! Your resume has been enhanced with AI content.\n\nClick 'Download My Resume' to get the full PDF.");
-                    btn.innerHTML = '<span class="emoji">🔄</span> Regenerate AI Resume';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                btn.innerHTML = originalText;
-                btn.style.opacity = '1';
-                btn.style.pointerEvents = 'auto';
-                alert("Something went wrong. Please try again.");
-            });
+                fetch('{% url "ai_generate_resume" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        btn.innerHTML = originalText;
+                        btn.style.opacity = '1';
+                        btn.style.pointerEvents = 'auto';
+                        Swal.close(); // Close loader
+
+                        if (data.error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: 'AI Error: ' + data.error,
+                            });
+                        } else {
+                            // Success Alert
+                            Swal.fire({
+                                title: '✨ Resume Enhanced!',
+                                text: 'Your resume has been professionally rewritten with high-impact content.',
+                                icon: 'success',
+                                confirmButtonText: 'Download PDF',
+                                confirmButtonColor: '#28a745'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = "{% url 'generate_resume_pdf' %}";
+                                }
+                            });
+
+                            btn.innerHTML = '<span class="emoji">🔄</span> Regenerate AI Resume';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        btn.innerHTML = originalText;
+                        btn.style.opacity = '1';
+                        btn.style.pointerEvents = 'auto';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Network Error',
+                            text: 'Something went wrong. Please try again.',
+                        });
+                    });
+            }
+        });
     });
 </script>
 {% endblock %}
