@@ -5,6 +5,8 @@ from google.genai import types
 import json
 import logging
 import os
+from dotenv import load_dotenv
+load_dotenv()
 logger = logging.getLogger(__name__)
 
 def generate_resume_content(student_data):
