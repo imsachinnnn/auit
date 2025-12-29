@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Leave | {{ staff.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
+    <style>
+        :root {
+            --primary-color: #5a7d7c;
+            --secondary-color: #4a6b69;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+            max-width: 95%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 20px 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 10px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-brand h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .action-btn {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Sidebar Profile */
+        .sidebar {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            position: sticky;
+            top: 30px;
+        }
+
+        .profile-img {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--bg-color);
+            margin-bottom: 20px;
+        }
+
+        .profile-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-role {
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            display: inline-block;
+            background: #eef6f6;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .profile-meta {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95em;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(90, 125, 124, 0.1);
+        }
+
+        .back-link {
+            display: block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="page-header">
+            <div class="header-brand">
+                <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" alt="Logo"
+                    style="height: 45px;">
+                <h1>Apply Leave</h1>
+            </div>
+            <a href="{% url 'staffs:staff_logout' %}" class="action-btn" style="background:#dc3545">Logout</a>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            {% if staff.photo %}
+            <img src="{{ staff.photo.url }}" alt="{{ staff.name }}" class="profile-img">
+            {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ staff.name }}&background=random&size=200"
+                alt="{{ staff.name }}" class="profile-img">
+            {% endif %}
+            <div class="profile-name">{{ staff.salutation }} {{ staff.name }}</div>
+            <div class="profile-role">{{ staff.role }}</div>
+            <div class="profile-meta">{{ staff.department }}</div>
+            <br>
+            <a href="{% url 'staffs:staff_dashboard' %}" class="action-btn"
+                style="width:100%; box-sizing:border-box; display:block;">Dashboard</a>
+            <br>
+            <a href="{% url 'staffs:staff_leave_history' %}" class="action-btn"
+                style="width:100%; box-sizing:border-box; display:block; background-color: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color);">History</a>
+        </aside>
+
+        <main class="main-content">
+            <a href="{% url 'staffs:staff_dashboard' %}" class="back-link">← Back to Dashboard</a>
+
+            <!-- Leave Balance Summary -->
+            <div
+                style="background: white; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <h3 style="margin-top: 0; color: var(--primary-color);">Casual Leave (CL) Status</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.9em; color: #7f8c8d;">Allowed</div>
+                        <div style="font-size: 1.5em; font-weight: 600; color: #2c3e50;">12</div>
+                    </div>
+                    <div style="background: #eef2f7; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.9em; color: #7f8c8d;">Used (Approved)</div>
+                        <div style="font-size: 1.5em; font-weight: 600; color: #e67e22;">{{ cl_used }}</div>
+                    </div>
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.5em; font-weight: 600; color: #27ae60;">{{ cl_balance }}</div>
+                    </div>
+                </div>
+
+                {% if cl_taken_dates %}
+                <div style="font-size: 0.9em; color: var(--text-muted);">
+                    <strong>Taken Dates:</strong>
+                    <ul style="margin: 5px 0 0 20px; color: var(--text-main);">
+                        {% for date_range in cl_taken_dates %}
+                        <li>{{ date_range.start|date:"d M Y" }} - {{ date_range.end|date:"d M Y" }} ({{ date_range.days }} day{{ date_range.days|pluralize }})</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-card">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label">Leave Type</label>
+                        {{ form.leave_type }}
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label class="form-label">From Date</label>
+                            {{ form.start_date }}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">To Date</label>
+                            {{ form.end_date }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Reason</label>
+                        {{ form.reason }}
+                    </div>
+
+                    <div style="text-align: right; margin-top: 20px;">
+                        <button type="submit" class="action-btn">Submit Application</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.classList.add('form-control');
+            });
+        });
+    </script>
+</body>
+
+</html>

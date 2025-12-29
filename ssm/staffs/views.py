@@ -782,3 +782,177 @@ def timetable(request):
         'selected_semester': selected_semester,
         'semesters': range(1, 9),
     })
+
+def view_leave_requests(request):
+    """View to list pending leave requests."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+        
+    staff = Staff.objects.get(staff_id=request.session['staff_id'])
+    from students.models import LeaveRequest
+    
+    # Filter pending requests
+    leave_requests = LeaveRequest.objects.filter(status='Pending').order_by('created_at')
+    
+    # Filter by assigned semester if Class Incharge
+    if staff.role == 'Class Incharge' and staff.assigned_semester:
+        leave_requests = leave_requests.filter(student__current_semester=staff.assigned_semester)
+    elif staff.role == 'HOD':
+        pass # HOD sees all
+    else:
+        # Other staff might not see any or only assigned? Assuming restriction to Class Incharge/HOD
+        # But for now, let's allow them to see nothing if not assigned
+        if not staff.role == 'HOD':
+             leave_requests = leave_requests.none()
+
+    return render(request, 'staff/staff_leave_list.html', {
+        'staff': staff,
+        'leave_requests': leave_requests
+    })
+
+def update_leave_status(request, request_id):
+    """View to approve or reject a leave request."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+    
+    if request.method == 'POST':
+        from students.models import LeaveRequest
+        leave_request = get_object_or_404(LeaveRequest, id=request_id)
+        
+        action = request.POST.get('action')
+        reason = request.POST.get('rejection_reason', '')
+        
+        if action == 'approve':
+            leave_request.status = 'Approved'
+            messages.success(request, f"Leave approved for {leave_request.student.student_name}.")
+        elif action == 'reject':
+            leave_request.status = 'Rejected'
+            leave_request.rejection_reason = reason
+            messages.warning(request, f"Leave rejected for {leave_request.student.student_name}.")
+        
+        leave_request.save()
+        
+    return redirect('staffs:view_leave_requests')
+
+# --- Staff Leave System (Staff -> HOD) ---
+
+def staff_apply_leave(request):
+    """View for staff to apply for leave."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+    
+    staff = Staff.objects.get(staff_id=request.session['staff_id'])
+    from .forms import StaffLeaveRequestForm
+    from .models import StaffLeaveRequest
+    
+    if request.method == 'POST':
+        form = StaffLeaveRequestForm(request.POST, staff=staff)
+        if form.is_valid():
+            leave_request = form.save(commit=False)
+            leave_request.staff = staff
+            leave_request.save()
+            messages.success(request, 'Leave request submitted to HOD.')
+            return redirect('staffs:staff_leave_history')
+    else:
+        form = StaffLeaveRequestForm(staff=staff)
+    
+    # Calculate Casual Leave Balance
+    import datetime
+    today = datetime.date.today()
+    if today.month >= 6: 
+        ay_start = datetime.date(today.year, 6, 1)
+    else: 
+        ay_start = datetime.date(today.year - 1, 6, 1)
+        
+    casual_leaves = StaffLeaveRequest.objects.filter(
+        staff=staff,
+        leave_type='Casual',
+        status='Approved', # Only count approved for taken, maybe pending restricts balance? Let's check logic. 
+        # Actually logic in form checks Pending+Approved. Let's show used (Approved) and Locked (Pending).
+        start_date__gte=ay_start
+    ).order_by('start_date')
+    
+    used_days = 0
+    taken_dates = []
+    for leave in casual_leaves:
+        days = (leave.end_date - leave.start_date).days + 1
+        used_days += days
+        taken_dates.append({
+            'start': leave.start_date,
+            'end': leave.end_date,
+            'days': days
+        })
+        
+    balance = max(0, 12 - used_days)
+        
+    return render(request, 'staff/apply_leave.html', {
+        'form': form, 
+        'staff': staff,
+        'cl_balance': balance,
+        'cl_used': used_days,
+        'cl_taken_dates': taken_dates
+    })
+
+def staff_leave_history(request):
+    """View for staff to see their leave history."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+        
+    staff = Staff.objects.get(staff_id=request.session['staff_id'])
+    from .models import StaffLeaveRequest
+    
+    leaves = StaffLeaveRequest.objects.filter(staff=staff).order_by('-created_at')
+    
+    return render(request, 'staff/my_leave_history.html', {'staff': staff, 'leaves': leaves})
+
+def hod_leave_dashboard(request):
+    """HOD view to see all staff leave requests."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+        
+    current_staff = Staff.objects.get(staff_id=request.session['staff_id'])
+    
+    # Strictly for HOD
+    if current_staff.role != 'HOD':
+        messages.error(request, "Access Restricted to HOD.")
+        return redirect('staffs:staff_dashboard')
+        
+    from .models import StaffLeaveRequest
+    
+    # pending requests
+    pending_leaves = StaffLeaveRequest.objects.filter(status='Pending').order_by('created_at')
+    
+    return render(request, 'staff/hod_leave_dashboard.html', {
+        'staff': current_staff,
+        'leave_requests': pending_leaves
+    })
+
+def hod_update_leave_status(request, request_id):
+    """HOD action to approve/reject staff leave."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+        
+    if request.method == 'POST':
+        from .models import StaffLeaveRequest
+        leave_request = get_object_or_404(StaffLeaveRequest, id=request_id)
+        
+        # Verify HOD access again for security
+        current_staff = Staff.objects.get(staff_id=request.session['staff_id'])
+        if current_staff.role != 'HOD':
+             messages.error(request, "Unauthorized action.")
+             return redirect('staffs:staff_dashboard')
+
+        action = request.POST.get('action')
+        reason = request.POST.get('rejection_reason', '')
+        
+        if action == 'approve':
+            leave_request.status = 'Approved'
+            messages.success(request, f"Approved leave for {leave_request.staff.name}.")
+        elif action == 'reject':
+            leave_request.status = 'Rejected'
+            leave_request.rejection_reason = reason
+            messages.warning(request, f"Rejected leave for {leave_request.staff.name}.")
+        
+        leave_request.save()
+        
+    return redirect('staffs:hod_leave_dashboard')

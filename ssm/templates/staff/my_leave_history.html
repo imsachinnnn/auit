@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Leave History | {{ staff.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
+    <style>
+        :root {
+            --primary-color: #5a7d7c;
+            --secondary-color: #4a6b69;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+            --success-bg: #d4edda;
+            --success-text: #155724;
+            --danger-bg: #f8d7da;
+            --danger-text: #721c24;
+            --warning-bg: #fff3cd;
+            --warning-text: #856404;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+            max-width: 95%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 20px 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 10px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-brand h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .action-btn {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Sidebar Profile */
+        .sidebar {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            position: sticky;
+            top: 30px;
+        }
+
+        .profile-img {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--bg-color);
+            margin-bottom: 20px;
+        }
+
+        .profile-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-role {
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            display: inline-block;
+            background: #eef6f6;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .profile-meta {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        /* Leave List */
+        .leave-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .leave-details h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.1em;
+            color: var(--text-main);
+        }
+
+        .leave-dates {
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .status-Pending {
+            background: var(--warning-bg);
+            color: var(--warning-text);
+        }
+
+        .status-Approved {
+            background: var(--success-bg);
+            color: var(--success-text);
+        }
+
+        .status-Rejected {
+            background: var(--danger-bg);
+            color: var(--danger-text);
+        }
+
+        .back-link {
+            display: block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="page-header">
+            <div class="header-brand">
+                <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" alt="Logo"
+                    style="height: 45px;">
+                <h1>My Leave History</h1>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="{% url 'staffs:staff_apply_leave' %}" class="action-btn">+ New Request</a>
+                <a href="{% url 'staffs:staff_logout' %}" class="action-btn" style="background:#dc3545">Logout</a>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            {% if staff.photo %}
+            <img src="{{ staff.photo.url }}" alt="{{ staff.name }}" class="profile-img">
+            {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ staff.name }}&background=random&size=200"
+                alt="{{ staff.name }}" class="profile-img">
+            {% endif %}
+            <div class="profile-name">{{ staff.salutation }} {{ staff.name }}</div>
+            <div class="profile-role">{{ staff.role }}</div>
+            <div class="profile-meta">{{ staff.department }}</div>
+            <br>
+            <a href="{% url 'staffs:staff_dashboard' %}" class="action-btn"
+                style="width:100%; box-sizing:border-box; display:block;">Dashboard</a>
+        </aside>
+
+        <main class="main-content">
+            <a href="{% url 'staffs:staff_dashboard' %}" class="back-link">← Back to Dashboard</a>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div
+                style="padding: 15px; margin-bottom: 20px; border-radius: 8px; 
+                    background-color: {% if message.tags == 'success' %}#d4edda{% elif message.tags == 'error' %}#f8d7da{% else %}#e2e3e5{% endif %};
+                    color: {% if message.tags == 'success' %}#155724{% elif message.tags == 'error' %}#721c24{% else %}#383d41{% endif %};">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% for leave in leaves %}
+            <div class="leave-card">
+                <div class="leave-details">
+                    <h3>{{ leave.get_leave_type_display }}</h3>
+                    <div class="leave-dates">
+                        {{ leave.start_date|date:"d M Y" }} - {{ leave.end_date|date:"d M Y" }}
+                    </div>
+                    <div style="margin-top: 5px; font-style: italic; color: #555;">
+                        "{{ leave.reason }}"
+                    </div>
+                    {% if leave.status == 'Rejected' and leave.rejection_reason %}
+                    <div style="margin-top: 5px; color: var(--danger-text); font-size: 0.9em;">
+                        Reason: {{ leave.rejection_reason }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <span class="status-badge status-{{ leave.status }}">{{ leave.status }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 50px; color: var(--text-muted);">
+                <p>No leave requests found.</p>
+                <a href="{% url 'staffs:staff_apply_leave' %}" class="action-btn">Apply Now</a>
+            </div>
+            {% endfor %}
+        </main>
+    </div>
+</body>
+
+</html>

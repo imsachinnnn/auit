@@ -35,4 +35,13 @@ urlpatterns = [
     path('exam-schedule/', views.exam_schedule, name='exam_schedule'),
     path('timetable/', views.timetable, name='timetable'),
 
+    # Leave Management (Student -> Staff)
+    path('leave/requests/', views.view_leave_requests, name='view_leave_requests'),
+    path('leave/update/<int:request_id>/', views.update_leave_status, name='update_leave_status'),
+
+    # Staff Leave System (Staff -> HOD)
+    path('my-leave/apply/', views.staff_apply_leave, name='staff_apply_leave'),
+    path('my-leave/history/', views.staff_leave_history, name='staff_leave_history'),
+    path('hod/leave-requests/', views.hod_leave_dashboard, name='hod_leave_dashboard'),
+    path('hod/leave-update/<int:request_id>/', views.hod_update_leave_status, name='hod_update_leave_status'),
 ]

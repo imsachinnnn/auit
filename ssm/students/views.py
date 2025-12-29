@@ -13,7 +13,7 @@ import csv
 from .models import (
     Student, PersonalInfo, BankDetails, AcademicHistory, DiplomaDetails, UGDetails, PGDetails, PhDDetails,
     ScholarshipInfo, StudentDocuments, OtherDetails, Caste, StudentMarks, StudentAttendance,
-    StudentSkill, StudentProject
+    StudentSkill, StudentProject, LeaveRequest
 )
 from . import ai_utils
 # Import the caste data for the API
@@ -22,7 +22,7 @@ from .forms import (
     StudentForm, PersonalInfoForm, BankDetailsForm, AcademicHistoryForm,
     DiplomaDetailsForm, UGDetailsForm, PGDetailsForm, PhDDetailsForm,
     ScholarshipInfoForm, StudentDocumentsForm, OtherDetailsForm,
-    StudentSkillForm, StudentProjectForm
+    StudentSkillForm, StudentProjectForm, LeaveRequestForm
 )
 from django.template.loader import get_template
 from xhtml2pdf import pisa
@@ -798,26 +798,53 @@ def generate_resume_pdf(request):
         'phd': getattr(student, 'phddetails', None),
         'skills': student.skills.all(),
         'projects': student.projects.all(),
-        'other': getattr(student, 'otherdetails', None),
-        'coursework': subjects, # Added coursework
-        'MEDIA_ROOT': settings.MEDIA_ROOT,
-        'ai_data': ai_data, # Pass AI data to template
     }
     
+    # 3. Create PDF
     template_path = 'resume_template.html'
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{student.student_name}_resume.pdf"'
-    
-    # Find the template and render it.
     template = get_template(template_path)
     html = template.render(context)
-
-    # create a pdf
+    
+    response = HttpResponse(content_type='application/pdf')
+    # Custom filename: Name_rollnumber_Resume.pdf
+    filename = f"{student.student_name.replace(' ', '_')}_{student.roll_number}_Resume.pdf"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
     pisa_status = pisa.CreatePDF(
        html, dest=response
     )
-    # if error then show some funny view
+    
     if pisa_status.err:
-       return HttpResponse(f'We had some errors <pre>{html}</pre>')
+       return HttpResponse('We had some errors <pre>' + html + '</pre>')
     return response
+
+# --- Leave Request Views ---
+
+@student_login_required
+def apply_leave(request):
+    roll_number = request.session.get('student_roll_number')
+    student = Student.objects.get(roll_number=roll_number)
+    
+    if request.method == 'POST':
+        form = LeaveRequestForm(request.POST)
+        if form.is_valid():
+            leave_request = form.save(commit=False)
+            leave_request.student = student
+            leave_request.save()
+            messages.success(request, 'Leave request submitted successfully!')
+            return redirect('leave_history')
+    else:
+        form = LeaveRequestForm()
+    
+    return render(request, 'leave_apply.html', {'form': form, 'student': student})
+
+@student_login_required
+def leave_history(request):
+    roll_number = request.session.get('student_roll_number')
+    student = Student.objects.get(roll_number=roll_number)
+    
+    # Fetch all requests ordered by latest first
+    leaves = LeaveRequest.objects.filter(student=student).order_by('-created_at')
+    
+    return render(request, 'leave_list.html', {'student': student, 'leaves': leaves})
 

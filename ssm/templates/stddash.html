@@ -42,6 +42,7 @@
                 <a href="{% url 'student_attendance' %}"><span class="emoji">📝</span> Attendance</a>
                 <a href="{% url 'student_marks' %}"><span class="emoji">📈</span> Marks</a>
                 <a href="{% url 'resume_builder' %}"><span class="emoji">🧠</span> AI Resume Generation</a>
+                <a href="{% url 'apply_leave' %}"><span class="emoji">📝</span> Leave Application</a>
                 <a href="{% url 'student_editprofile' %}"><span class="emoji">✏️</span> Edit Profile</a>
                 <a href="https://annamalaiuniversity.ac.in/" target="_blank" rel="noopener"><span
                         class="emoji">🌐</span> AU Main Site</a>
@@ -104,14 +105,15 @@
                         <div class="detail-item"><strong>Mobile</strong>
                             <span>{{student.personalinfo.student_mobile|default:"-" }}</span>
                         </div>
-                        <div class="detail-item"><strong>DOB</strong> <span>{{student.personalinfo.date_of_birth|date:"d M Y"|default:"-" }}</span></div>
+                        <div class="detail-item"><strong>DOB</strong> <span>{{student.personalinfo.date_of_birth|date:"d
+                                M Y"|default:"-" }}</span></div>
                         <div class="detail-item"><strong>Gender</strong>
                             <span>{{student.personalinfo.get_gender_display|default:"-" }}</span>
                         </div>
                         <div class="detail-item"><strong>Community</strong>
                             <span>{{student.personalinfo.community|default:"-" }}</span>
                         </div>
-                        <div class="detail-item"><strong>Caste</strong> <span>{% if student.personalinfo.caste %}{{student.personalinfo.caste.name }}{% elif student.personalinfo.caste_other %}{{student.personalinfo.caste_other }}{% else %}-{% endif %}</span></div>
+                        <div class="detail-item"><strong>Caste</strong> <span>{% if student.personalinfo.caste%}{{student.personalinfo.caste.name }}{% elif student.personalinfo.caste_other %}{{student.personalinfo.caste_other }}{% else %}-{% endif %}</span></div>
                         <div class="detail-item"><strong>Blood Group</strong>
                             <span>{{student.personalinfo.get_blood_group_display|default:"-" }}</span>
                         </div>
@@ -193,8 +195,7 @@
                         <div class="detail-item"><strong>M. Mobile</strong>
                             <span>{{student.personalinfo.mother_mobile|default:"-" }}</span>
                         </div>
-                        <div class="detail-item"><strong>Income</strong> <span>{% if student.personalinfo.parent_annual_income %}Rs.
-                                {{student.personalinfo.parent_annual_income }}{% else %}-{% endif %}</span></div>
+                        <div class="detail-item"><strong>Income</strong> <span>{% if student.personalinfo.parent_annual_income %}Rs. {{student.personalinfo.parent_annual_income }}{% else %}-{% endif %}</span></div>
                     </div>
                 </div>
 

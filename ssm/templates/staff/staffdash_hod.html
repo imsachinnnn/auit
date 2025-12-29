@@ -269,6 +269,11 @@
                     <div class="action-title">👨‍🎓 Student Directory</div>
                     <div class="action-desc">Access {{ student_count }} registered students in the department.</div>
                 </a>
+
+                <a href="{% url 'staffs:hod_leave_dashboard' %}" class="action-card">
+                    <div class="action-title">👔 Staff Leaves</div>
+                    <div class="action-desc">Review staff leave applications.</div>
+                </a>
                 <a href="{% url 'staffs:staff_list' %}" class="action-card">
                     <div class="action-title">👨‍🏫 Staff Directory</div>
                     <div class="action-desc">View and search for faculty members.</div>

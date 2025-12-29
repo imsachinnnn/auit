@@ -281,6 +281,16 @@
                         in your assigned semester.</div>
                 </a>
 
+                <a href="{% url 'staffs:view_leave_requests' %}" class="action-card">
+                    <div class="action-title">📝 Leave Requests</div>
+                    <div class="action-desc">Review pending leave applications.</div>
+                </a>
+
+                <a href="{% url 'staffs:staff_apply_leave' %}" class="action-card">
+                    <div class="action-title">✈️ Apply Leave</div>
+                    <div class="action-desc">Submit your own leave request to HOD.</div>
+                </a>
+
 
 
                 <a href="{% url 'staffs:manage_semesters' %}" class="action-card">

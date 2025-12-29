@@ -1,0 +1,102 @@
+{% extends 'stddash.html' %}
+{% load static %}
+
+{% block header_actions %}
+<a href="{% url 'leave_history' %}" class="action-btn btn-outline" style="margin-right: 10px;">
+    📜 Leave History
+</a>
+{% endblock %}
+
+{% block content %}
+<style>
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        padding: 30px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95em;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px var(--light-accent-bg);
+    }
+
+    .date-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+</style>
+
+<div class="page-header">
+    <h2 style="color: var(--accent-color);">Apply for Leave</h2>
+</div>
+
+<div class="form-card">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label class="form-label">Leave Type</label>
+            {{ form.leave_type }}
+        </div>
+
+        <div class="date-row">
+            <div class="form-group">
+                <label class="form-label">From Date</label>
+                {{ form.start_date }}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">To Date</label>
+                {{ form.end_date }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Reason</label>
+            {{ form.reason }}
+        </div>
+
+        <div style="text-align: right; margin-top: 30px;">
+            <button type="submit" class="action-btn btn-primary" style="padding: 12px 30px; font-size: 1em;">
+                Submit Request
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Apply CSS classes to form fields via JS or widget attrs -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.classList.add('form-control');
+        });
+    });
+</script>
+{% endblock %}
