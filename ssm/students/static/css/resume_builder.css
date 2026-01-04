@@ -151,6 +151,29 @@
     box-shadow: 0 4px 12px rgba(84, 124, 124, 0.3);
 }
 
+.btn-primary {
+    background: #547c7c;
+    /* Matching theme color */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+}
+
+.btn-primary:hover {
+    background: #466767;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(84, 124, 124, 0.3);
+}
+
 /* AI Status Box */
 .ai-status-box {
     background: #f8f9fa;
