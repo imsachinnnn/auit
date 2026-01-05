@@ -1,0 +1,247 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP - Step 2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
+
+    <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --secondary-bg: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --accent-color: #5a7d7c;
+            --accent-color-hover: #4a6b69;
+            --success-bg: #d1e7dd;
+            --success-text: #0f5132;
+            --error-bg: #f8d7da;
+            --error-text: #842029;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .reset-container {
+            background-color: var(--secondary-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-section img {
+            height: 60px;
+            margin-bottom: 15px;
+        }
+
+        .logo-section h1 {
+            font-size: 1.8em;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        .logo-section p {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+        }
+
+        .messages {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .messages li {
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .messages li.success {
+            background-color: var(--success-bg);
+            color: var(--success-text);
+            border: 1px solid #a3cfbb;
+        }
+
+        .messages li.error {
+            background-color: var(--error-bg);
+            color: var(--error-text);
+            border: 1px solid #f1aeb5;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2em;
+            /* Larger for OTP */
+            text-align: center;
+            letter-spacing: 0.5em;
+            /* Spacing for OTP */
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--accent-color-hover);
+        }
+
+        .otp-info {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--text-primary);
+        }
+
+        .otp-info strong {
+            color: var(--accent-color);
+        }
+
+        .actions-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .actions-link a,
+        .actions-link button {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+            background: none;
+            border: none;
+            padding: 0;
+            font-family: inherit;
+            font-size: inherit;
+            cursor: pointer;
+        }
+
+        .actions-link a:hover,
+        .actions-link button:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="reset-container">
+        <div class="logo-section">
+            <img src="{% static 'imgs/aublack.png' %}" alt="University Logo" />
+            <h1>Enter OTP</h1>
+            <p>Step 3 of 3: A One-Time Password has been sent to your email.</p>
+        </div>
+
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <div class="otp-info">
+            Sent to email: <strong>{{ email_mask }}</strong>
+        </div>
+
+        <form method="POST" action="{% url 'password_reset_otp_verify' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <input type="text" id="otp" name="otp" placeholder="XXXXXX" maxlength="6" required autofocus>
+            </div>
+
+            <button type="submit" class="submit-btn">Verify & Proceed</button>
+        </form>
+
+        <div class="actions-link">
+            <form method="POST" action="{% url 'password_reset_verify' %}" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="send_otp">
+                <!-- We need to pass back the original mobile/email if we want strict resend, 
+                     but session has student_pk, so backend can re-fetch email. 
+                     Refetching from session is safer. View logic supports it? 
+                     'send_otp' in view expects POST data for mobile/email to validate. 
+                     Let's check view logic. 
+                     
+                     View logic for 'send_otp' checks:
+                     mobile_number = request.POST.get('student_mobile')
+                     email_address = request.POST.get('student_email')
+                     
+                     This form won't have them. 
+                     We should probably just redirect to p2 to fill them again OR update view to allow resend from session.
+                     
+                     Simpler for now: redirect to 'password_reset_identify' or 'password_reset_verify' to re-enter.
+                     Actually, let's look at the view again.
+                -->
+                <!-- Resend might be complex without re-submitting data. 
+                     Better to guide user back or just let them verify if they have it.
+                     Let's use a simple link to Go Back for now. -->
+            </form>
+
+            <p>Didn't receive code?</p>
+            <a href="{% url 'password_reset_verify' %}">Try sending again</a>
+            <br><br>
+            <a href="{% url 'password_reset_identify' %}">Back to Identity Verification</a>
+        </div>
+    </div>
+</body>
+
+</html>

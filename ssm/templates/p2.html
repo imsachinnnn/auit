@@ -1,12 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Identity - Step 2</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" type="image/png">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
 
     <style>
         :root {
@@ -23,11 +25,15 @@
             --error-text: #842029;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background-color: var(--primary-bg); 
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-bg);
             color: var(--text-primary);
             display: flex;
             justify-content: center;
@@ -39,7 +45,7 @@
         .reset-container {
             background-color: var(--secondary-bg);
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             max-width: 450px;
             width: 100%;
             padding: 40px;
@@ -155,13 +161,13 @@
         .back-link a:hover {
             text-decoration: underline;
         }
-
     </style>
 </head>
+
 <body>
     <div class="reset-container">
         <div class="logo-section">
-            <img src="{% static 'imgs/aublack.png' %}" alt="University Logo" width="150" height="auto"/>
+            <img src="{% static 'imgs/aublack.png' %}" alt="University Logo" width="150" height="auto" />
             <h1>Verify Your Identity</h1>
             <p>Step 2 of 3: Please enter the details associated with your account.</p>
         </div>
@@ -174,31 +180,110 @@
         </ul>
         {% endif %}
 
-        <form method="POST">
-            {% csrf_token %}
+        <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist"
+            style="list-style: none; padding: 0; display: flex; gap: 10px;">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pills-legacy-tab" data-toggle="pill" data-target="#pills-legacy"
+                    type="button" role="tab" aria-selected="true"
+                    style="padding: 10px 20px; border: 1px solid var(--border-color); background: var(--secondary-bg); cursor: pointer; border-radius: 5px; font-family: 'Poppins', sans-serif;">
+                    Mobile + Aadhaar
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-otp-tab" data-toggle="pill" data-target="#pills-otp" type="button"
+                    role="tab" aria-selected="false"
+                    style="padding: 10px 20px; border: 1px solid var(--border-color); background: var(--secondary-bg); cursor: pointer; border-radius: 5px; font-family: 'Poppins', sans-serif;">
+                    Mobile + Email (OTP)
+                </button>
+            </li>
+        </ul>
 
-            {% if student %}
-            <div class="form-group">
-                <label for="student_name">Student Name</label>
-                <input type="text" id="student_name" class="readonly-input" value="{{ student.student_name }}" readonly>
-            </div>
-            {% endif %}
+        <div class="tab-content" id="pills-tabContent">
 
-            <div class="form-group">
-                <label for="student_mobile">Registered Mobile Number</label>
-                <input type="tel" id="student_mobile" name="student_mobile" required placeholder="Enter your mobile number">
-            </div>
-            <div class="form-group">
-                <label for="aadhaar_number">Aadhaar Number</label>
-                <input type="text" id="aadhaar_number" name="aadhaar_number" required placeholder="Enter your Aadhaar number">
+            <!-- Method 1: Mobile + Aadhaar -->
+            <div class="tab-pane fade show active" id="pills-legacy" role="tabpanel">
+                <form method="POST">
+                    {% csrf_token %}
+                    {% if student %}
+                    <div class="form-group">
+                        <label>Student Name</label>
+                        <input type="text" class="readonly-input" value="{{ student.student_name }}" readonly>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="student_mobile_1">Registered Mobile Number</label>
+                        <input type="tel" id="student_mobile_1" name="student_mobile" required
+                            placeholder="Enter mobile number">
+                    </div>
+                    <div class="form-group">
+                        <label for="aadhaar_number">Aadhaar Number</label>
+                        <input type="text" id="aadhaar_number" name="aadhaar_number" required
+                            placeholder="Enter Aadhaar number">
+                    </div>
+
+                    <button type="submit" class="submit-btn" name="action" value="verify_details">Verify &
+                        Reset</button>
+                </form>
             </div>
 
-            <button type="submit" class="submit-btn">Verify Details</button>
-        </form>
+            <!-- Method 2: Mobile + Email -->
+            <div class="tab-pane fade" id="pills-otp" role="tabpanel" style="display: none;">
+                <form method="POST">
+                    {% csrf_token %}
+                    {% if student %}
+                    <div class="form-group">
+                        <label>Student Name</label>
+                        <input type="text" class="readonly-input" value="{{ student.student_name }}" readonly>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="student_mobile_2">Registered Mobile Number</label>
+                        <input type="tel" id="student_mobile_2" name="student_mobile" required
+                            placeholder="Enter mobile number">
+                    </div>
+                    <div class="form-group">
+                        <label for="student_email">Registered Email Address</label>
+                        <input type="email" id="student_email" name="student_email" required
+                            placeholder="Enter email address">
+                    </div>
+
+                    <button type="submit" class="submit-btn" name="action" value="send_otp"
+                        style="background-color: #6c757d;">Send OTP</button>
+                </form>
+            </div>
+
+        </div>
+
+        <script>
+            // Simple Tab Switching Logic
+            document.getElementById('pills-legacy-tab').addEventListener('click', function () {
+                document.getElementById('pills-legacy').style.display = 'block';
+                document.getElementById('pills-otp').style.display = 'none';
+                this.style.backgroundColor = 'var(--accent-color)';
+                this.style.color = 'white';
+                document.getElementById('pills-otp-tab').style.backgroundColor = 'var(--secondary-bg)';
+                document.getElementById('pills-otp-tab').style.color = 'var(--text-primary)';
+            });
+
+            document.getElementById('pills-otp-tab').addEventListener('click', function () {
+                document.getElementById('pills-otp').style.display = 'block';
+                document.getElementById('pills-legacy').style.display = 'none';
+                this.style.backgroundColor = 'var(--accent-color)';
+                this.style.color = 'white';
+                document.getElementById('pills-legacy-tab').style.backgroundColor = 'var(--secondary-bg)';
+                document.getElementById('pills-legacy-tab').style.color = 'var(--text-primary)';
+            });
+
+            // Trigger click on load to set initial state styles
+            document.getElementById('pills-legacy-tab').click();
+        </script>
 
         <div class="back-link">
             <a href="{% url 'password_reset_identify' %}">Start Over</a>
         </div>
     </div>
 </body>
+
 </html>

@@ -4,6 +4,7 @@ from . import views
 
 
 urlpatterns = [
+    # Force reload
     path('', views.prevhome, name='homepage'),
     path('login/', views.stdlogin, name='student_login'),
     #path('stafflogin/', views.stdlogin, name='staff_login'),
@@ -49,6 +50,7 @@ urlpatterns = [
     #path('reset-password/', views.password_reset_security, name='password_reset_security'),
     path('password-reset/identify/', views.password_reset_identify, name='password_reset_identify'),
     path('password-reset/verify/', views.password_reset_verify, name='password_reset_verify'),
+    path('password-reset/verify-otp/', views.password_reset_otp_verify, name='password_reset_otp_verify'),
     path('password-reset/confirm/', views.password_reset_confirm, name='password_reset_confirm'),
     path('service-unavailable/', views.service_unavailable, name='service_unavailable'),
     
@@ -66,7 +68,6 @@ urlpatterns = [
     # Leave Requests
     path('leave/apply/', views.apply_leave, name='apply_leave'),
     path('leave/history/', views.leave_history, name='leave_history'),
-
     path('student/export/marks/', views.export_student_marks_csv, name='export_marks_csv'),
     path('student/export/attendance/', views.export_student_attendance_csv, name='export_attendance_csv'),
 ]

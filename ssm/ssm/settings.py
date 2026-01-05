@@ -151,17 +151,17 @@ CORS_ALLOWED_ORIGINS = ["null"]
 # your_project/settings.py
 
 # Add this for development/testing
-#EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
-# For production, you would use a real SMTP server:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.example.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your-email@example.com'
-# EMAIL_HOST_PASSWORD = 'your-email-password'
-#login_url = '/students/login/'
+# Email Configuration (Development - Prints to Console)
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# EMAIL_BACKEND = "anymail.backends.mailersend.EmailBackend"
+# For production, uncomment and configure these:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
 
 # ANYMAIL = {
 #     "MAILGUN_API_KEY": "",

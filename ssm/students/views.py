@@ -359,7 +359,7 @@ def password_reset_identify(request):
 
 
 def password_reset_verify(request):
-    """Step 2: User verifies with Mobile and Aadhaar numbers."""
+    """Step 2: User verifies with Mobile and Aadhaar numbers OR requests OTP."""
     student_pk = request.session.get('reset_student_pk')
     if not student_pk:
         return redirect('password_reset_identify')
@@ -370,20 +370,98 @@ def password_reset_verify(request):
         return redirect('password_reset_identify')
 
     if request.method == 'POST':
+        action = request.POST.get('action')
         mobile_number = request.POST.get('student_mobile')
-        aadhaar_number = request.POST.get('aadhaar_number')
 
-        if (hasattr(student, 'personalinfo') and
-            student.personalinfo.student_mobile == mobile_number and 
-            student.personalinfo.aadhaar_number == aadhaar_number):
+        # --- OPTION 1: Email OTP (Requires Mobile + Email) ---
+        if action == 'send_otp':
+            email_address = request.POST.get('student_email')
             
-            request.session['reset_verified'] = True
-            return redirect('password_reset_confirm')
-        else:
-            messages.error(request, 'The details you entered do not match our records.')
+            # Validation: Check if Mobile AND Email match
+            if (hasattr(student, 'personalinfo') and
+                student.personalinfo.student_mobile == mobile_number and 
+                student.student_email == email_address):
+                
+                # Generate OTP
+                import random
+                otp = str(random.randint(100000, 999999))
+                
+                # Store in session with expiry
+                request.session['reset_otp'] = otp
+                request.session['reset_otp_expiry'] = (timezone.now() + datetime.timedelta(minutes=10)).isoformat()
+                
+                # Send Email
+                from django.core.mail import send_mail
+                try:
+                    send_mail(
+                        subject='Password Reset OTP - SSM',
+                        message=f'Your OTP for password reset is: {otp}. It is valid for 10 minutes.',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[student.student_email],
+                        fail_silently=False,
+                    )
+                    messages.success(request, f'OTP sent to registered email.')
+                except Exception as e:
+                    messages.error(request, f'Failed to send email: {str(e)}')
+                
+                return render(request, 'p2_otp.html', {
+                    'email_mask': student.student_email
+                })
+            else:
+                 messages.error(request, 'Mobile Number or Email Address does not match our records.')
+
+        # --- OPTION 2: Legacy Mobile/Aadhaar (Requires Mobile + Aadhaar) ---
+        elif action == 'verify_details':
+            aadhaar_number = request.POST.get('aadhaar_number')
+
+            if (hasattr(student, 'personalinfo') and
+                student.personalinfo.student_mobile == mobile_number and 
+                student.personalinfo.aadhaar_number == aadhaar_number):
+                
+                request.session['reset_verified'] = True
+                return redirect('password_reset_confirm')
+            else:
+                messages.error(request, 'Mobile Number or Aadhaar Number does not match our records.')
 
     # Pass student to template to display their name
     return render(request, 'p2.html', {'student': student})
+
+
+def password_reset_otp_verify(request):
+    """Step 2.5: Verify the entered OTP."""
+    if request.method == 'POST':
+        entered_otp = request.POST.get('otp')
+        session_otp = request.session.get('reset_otp')
+        expiry_str = request.session.get('reset_otp_expiry')
+        
+        if not session_otp or not expiry_str:
+            messages.error(request, 'No OTP found or session expired. Please request a new one.')
+            return redirect('password_reset_verify') # Redirects back effectively re-rendering p2 or needing logic
+
+        # Check expiry
+        expiry_time = datetime.datetime.fromisoformat(expiry_str)       
+        if timezone.now() > expiry_time:
+            messages.error(request, 'OTP has expired. Please request a new one.')
+            return redirect('password_reset_identify') # Or handle better re-flow
+
+        if entered_otp == session_otp:
+            # Success
+            request.session['reset_verified'] = True
+            # clear OTP session
+            del request.session['reset_otp']
+            del request.session['reset_otp_expiry']
+            return redirect('password_reset_confirm')
+        else:
+            messages.error(request, 'Invalid OTP. Please try again.')
+            # Re-render the OTP page
+            # We need student email mask again, but student obj is in session PK
+            student_pk = request.session.get('reset_student_pk')
+            student = Student.objects.get(pk=student_pk)
+            return render(request, 'p2_otp.html', {
+                 'email_mask': student.student_email
+            })
+            
+    return redirect('password_reset_identify')
 
 
 def password_reset_confirm(request):
@@ -407,15 +485,20 @@ def password_reset_confirm(request):
             messages.error(request, 'Passwords do not match or are empty.')
             return render(request, 'p3.html', {'student': student})
 
-
         student.set_password(password)
         student.save()
 
-        del request.session['reset_student_pk']
-        del request.session['reset_verified']
+        # Cleanup Session
+        keys_to_delete = ['reset_student_pk', 'reset_verified', 'reset_otp', 'reset_otp_expiry', 'student_roll_number']
+        for key in keys_to_delete:
+            if key in request.session:
+                del request.session[key]
         
-        # Log them in manually by setting the session
+        # Log them in? Or make them log in again.
+        # User requested manual login usually safer after reset, but previous code logged them in. 
+        # Requirement: "Log them in manually" was in previous code.
         request.session['student_roll_number'] = student.roll_number
+        
         messages.success(request, 'Your password has been reset successfully!')
         return redirect('student_login')
         

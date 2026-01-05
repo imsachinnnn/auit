@@ -205,16 +205,16 @@
 
         Swal.fire({
             title: 'Enhance with AI?',
-            text: "AI will analyze your profile to create a professional, ATS-optimized resume. This works best if you have added at least one project or skill.",
+            text: "AI will analyze your profile to build a professional, ATS-optimized resume. Please note that your data may be used for model training. AI can make mistakes, so please carefully review and verify the document before using it.",
             icon: 'info',
             showCancelButton: true,
             confirmButtonColor: '#6f42c1',
-            confirmButtonText: 'Yes, Enhance it! ✨'
+            confirmButtonText: 'Yes, Generate Resume ✨'
         }).then((result) => {
             if (result.isConfirmed) {
 
                 // Show Loading
-                btn.innerHTML = '<span class="emoji">⏳</span> Magic in progress...';
+                btn.innerHTML = '<span class="emoji">⏳</span>  Generation in progress...';
                 btn.style.opacity = '0.7';
                 btn.style.pointerEvents = 'none';
 
