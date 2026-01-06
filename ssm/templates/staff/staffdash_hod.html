@@ -258,6 +258,12 @@
             <div class="profile-meta">{{ staff.designation }}</div>
             <div class="profile-meta">{{ staff.department }}</div>
             <div class="profile-meta" style="margin-top: 15px; font-size: 0.8rem;">ID: {{ staff.staff_id }}</div>
+
+            <a href="{% url 'staffs:admin_portal_login' %}"
+                style="display: inline-block; background: #2c3e50; color: white; margin-top: 20px; padding: 10px 20px; text-decoration: none; border-radius: 20px; font-size: 0.9rem; font-weight: 500; width: 80%; transition: 0.3s;"
+                onmouseover="this.style.background='#34495e'" onmouseout="this.style.background='#2c3e50'">
+                ⚙️ Admin Portal
+            </a>
         </aside>
 
         <!-- Main Content -->

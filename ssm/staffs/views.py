@@ -956,3 +956,45 @@ def hod_update_leave_status(request, request_id):
         leave_request.save()
         
     return redirect('staffs:hod_leave_dashboard')
+
+def admin_portal_login(request):
+    """Auto-login HOD to Django Admin Portal."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+
+    try:
+        staff = Staff.objects.get(staff_id=request.session['staff_id'])
+    except Staff.DoesNotExist:
+        return redirect('staffs:stafflogin')
+
+    if staff.role != 'HOD':
+        messages.error(request, "Access Denied: Only HOD can access Admin Portal.")
+        return redirect('staffs:staff_dashboard')
+
+    from django.contrib.auth.models import User
+    from django.contrib.auth import login
+
+    # Find or Create User for HOD
+    # We use staff.email or staff.staff_id as username
+    user_qs = User.objects.filter(email=staff.email)
+    
+    if user_qs.exists():
+        user = user_qs.first()
+        # Ensure permissions
+        if not user.is_staff or not user.is_superuser:
+            user.is_staff = True
+            user.is_superuser = True
+            user.save()
+    else:
+        # Create new superuser
+        username = staff.staff_id.replace(" ", "") # accurate username
+        user = User.objects.create_user(username=username, email=staff.email, password=staff.password)
+        user.first_name = staff.name
+        user.is_staff = True
+        user.is_superuser = True
+        user.save()
+
+    # Log in the user
+    login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+    
+    return redirect('/admin/')
