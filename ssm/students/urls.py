@@ -71,4 +71,17 @@ urlpatterns = [
     path('leave/history/', views.leave_history, name='leave_history'),
     path('student/export/marks/', views.export_student_marks_csv, name='export_marks_csv'),
     path('student/export/attendance/', views.export_student_attendance_csv, name='export_attendance_csv'),
+
+    # GPA Calculator
+    path('gpa/calculator/', views.gpa_calculator, name='gpa_calculator'),
+    path('api/extract-grades/', views.extract_grades_api, name='extract_grades_api'),
+    path('api/save-gpa/', views.save_gpa_api, name='save_gpa_api'),
+    path('api/save-gpa/', views.save_gpa_api, name='save_gpa_api'),
+    path('api/get-gpa-data/', views.get_gpa_data, name='get_gpa_data'),
+    
+    # Skills & Projects
+    path('api/skill/add/', views.add_skill_api, name='add_skill_api'),
+    path('api/skill/delete/', views.delete_skill_api, name='delete_skill_api'),
+    path('api/project/add/', views.add_project_api, name='add_project_api'),
+    path('api/project/delete/', views.delete_project_api, name='delete_project_api'),
 ]

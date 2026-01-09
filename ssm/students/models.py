@@ -242,3 +242,19 @@ class LeaveRequest(models.Model):
     def __str__(self):
         return f"{self.student.student_name} - {self.get_leave_type_display()} ({self.status})"
 
+
+class StudentGPA(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='gpa_records')
+    semester = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(8)])
+    gpa = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(10.0)])
+    total_credits = models.FloatField(default=0.0)
+    subject_data = models.JSONField(blank=True, null=True, help_text="List of subjects with grades for editing")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('student', 'semester')
+        ordering = ['semester']
+
+    def __str__(self):
+        return f"{self.student.student_name} - Sem {self.semester}: {self.gpa}"

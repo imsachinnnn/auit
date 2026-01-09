@@ -1,12 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile - {{ student.student_name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" type="image/png">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
 
     <style>
         :root {
@@ -24,22 +26,64 @@
             --info-text: #055160;
             --info-border: #9eeaf9;
         }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--primary-bg); color: var(--text-primary); margin: 0; padding: 40px 20px; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .form-header { text-align: center; margin-bottom: 40px; }
-        .form-header h1 { font-size: 2.5em; margin: 0; }
-        .form-header p { color: var(--text-secondary); font-size: 1.1em; }
-        
-        .messages { list-style: none; padding: 0; margin-bottom: 20px; }
-        .messages li { padding: 15px 20px; border-radius: 8px; margin-bottom: 10px; }
-        .messages li.success { 
-            background-color: var(--success-bg); 
-            color: var(--success-text); 
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .form-header h1 {
+            font-size: 2.5em;
+            margin: 0;
+        }
+
+        .form-header p {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+        }
+
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        .messages li {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .messages li.success {
+            background-color: var(--success-bg);
+            color: var(--success-text);
             border: 1px solid var(--success-border);
             border-left: 4px solid #0f5132;
         }
-        .messages li.success strong { display: block; margin-bottom: 5px; font-size: 1.05em; }
-        .messages li.success p { margin: 5px 0 0 0; font-size: 0.95em; }
+
+        .messages li.success strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.05em;
+        }
+
+        .messages li.success p {
+            margin: 5px 0 0 0;
+            font-size: 0.95em;
+        }
 
         .info-box {
             background-color: var(--info-bg);
@@ -50,50 +94,172 @@
             margin-bottom: 25px;
             color: var(--info-text);
         }
-        .info-box strong { display: block; margin-bottom: 5px; font-size: 1em; }
-        .info-box p { margin: 5px 0 0 0; font-size: 0.9em; line-height: 1.5; }
 
-        .card { background-color: var(--secondary-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 25px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .card-title { font-size: 1.3em; font-weight: 600; margin: 0 0 20px 0; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); color: var(--accent-color); }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .form-grid-full { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        .input-group { display: flex; flex-direction: column; }
-        .input-group label { margin-bottom: 8px; font-weight: 500; color: var(--text-secondary); font-size: 0.9em; }
-        .input-group input, .input-group textarea { background-color: #fff; border: 1px solid var(--border-color); color: var(--text-primary); padding: 12px; border-radius: 6px; font-family: 'Poppins', sans-serif; font-size: 1em; width: 100%; box-sizing: border-box; }
-        .input-group textarea { min-height: 100px; resize: vertical; }
-        
-        .document-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .document-upload-item { display: flex; flex-direction: column; gap: 8px; }
-        .current-file { font-size: 0.85em; color: var(--text-secondary); margin-top: 5px; }
-        .current-file a { color: var(--accent-color); font-weight: 500; text-decoration: none; }
-        .current-file a:hover { text-decoration: underline; }
-        .not-uploaded { color: #dc3545; font-weight: 500; }
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1em;
+        }
 
-        .button-group { display: flex; gap: 15px; margin-top: 30px; }
-        .submit-btn, .cancel-btn { flex: 1; border: none; padding: 15px 30px; font-size: 1.1em; font-weight: 600; border-radius: 6px; cursor: pointer; text-decoration: none; text-align: center; display: inline-block; }
-        .submit-btn { background-color: var(--accent-color); color: #ffffff; }
-        .submit-btn:hover { background-color: var(--accent-color-hover); }
-        .cancel-btn { background-color: var(--secondary-bg); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .info-box p {
+            margin: 5px 0 0 0;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .card {
+            background-color: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 25px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin: 0 0 20px 0;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--accent-color);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-grid-full {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1em;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .input-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .document-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .document-upload-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .current-file {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .current-file a {
+            color: var(--accent-color);
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .current-file a:hover {
+            text-decoration: underline;
+        }
+
+        .not-uploaded {
+            color: #dc3545;
+            font-weight: 500;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .submit-btn,
+        .cancel-btn {
+            flex: 1;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .submit-btn {
+            background-color: var(--accent-color);
+            color: #ffffff;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--accent-color-hover);
+        }
+
+        .cancel-btn {
+            background-color: var(--secondary-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
 
         @media (max-width: 768px) {
-            .form-grid, .document-grid { grid-template-columns: 1fr; }
+
+            .form-grid,
+            .document-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="form-header">
-            <img src="{% static 'imgs/aublack.png' %}" alt="University Logo" width="200" height="auto"/>
+            <img src="{% static 'imgs/aublack.png' %}" alt="University Logo" width="200" height="auto" />
             <h1>Edit Your Profile</h1>
             <p>Update your contact information, bank details, and documents</p>
         </div>
-{% comment %} 
+        {% comment %}
         {% if messages %}
         <ul class="messages">
             {% for message in messages %}
             <li class="{{ message.tags }}">
                 <strong>Profile Updated Successfully!</strong>
-                <p>Your changes have been saved. If you need to update other information (name, date of birth, academic history, etc.), please contact the admin.</p>
+                <p>Your changes have been saved. If you need to update other information (name, date of birth, academic
+                    history, etc.), please contact the admin.</p>
             </li>
             {% endfor %}
         </ul>
@@ -101,41 +267,50 @@
 
         <div class="info-box">
             <strong>Need to Update Other Information?</strong>
-            <p>You can only edit contact details, addresses, bank information, and documents here. For any other changes, please contact the Admin, For More Details Visit <a href="{% url 'help_and_support' %}" style="color: var(--info-text); font-weight: 600; text-decoration: underline;">Help & Support</a> page.</p>
+            <p>You can only edit contact details, addresses, bank information, and documents here. For any other
+                changes, please contact the Admin, For More Details Visit <a href="{% url 'help_and_support' %}"
+                    style="color: var(--info-text); font-weight: 600; text-decoration: underline;">Help & Support</a>
+                page.</p>
         </div>
 
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            
+
             <!-- Contact Information -->
             <div class="card">
                 <h2 class="card-title">Contact Information</h2>
                 <div class="form-grid">
                     <div class="input-group">
                         <label for="student_email">Email Address *</label>
-                        <input type="email" id="student_email" name="student_email" value="{{ student.student_email|default:'' }}" required>
+                        <input type="email" id="student_email" name="student_email"
+                            value="{{ student.student_email|default:'' }}" required>
                     </div>
                     <div class="input-group">
                         <label for="student_mobile">Student Mobile Number</label>
-                        <input type="tel" id="student_mobile" name="student_mobile" value="{{ personalinfo.student_mobile|default:'' }}" pattern="[0-9]{10}" maxlength="10">
+                        <input type="tel" id="student_mobile" name="student_mobile"
+                            value="{{ personalinfo.student_mobile|default:'' }}" pattern="[0-9]{10}" maxlength="10">
                     </div>
                     <div class="input-group">
                         <label for="father_mobile">Father's Mobile Number</label>
-                        <input type="tel" id="father_mobile" name="father_mobile" value="{{ personalinfo.father_mobile|default:'' }}" pattern="[0-9]{10}" maxlength="10">
+                        <input type="tel" id="father_mobile" name="father_mobile"
+                            value="{{ personalinfo.father_mobile|default:'' }}" pattern="[0-9]{10}" maxlength="10">
                     </div>
                     <div class="input-group">
                         <label for="mother_mobile">Mother's Mobile Number</label>
-                        <input type="tel" id="mother_mobile" name="mother_mobile" value="{{ personalinfo.mother_mobile|default:'' }}" pattern="[0-9]{10}" maxlength="10">
+                        <input type="tel" id="mother_mobile" name="mother_mobile"
+                            value="{{ personalinfo.mother_mobile|default:'' }}" pattern="[0-9]{10}" maxlength="10">
                     </div>
                 </div>
                 <div class="form-grid-full" style="margin-top: 20px;">
                     <div class="input-group">
                         <label for="present_address">Present Address</label>
-                        <textarea id="present_address" name="present_address">{{ personalinfo.present_address|default:'' }}</textarea>
+                        <textarea id="present_address"
+                            name="present_address">{{ personalinfo.present_address|default:'' }}</textarea>
                     </div>
                     <div class="input-group">
                         <label for="permanent_address">Permanent Address</label>
-                        <textarea id="permanent_address" name="permanent_address">{{ personalinfo.permanent_address|default:'' }}</textarea>
+                        <textarea id="permanent_address"
+                            name="permanent_address">{{ personalinfo.permanent_address|default:'' }}</textarea>
                     </div>
                 </div>
             </div>
@@ -146,24 +321,124 @@
                 <div class="form-grid">
                     <div class="input-group">
                         <label for="account_holder_name">Account Holder Name</label>
-                        <input type="text" id="account_holder_name" name="account_holder_name" value="{{ bankdetails.account_holder_name|default:'' }}">
+                        <input type="text" id="account_holder_name" name="account_holder_name"
+                            value="{{ bankdetails.account_holder_name|default:'' }}">
                     </div>
                     <div class="input-group">
                         <label for="account_number">Account Number</label>
-                        <input type="text" id="account_number" name="account_number" value="{{ bankdetails.account_number|default:'' }}">
+                        <input type="text" id="account_number" name="account_number"
+                            value="{{ bankdetails.account_number|default:'' }}">
                     </div>
                     <div class="input-group">
                         <label for="bank_name">Bank Name</label>
-                        <input type="text" id="bank_name" name="bank_name" value="{{ bankdetails.bank_name|default:'' }}">
+                        <input type="text" id="bank_name" name="bank_name"
+                            value="{{ bankdetails.bank_name|default:'' }}">
                     </div>
                     <div class="input-group">
                         <label for="branch_name">Branch Name</label>
-                        <input type="text" id="branch_name" name="branch_name" value="{{ bankdetails.branch_name|default:'' }}">
+                        <input type="text" id="branch_name" name="branch_name"
+                            value="{{ bankdetails.branch_name|default:'' }}">
                     </div>
                     <div class="input-group">
                         <label for="ifsc_code">IFSC Code</label>
-                        <input type="text" id="ifsc_code" name="ifsc_code" value="{{ bankdetails.ifsc_code|default:'' }}" maxlength="11" style="text-transform: uppercase;">
+                        <input type="text" id="ifsc_code" name="ifsc_code"
+                            value="{{ bankdetails.ifsc_code|default:'' }}" maxlength="11"
+                            style="text-transform: uppercase;">
                     </div>
+                </div>
+            </div>
+
+            <!-- Skills Management -->
+            <div class="card">
+                <h2 class="card-title">Skills & Expertise</h2>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Add New Skill</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="newSkillInput" placeholder="e.g. Python, Leadership">
+                            <select id="newSkillProficiency"
+                                style="width: 150px; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate" selected>Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                                <option value="Expert">Expert</option>
+                            </select>
+                            <button type="button" class="submit-btn" style="padding: 10px 20px; font-size: 0.9em;"
+                                onclick="addSkill()">Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="skillsList" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+                    {% for skill in skills %}
+                    <div class="skill-tag" id="skill-{{ skill.id }}"
+                        style="background: #eef2ff; color: #4f46e5; padding: 6px 12px; border-radius: 20px; border: 1px solid #c7d2fe; display: flex; align-items: center; gap: 8px;">
+                        <span>{{ skill.skill_name }} <small>({{ skill.proficiency }})</small></span>
+                        <span onclick="deleteSkill({{ skill.id }})"
+                            style="cursor: pointer; font-weight: bold; color: #ef4444;">&times;</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Projects Management -->
+            <div class="card">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;">
+                    <h2 class="card-title" style="border: none; margin: 0; padding: 0;">Projects</h2>
+                    <button type="button" class="btn btn-outline" onclick="toggleProjectForm()"
+                        style="padding: 8px 15px; border-radius: 6px; border: 1px solid var(--accent-color); color: var(--accent-color); background: #fff; cursor: pointer;">+
+                        Add Project</button>
+                </div>
+
+                <!-- Add Project Form (Hidden by default) -->
+                <div id="projectForm"
+                    style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label>Project Title *</label>
+                            <input type="text" id="projTitle">
+                        </div>
+                        <div class="input-group">
+                            <label>Role</label>
+                            <input type="text" id="projRole" placeholder="e.g. Lead Developer">
+                        </div>
+                    </div>
+                    <div class="input-group" style="margin-top: 15px;">
+                        <label>Description *</label>
+                        <textarea id="projDesc" style="min-height: 80px;"></textarea>
+                    </div>
+                    <div class="input-group" style="margin-top: 15px;">
+                        <label>Project Link (Optional)</label>
+                        <input type="url" id="projLink" placeholder="https://github.com/...">
+                    </div>
+                    <div style="margin-top: 15px; text-align: right;">
+                        <button type="button" class="cancel-btn"
+                            style="padding: 8px 20px; font-size: 0.9em; margin-right: 10px;"
+                            onclick="toggleProjectForm()">Cancel</button>
+                        <button type="button" class="submit-btn" style="padding: 8px 20px; font-size: 0.9em;"
+                            onclick="addProject()">Save Project</button>
+                    </div>
+                </div>
+
+                <div id="projectsList" style="display: flex; flex-direction: column; gap: 15px;">
+                    {% for project in projects %}
+                    <div class="project-item" id="project-{{ project.id }}"
+                        style="padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <div>
+                                <strong style="font-size: 1.1em; color: #334155;">{{ project.title }}</strong>
+                                {% if project.project_link %}
+                                <a href="{{ project.project_link }}" target="_blank"
+                                    style="margin-left: 10px; font-size: 0.9em;">🔗 Link</a>
+                                {% endif %}
+                                <div style="font-size: 0.9em; color: #64748b; margin-top: 2px;">{{ project.role }}</div>
+                            </div>
+                            <button type="button" onclick="deleteProject({{ project.id }})"
+                                style="border: none; background: none; color: #ef4444; cursor: pointer;">🗑️</button>
+                        </div>
+                        <p style="margin: 8px 0 0 0; color: #475569; font-size: 0.95em;">{{ project.description }}</p>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
 
@@ -175,7 +450,8 @@
                         <label for="student_photo">Student Photo</label>
                         <input type="file" id="student_photo" name="student_photo" accept="image/*">
                         {% if studentdocuments.student_photo %}
-                        <div class="current-file">Current: <a href="{{ studentdocuments.student_photo.url }}" target="_blank">View Photo</a></div>
+                        <div class="current-file">Current: <a href="{{ studentdocuments.student_photo.url }}"
+                                target="_blank">View Photo</a></div>
                         {% else %}
                         <div class="current-file not-uploaded">Not uploaded yet</div>
                         {% endif %}
@@ -185,7 +461,8 @@
                         <label for="aadhaar_card">Aadhaar Card</label>
                         <input type="file" id="aadhaar_card" name="aadhaar_card" accept="image/*,application/pdf">
                         {% if studentdocuments.aadhaar_card %}
-                        <div class="current-file">Current: <a href="{{ studentdocuments.aadhaar_card.url }}" target="_blank">View Document</a></div>
+                        <div class="current-file">Current: <a href="{{ studentdocuments.aadhaar_card.url }}"
+                                target="_blank">View Document</a></div>
                         {% else %}
                         <div class="current-file not-uploaded">Not uploaded yet</div>
                         {% endif %}
@@ -193,9 +470,11 @@
 
                     <div class="document-upload-item">
                         <label for="community_certificate">Community Certificate</label>
-                        <input type="file" id="community_certificate" name="community_certificate" accept="image/*,application/pdf">
+                        <input type="file" id="community_certificate" name="community_certificate"
+                            accept="image/*,application/pdf">
                         {% if studentdocuments.community_certificate %}
-                        <div class="current-file">Current: <a href="{{ studentdocuments.community_certificate.url }}" target="_blank">View Document</a></div>
+                        <div class="current-file">Current: <a href="{{ studentdocuments.community_certificate.url }}"
+                                target="_blank">View Document</a></div>
                         {% else %}
                         <div class="current-file not-uploaded">Not uploaded yet</div>
                         {% endif %}
@@ -205,7 +484,8 @@
                         <label for="sslc_marksheet">SSLC Marksheet</label>
                         <input type="file" id="sslc_marksheet" name="sslc_marksheet" accept="image/*,application/pdf">
                         {% if studentdocuments.sslc_marksheet %}
-                        <div class="current-file">Current: <a href="{{ studentdocuments.sslc_marksheet.url }}" target="_blank">View Document</a></div>
+                        <div class="current-file">Current: <a href="{{ studentdocuments.sslc_marksheet.url }}"
+                                target="_blank">View Document</a></div>
                         {% else %}
                         <div class="current-file not-uploaded">Not uploaded yet</div>
                         {% endif %}
@@ -215,7 +495,8 @@
                         <label for="hsc_marksheet">HSC Marksheet</label>
                         <input type="file" id="hsc_marksheet" name="hsc_marksheet" accept="image/*,application/pdf">
                         {% if studentdocuments.hsc_marksheet %}
-                        <div class="current-file">Current: <a href="{{ studentdocuments.hsc_marksheet.url }}" target="_blank">View Document</a></div>
+                        <div class="current-file">Current: <a href="{{ studentdocuments.hsc_marksheet.url }}"
+                                target="_blank">View Document</a></div>
                         {% else %}
                         <div class="current-file not-uploaded">Not uploaded yet</div>
                         {% endif %}
@@ -223,9 +504,11 @@
 
                     <div class="document-upload-item">
                         <label for="income_certificate">Income Certificate</label>
-                        <input type="file" id="income_certificate" name="income_certificate" accept="image/*,application/pdf">
+                        <input type="file" id="income_certificate" name="income_certificate"
+                            accept="image/*,application/pdf">
                         {% if studentdocuments.income_certificate %}
-                        <div class="current-file">Current: <a href="{{ studentdocuments.income_certificate.url }}" target="_blank">View Document</a></div>
+                        <div class="current-file">Current: <a href="{{ studentdocuments.income_certificate.url }}"
+                                target="_blank">View Document</a></div>
                         {% else %}
                         <div class="current-file not-uploaded">Not uploaded yet</div>
                         {% endif %}
@@ -235,7 +518,8 @@
                         <label for="bank_passbook">Bank Passbook</label>
                         <input type="file" id="bank_passbook" name="bank_passbook" accept="image/*,application/pdf">
                         {% if studentdocuments.bank_passbook %}
-                        <div class="current-file">Current: <a href="{{ studentdocuments.bank_passbook.url }}" target="_blank">View Document</a></div>
+                        <div class="current-file">Current: <a href="{{ studentdocuments.bank_passbook.url }}"
+                                target="_blank">View Document</a></div>
                         {% else %}
                         <div class="current-file not-uploaded">Not uploaded yet</div>
                         {% endif %}
@@ -245,7 +529,8 @@
                         <label for="driving_license">Driving License (Optional)</label>
                         <input type="file" id="driving_license" name="driving_license" accept="image/*,application/pdf">
                         {% if studentdocuments.driving_license %}
-                        <div class="current-file">Current: <a href="{{ studentdocuments.driving_license.url }}" target="_blank">View Document</a></div>
+                        <div class="current-file">Current: <a href="{{ studentdocuments.driving_license.url }}"
+                                target="_blank">View Document</a></div>
                         {% else %}
                         <div class="current-file not-uploaded">Not uploaded yet</div>
                         {% endif %}
@@ -259,5 +544,170 @@
             </div>
         </form>
     </div>
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+
+        // --- Skills Logic ---
+        async function addSkill() {
+            const nameInput = document.getElementById('newSkillInput');
+            const profInput = document.getElementById('newSkillProficiency');
+            const name = nameInput.value.trim();
+
+            if (!name) return;
+
+            try {
+                const response = await fetch("{% url 'add_skill_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        skill_name: name,
+                        proficiency: profInput.value
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const list = document.getElementById('skillsList');
+                    const newItem = document.createElement('div');
+                    newItem.className = 'skill-tag';
+                    newItem.id = `skill-${data.id}`;
+                    newItem.style = "background: #eef2ff; color: #4f46e5; padding: 6px 12px; border-radius: 20px; border: 1px solid #c7d2fe; display: flex; align-items: center; gap: 8px;";
+                    newItem.innerHTML = `<span>${name} <small>(${profInput.value})</small></span>
+                                         <span onclick="deleteSkill(${data.id})" style="cursor: pointer; font-weight: bold; color: #ef4444;">&times;</span>`;
+                    list.appendChild(newItem);
+                    nameInput.value = ''; // Reset
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deleteSkill(id) {
+            if (!confirm('Delete this skill?')) return;
+            try {
+                const response = await fetch("{% url 'delete_skill_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ skill_id: id })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById(`skill-${id}`).remove();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // --- Projects Logic ---
+        function toggleProjectForm() {
+            const form = document.getElementById('projectForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function addProject() {
+            const title = document.getElementById('projTitle').value.trim();
+            const desc = document.getElementById('projDesc').value.trim();
+            const role = document.getElementById('projRole').value.trim();
+            const link = document.getElementById('projLink').value.trim();
+
+            if (!title || !desc) {
+                alert('Title and Description are required.');
+                return;
+            }
+
+            try {
+                const response = await fetch("{% url 'add_project_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        description: desc,
+                        role: role,
+                        link: link
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const list = document.getElementById('projectsList');
+                    const newItem = document.createElement('div');
+                    newItem.className = 'project-item';
+                    newItem.id = `project-${data.id}`;
+                    newItem.style = "padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff;";
+                    newItem.innerHTML = `
+                        <div style="display: flex; justify-content: space-between;">
+                            <div>
+                                <strong style="font-size: 1.1em; color: #334155;">${title}</strong>
+                                ${link ? `<a href="${link}" target="_blank" style="margin-left: 10px; font-size: 0.9em;">🔗 Link</a>` : ''}
+                                <div style="font-size: 0.9em; color: #64748b; margin-top: 2px;">${role}</div>
+                            </div>
+                            <button type="button" onclick="deleteProject(${data.id})" style="border: none; background: none; color: #ef4444; cursor: pointer;">🗑️</button>
+                        </div>
+                        <p style="margin: 8px 0 0 0; color: #475569; font-size: 0.95em;">${desc}</p>
+                    `;
+                    list.appendChild(newItem);
+
+                    // Reset and hide form
+                    document.getElementById('projTitle').value = '';
+                    document.getElementById('projDesc').value = '';
+                    document.getElementById('projRole').value = '';
+                    document.getElementById('projLink').value = '';
+                    toggleProjectForm();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deleteProject(id) {
+            if (!confirm('Delete this project?')) return;
+            try {
+                const response = await fetch("{% url 'delete_project_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ project_id: id })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById(`project-${id}`).remove();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
 </body>
+
 </html>

@@ -1,0 +1,471 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPA Calculator | {{ student.student_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/student_style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .calc-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .calc-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            background: #f8fafc;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover {
+            border-color: #5a7d7c;
+            background: #f0fdfa;
+        }
+
+        .grade-table input,
+        .grade-table select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .gpa-display {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #5a7d7c;
+            text-align: center;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #5a7d7c;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading-overlay" id="loader">
+        <div class="spinner"></div>
+        <p style="margin-top: 10px; font-weight: 600;">Processing with AI...</p>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="profile-sidebar no-print">
+            {% if student.studentdocuments.student_photo %}
+            <img src="{{ student.studentdocuments.student_photo.url }}" alt="Student Photo" class="profile-photo">
+            {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ student.student_name|urlencode }}&background=5a7d7c&color=fff&size=200"
+                alt="Profile Photo" class="profile-photo">
+            {% endif %}
+
+            <div class="profile-name">{{ student.student_name }}</div>
+            <div class="profile-meta">{{ student.roll_number }}</div>
+            <div class="profile-meta">{{ student.get_program_level_display }}</div>
+            <div class="profile-badge">
+                {% if student.current_semester > 8 %}
+                Course Completed
+                {% else %}
+                Semester {{ student.current_semester }}
+                {% endif %}
+            </div>
+
+            <nav class="essential-links">
+                <a href="{% url 'exam_timetable' %}"><span class="emoji">📅</span> Exam Timetable</a>
+                <a href="{% url 'class_timetable' %}"><span class="emoji">👩🏻‍🏫</span> Class Timetable</a>
+                <a href="{% url 'student_profile' %}" class="nav-item">
+                    <span class="nav-icon">👤</span> My Profile
+                </a>
+                <a href="{% url 'gpa_calculator' %}" class="nav-item active">
+                    <span class="nav-icon">🧮</span> GPA Calculator
+                </a>
+                <div class="nav-divider"></div>
+                <a href="{% url 'student_marks' %}"><span class="emoji">📈</span> Marks</a>
+                <a href="{% url 'resume_builder' %}"><span class="emoji">🧠</span> AI Resume Generation</a>
+                <a href="{% url 'apply_leave' %}"><span class="emoji">📝</span> Leave Application</a>
+                <a href="{% url 'student_editprofile' %}"><span class="emoji">✏️</span> Edit Profile</a>
+                <a href="{% url 'help_and_support' %}"><span class="emoji">❓</span> Help & Support</a>
+                <div class="nav-divider"></div>
+                <a href="{% url 'student_logout' %}" class="nav-item logout-btn">
+                    <span class="nav-icon">🚪</span> Logout
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="page-header no-print">
+                <div class="title-group">
+                    <button class="menu-toggle-btn" onclick="toggleSidebar()">☰</button>
+                    <h1>GPA Calculator</h1>
+                </div>
+                <div class="header-actions">
+                    <a href="{% url 'student_dashboard' %}" class="action-btn btn-secondary">⬅ Back to Dashboard</a>
+                </div>
+            </header>
+
+            <div class="calc-container">
+                <!-- Left: Calculator Inputs -->
+                <div class="calc-main">
+                    <!-- Configuration Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title"><span>⚙️</span> Setup</h2>
+                        </div>
+                        <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 15px; display: grid;">
+                            <div class="form-group">
+                                <label>Target Semester</label>
+                                <select id="semSelect" class="form-control" onchange="loadSavedData()">
+                                    {% for i in range_8 %}
+                                    <option value="{{ i }}">Semester {{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="upload-zone" id="dropZone" style="margin-top: 20px;">
+                            <p>📸 <strong>Drag & Drop Result Screenshot</strong> or Click to Upload</p>
+                            <input type="file" id="resultUpload" accept="image/*" style="display: none;"
+                                onchange="handleImageUpload(this)">
+                            <button class="btn btn-primary" style="margin-top: 10px;"
+                                onclick="document.getElementById('resultUpload').click()">Choose Image</button>
+                        </div>
+                    </div>
+
+                    <!-- Grades Table -->
+                    <div class="card" style="margin-top: 20px;">
+                        <div class="card-header"
+                            style="justify-content: space-between; display: flex; align-items: center;">
+                            <h2 class="card-title" style="margin: 0;"><span>📝</span> Course Grades</h2>
+                            <button class="btn btn-sm btn-outline" onclick="addRow()">+ Add Subject</button>
+                        </div>
+                        <div
+                            style="background: #e0f2fe; color: #0284c7; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em; display: flex; align-items: center; gap: 10px; border: 1px solid #bae6fd;">
+                            <span>ℹ️</span>
+                            <span><strong>Cleared an Arrear?</strong> If you have cleared a previous RA, please manually
+                                update the grade to your new result.</span>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="data-table grade-table">
+                                <thead>
+                                    <tr>
+                                        <th>Subject Name</th>
+                                        <th style="width: 100px;">Grade</th>
+                                        <th style="width: 80px;">Credits</th>
+                                        <th style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="gradeBody">
+                                    <!-- Rows will be added here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-muted" style="font-size: 0.85rem; margin-top: 10px;">* AI might make mistakes.
+                            Please verify grades before saving.</p>
+                    </div>
+                </div>
+
+                <!-- Right: Summary & History -->
+                <div class="calc-sidebar">
+                    <div class="card sticky-top" style="top: 20px;">
+                        <div class="card-header">
+                            <h2 class="card-title"><span>📊</span> Semester Summary</h2>
+                        </div>
+                        <div style="padding: 20px; text-align: center;">
+                            <div class="gpa-display" id="gpaDisplay">0.00</div>
+                            <p class="text-muted">Calculated GPA</p>
+
+                            <hr style="margin: 15px 0; border-top: 1px solid #eee;">
+
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>Total Credits:</span>
+                                <strong id="totalCreditsDisplay">0</strong>
+                            </div>
+
+                            <button class="btn btn-primary w-100" style="margin-top: 20px; width: 100%;"
+                                onclick="saveGPA()">Save to Profile</button>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top: 20px;">
+                        <div class="card-header">
+                            <h2 class="card-title"><span>📅</span> History</h2>
+                        </div>
+                        <ul class="list-group" style="list-style: none; padding: 0;">
+                            {% for record in gpa_records %}
+                            <li
+                                style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                                <span>Semester {{ record.semester }}</span>
+                                <strong>{{ record.gpa }}</strong>
+                            </li>
+                            {% empty %}
+                            <li style="padding: 10px; color: #999;">No saved records yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Constants for University Grading Rules
+        // RA (Re-Appear): 0 Points, but Credits are counted (Drag down GPA).
+        // W (Withdrawal): 0 Points, Credits NOT counted (Neutral).
+        const GRADE_POINTS = {
+            'S': 10, 'A': 9, 'B': 8, 'C': 7, 'D': 6, 'E': 5, 'RA': 0, 'W': 0
+        };
+
+        function toggleSidebar() {
+            document.querySelector('.profile-sidebar').classList.toggle('mobile-active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+
+        function showLoader(text = "Processing...") {
+            const loader = document.getElementById('loader');
+            loader.querySelector('p').innerText = text;
+            loader.style.display = 'flex';
+        }
+
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        function showToast(title, icon = 'success') {
+            Swal.fire({
+                title: title,
+                icon: icon,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
+
+        // --- Core Logic ---
+
+        function addRow(name = '', grade = 'S', credits = 3) {
+            const tbody = document.getElementById('gradeBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" value="${name}" placeholder="Subject Name"></td>
+                <td>
+                    <select onchange="calculateGPA()">
+                        <option value="S" ${grade === 'S' ? 'selected' : ''}>S (10)</option>
+                        <option value="A" ${grade === 'A' ? 'selected' : ''}>A (9)</option>
+                        <option value="B" ${grade === 'B' ? 'selected' : ''}>B (8)</option>
+                        <option value="C" ${grade === 'C' ? 'selected' : ''}>C (7)</option>
+                        <option value="D" ${grade === 'D' ? 'selected' : ''}>D (6)</option>
+                        <option value="E" ${grade === 'E' ? 'selected' : ''}>E (5)</option>
+                        <option value="RA" ${grade === 'RA' ? 'selected' : ''}>RA (Reappear)</option>
+                        <option value="W" ${grade === 'W' ? 'selected' : ''}>W (Withdraw)</option>
+                    </select>
+                </td>
+                <td><input type="number" value="${credits}" step="0.5" min="0" onchange="calculateGPA()"></td>
+                <td><button class="btn-text text-danger" onclick="this.closest('tr').remove(); calculateGPA()">✕</button></td>
+            `;
+            tbody.appendChild(row);
+            calculateGPA();
+        }
+
+        function calculateGPA() {
+            let totalPoints = 0;
+            let totalCredits = 0;
+            const subject_data = [];
+
+            document.querySelectorAll('#gradeBody tr').forEach(row => {
+                const name = row.querySelector('input[type="text"]').value;
+                const grade = row.querySelector('select').value;
+                const credits = parseFloat(row.querySelectorAll('input')[1].value) || 0;
+
+                // Collect data for saving
+                subject_data.push({ name, grade, credits });
+
+                if (credits > 0) {
+                    if (grade === 'W') return; // W is neutral
+                    const points = GRADE_POINTS[grade] || 0;
+                    totalPoints += (points * credits);
+
+                    // RA counts in credits (denominator) -> Lowers GPA
+                    totalCredits += credits;
+                }
+            });
+
+            const gpa = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : "0.00";
+            document.getElementById('gpaDisplay').innerText = gpa;
+            document.getElementById('totalCreditsDisplay').innerText = totalCredits;
+            return { gpa, totalCredits, subject_data };
+        }
+
+        async function loadSavedData() {
+            const semester = document.getElementById('semSelect').value;
+            // Slightly fade the table to indicate loading or change
+            const tbody = document.getElementById('gradeBody');
+            tbody.style.opacity = '0.5';
+
+            try {
+                const response = await fetch(`{% url 'get_gpa_data' %}?semester=${semester}`);
+                const data = await response.json();
+
+                tbody.innerHTML = ''; // Clear current
+                tbody.style.opacity = '1';
+
+                if (data.found && data.subject_data && data.subject_data.length > 0) {
+                    data.subject_data.forEach(sub => {
+                        addRow(sub.name, sub.grade, sub.credits);
+                    });
+                    showToast(`Loaded data for Semester ${semester}`, 'info');
+                } else {
+                    // Empty state
+                    addRow('', 'S', 3);
+                }
+            } catch (err) {
+                console.error("Failed to load saved data:", err);
+                tbody.style.opacity = '1';
+            }
+        }
+
+        async function handleImageUpload(input) {
+            if (!input.files || !input.files[0]) return;
+
+            showLoader("Analyzing Result...");
+
+            const formData = new FormData();
+            formData.append('result_image', input.files[0]);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            try {
+                const response = await fetch("{% url 'extract_grades_api' %}", {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    Swal.fire("Error", data.error, "error");
+                } else if (data.subjects) {
+                    const tbody = document.getElementById('gradeBody');
+                    tbody.innerHTML = ''; // Clear existing
+                    data.subjects.forEach(sub => {
+                        addRow(sub.name || sub.subject_name, sub.grade, sub.credits);
+                    });
+                    Swal.fire({
+                        title: "Grades Extracted!",
+                        text: "Please verify specific grades and credits.",
+                        icon: "success",
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            } catch (err) {
+                Swal.fire("Connection Error", "Failed to connect to server.", "error");
+            } finally {
+                hideLoader();
+                input.value = ''; // Reset file input
+            }
+        }
+
+        async function saveGPA() {
+            const { gpa, totalCredits, subject_data } = calculateGPA();
+            const semester = document.getElementById('semSelect').value;
+
+            if (totalCredits == 0) {
+                Swal.fire("Empty Data", "No valid subjects to save!", "warning");
+                return;
+            }
+
+            showLoader("Saving Profile...");
+
+            try {
+                const response = await fetch("{% url 'save_gpa_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        semester: semester,
+                        gpa: gpa,
+                        total_credits: totalCredits,
+                        subject_data: subject_data
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    Swal.fire({
+                        title: "Saved!",
+                        text: data.message,
+                        icon: "success"
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire("Error", data.error, "error");
+                }
+            } catch (err) {
+                Swal.fire("Save Failed", "Could not save data. Please try again.", "error");
+            } finally {
+                hideLoader();
+            }
+        }
+
+        // Initial Load
+        window.onload = () => {
+            loadSavedData();
+        };
+    </script>
+</body>
+
+</html>

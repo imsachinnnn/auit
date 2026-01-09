@@ -10,15 +10,16 @@ from django.contrib.auth.decorators import login_required
 from functools import wraps
 import datetime
 import csv
+import json
 import logging
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 
 logger = logging.getLogger(__name__)
 
 from .models import (
     Student, PersonalInfo, BankDetails, AcademicHistory, DiplomaDetails, UGDetails, PGDetails, PhDDetails,
     ScholarshipInfo, StudentDocuments, OtherDetails, Caste, StudentMarks, StudentAttendance,
-    StudentSkill, StudentProject, LeaveRequest
+    StudentSkill, StudentProject, LeaveRequest, StudentGPA
 )
 from . import ai_utils
 # Import the caste data for the API
@@ -272,10 +273,29 @@ def student_dashboard(request):
     if total_classes > 0:
         attendance_percentage = round((present_classes / total_classes) * 100, 1)
 
+    # Fetch GPA Data for Chart
+    gpa_records = StudentGPA.objects.filter(student=student).order_by('semester')
+    gpa_labels = [f"Sem {r.semester}" for r in gpa_records]
+    gpa_data = [r.gpa for r in gpa_records]
+    
+    # Calculate CGPA
+    total_points = sum(r.gpa * r.total_credits for r in gpa_records)
+    total_credits = sum(r.total_credits for r in gpa_records)
+    cgpa = round(total_points / total_credits, 2) if total_credits > 0 else 0.0
+
+    # Skills & Projects (New)
+    skills = student.skills.all()
+    projects = student.projects.all()
+
     context = {
         'student': student,
         'news_list': news_list,
-        'attendance_percentage': attendance_percentage
+        'attendance_percentage': attendance_percentage,
+        'gpa_labels': json.dumps(gpa_labels),
+        'gpa_data': json.dumps(gpa_data),
+        'cgpa': cgpa,
+        'skills': skills,
+        'projects': projects
     }
     return render(request, 'stddash.html', context)
 
@@ -376,6 +396,8 @@ def student_editprofile(request):
         'studentdocuments': student_docs,
         'bankdetails': bank_details,
         'otherdetails': other_details,
+        'skills': student.skills.all(),
+        'projects': student.projects.all(),
     }
     return render(request, 'studedit.html', context)
 
@@ -1107,3 +1129,204 @@ def leave_history(request):
     
     return render(request, 'leave_list.html', {'student': student, 'leaves': leaves})
 
+
+# --- GPA Calculator Views ---
+
+@student_login_required
+def gpa_calculator(request):
+    """Renders the GPA Calculator page."""
+    roll_number = request.session.get('student_roll_number')
+    student = Student.objects.get(roll_number=roll_number)
+    
+    # Fetch existing GPA records
+    gpa_records = StudentGPA.objects.filter(student=student).order_by('semester')
+    
+    context = {
+        'student': student,
+        'gpa_records': gpa_records,
+        'range_8': range(1, 9)
+    }
+    return render(request, 'gpa_calculator.html', context)
+
+
+@student_login_required
+@require_http_methods(["POST"])
+def extract_grades_api(request):
+    """API to extract grades from uploaded image using Gemini."""
+    try:
+        if 'result_image' not in request.FILES:
+            return JsonResponse({'error': 'No image uploaded'}, status=400)
+        
+        image_file = request.FILES['result_image']
+        
+        # Call AI Utility (API Key handled by env)
+        extraction_result = ai_utils.extract_grades_from_image(image_file)
+        
+        if 'error' in extraction_result:
+            return JsonResponse({'error': extraction_result['error']}, status=500)
+            
+        return JsonResponse(extraction_result)
+
+    except Exception as e:
+        logger.error(f"GPA Extraction Error: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@student_login_required
+@require_http_methods(["POST"])
+def save_gpa_api(request):
+    """API to save calculated GPA for a semester."""
+    try:
+        roll_number = request.session.get('student_roll_number')
+        student = Student.objects.get(roll_number=roll_number)
+        
+        data = json.loads(request.body)
+        semester = int(data.get('semester'))
+        gpa = float(data.get('gpa'))
+        total_credits = float(data.get('total_credits', 0))
+        subject_data = data.get('subject_data', []) # Function to store subject details
+
+        # Update or Create Record
+        record, created = StudentGPA.objects.update_or_create(
+            student=student,
+            semester=semester,
+            defaults={
+                'gpa': gpa,
+                'total_credits': total_credits,
+                'subject_data': subject_data
+            }
+        )
+        
+        return JsonResponse({
+            'success': True, 
+            'message': f"GPA for Sem {semester} saved successfully!",
+            'cgpa': calculate_cgpa(student) # Return updated CGPA
+        })
+
+    except Exception as e:
+        logger.error(f"Save GPA Error: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+@student_login_required
+@require_http_methods(["GET"])
+def get_gpa_data(request):
+    """API to fetch stored GPA and Subject Data for a specific semester."""
+    try:
+        roll_number = request.session.get('student_roll_number')
+        student = Student.objects.get(roll_number=roll_number)
+        semester = request.GET.get('semester')
+        
+        if not semester:
+            return JsonResponse({'error': 'Semester required'}, status=400)
+
+        record = StudentGPA.objects.filter(student=student, semester=semester).first()
+        
+        if record:
+            return JsonResponse({
+                'found': True,
+                'gpa': record.gpa,
+                'total_credits': record.total_credits,
+                'subject_data': record.subject_data or []
+            })
+        else:
+            return JsonResponse({'found': False})
+
+    except Exception as e:
+        logger.error(f"Fetch GPA Data Error: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+def calculate_cgpa(student):
+    """Helper to calculate CGPA from stored records."""
+    records = StudentGPA.objects.filter(student=student)
+    if not records.exists():
+        return 0.0
+        
+    total_points = sum(r.gpa * r.total_credits for r in records)
+    total_credits = sum(r.total_credits for r in records)
+    
+    if total_credits == 0:
+        return 0.0
+        
+    return round(total_points / total_credits, 2)
+
+# --- Skills & Projects APIs ---
+
+@require_POST
+@student_login_required
+def add_skill_api(request):
+    try:
+        data = json.loads(request.body)
+        skill_name = data.get('skill_name')
+        proficiency = data.get('proficiency', 'Intermediate')
+        
+        if not skill_name:
+             return JsonResponse({'success': False, 'error': 'Skill name is required'})
+
+        roll_number = request.session.get('student_roll_number')
+        student = Student.objects.get(roll_number=roll_number)
+        
+        skill = StudentSkill.objects.create(
+            student=student, 
+            skill_name=skill_name,
+            proficiency=proficiency
+        )
+        return JsonResponse({'success': True, 'id': skill.id})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@require_POST
+@student_login_required
+def delete_skill_api(request):
+    try:
+        data = json.loads(request.body)
+        skill_id = data.get('skill_id')
+        
+        roll_number = request.session.get('student_roll_number')
+        student = Student.objects.get(roll_number=roll_number)
+        
+        StudentSkill.objects.filter(id=skill_id, student=student).delete()
+        return JsonResponse({'success': True})
+    except Exception as e:
+         return JsonResponse({'success': False, 'error': str(e)})
+
+@require_POST
+@student_login_required
+def add_project_api(request):
+    try:
+        data = json.loads(request.body)
+        title = data.get('title')
+        description = data.get('description')
+        role = data.get('role', '')
+        link = data.get('link', '')
+        
+        if not title or not description:
+             return JsonResponse({'success': False, 'error': 'Title and Description are required'})
+
+        roll_number = request.session.get('student_roll_number')
+        student = Student.objects.get(roll_number=roll_number)
+        
+        project = StudentProject.objects.create(
+            student=student, 
+            title=title,
+            description=description,
+            role=role,
+            project_link=link
+        )
+        return JsonResponse({'success': True, 'id': project.id})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@require_POST
+@student_login_required
+def delete_project_api(request):
+    try:
+        data = json.loads(request.body)
+        project_id = data.get('project_id')
+        
+        roll_number = request.session.get('student_roll_number')
+        student = Student.objects.get(roll_number=roll_number)
+        
+        StudentProject.objects.filter(id=project_id, student=student).delete()
+        return JsonResponse({'success': True})
+    except Exception as e:
+         return JsonResponse({'success': False, 'error': str(e)})

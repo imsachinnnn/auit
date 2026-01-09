@@ -320,3 +320,57 @@ def _handle_api_error(error, client):
     
     else:
         return {"error": f"AI service error: {error_msg[:200]}"}
+
+
+def extract_grades_from_image(image_file, api_key=None):
+    """
+    Extracts grade data from a result screenshot using Gemini Pro Vision (or Flash).
+    """
+    try:
+        if not api_key:
+            api_key = os.getenv("GEMINI_API_KEY_GPA")
+            
+        if not api_key:
+            return {"error": "API Key is not configured on the server."}
+
+        client = genai.Client(api_key=api_key)
+        
+        # Read image bytes
+        image_bytes = image_file.read()
+        
+        prompt = """
+        Analyze this academic result screenshot. Extract the data into a JSON structure.
+        
+        I need a list of subjects with the following fields:
+        - subject_code (string, optional)
+        - subject_name (string)
+        - grade (string, Valid values: 'S' (top), 'A', 'B', 'C', 'D', 'E', 'RA' (Reappear/Fail), 'W' (Withdraw))
+        - credits (float, default to 3 or 4 if not visible but usually 3 for theory, 2 for labs, 4 for major)
+        
+        Format:
+        {
+            "subjects": [
+                {"code": "CS123", "name": "Subject Name", "grade": "A+", "credits": 3},
+                ...
+            ]
+        }
+        
+        If you see "PASS", "FAIL", ignore it. Focus on individual subject grades.
+        If credits are not visible, estimate based on subject type (Lab=2, Theory=3/4, Project=10).
+        Output ONLY valid JSON.
+        """
+
+        response = client.models.generate_content(
+            model='gemini-2.5-flash', 
+            contents=[prompt, types.Part.from_bytes(data=image_bytes, mime_type=image_file.content_type)],
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.1
+            )
+        )
+        
+        return _parse_ai_response(response.text)
+
+    except Exception as e:
+        logger.error(f"Error extracting grades: {str(e)}")
+        return {"error": str(e)}

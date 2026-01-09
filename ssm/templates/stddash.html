@@ -114,9 +114,15 @@
             <nav class="essential-links">
                 <a href="{% url 'exam_timetable' %}"><span class="emoji">📅</span> Exam Timetable</a>
                 <a href="{% url 'class_timetable' %}"><span class="emoji">👩🏻‍🏫</span> Class Timetable</a>
-                <a href="{% url 'student_attendance' %}"><span class="emoji">📝</span> Attendance</a>
+                <a href="{% url 'student_profile' %}" class="nav-item">
+                    <span class="nav-icon">👤</span> My Profile
+                </a>
+                <a href="{% url 'gpa_calculator' %}" class="nav-item">
+                    <span class="nav-icon">🧮</span> GPA Calculator - AI
+                </a>
+                <div class="nav-divider"></div>
                 <a href="{% url 'student_marks' %}"><span class="emoji">📈</span> Marks</a>
-                <a href="{% url 'resume_builder' %}"><span class="emoji">🧠</span> AI Resume Generation</a>
+                <a href="{% url 'resume_builder' %}"><span class="emoji">🧠</span>Resume Generator - AI</a>
                 <a href="{% url 'apply_leave' %}"><span class="emoji">📝</span> Leave Application</a>
                 <a href="{% url 'student_editprofile' %}"><span class="emoji">✏️</span> Edit Profile</a>
                 <a href="https://annamalaiuniversity.ac.in/" target="_blank" rel="noopener"><span
@@ -141,6 +147,7 @@
                 </div>
                 <!-- Top Right Actions -->
                 <div class="header-actions">
+                    {% block header_actions %}{% endblock %}
                     <a href="{% url 'student_profile' %}" class="action-btn btn-primary">👤 View Full Profile</a>
                     <a href="{% url 'student_logout' %}" class="action-btn btn-danger">Logout</a>
                 </div>
@@ -151,6 +158,7 @@
             <!-- Quick Info Bar -->
             <div class="quick-actions-bar">
                 <div style="display: flex; gap: 40px; color: #475569; font-size: 0.95rem;">
+                    <div title="Name"><span style="margin-right: 5px;">👤</span> {{ student.student_name }}</div>
                     <div title="Semester"><span style="margin-right: 5px;">🎓</span> Sem {{ student.current_semester }}
                     </div>
                     <div title="Batch"><span style="margin-right: 5px;">📅</span> {{ student.joining_year }} -
@@ -176,20 +184,73 @@
 
                     <!-- Attendance Graph -->
                     <div class="chart-card" style="margin-top: 25px;">
-                        <h3 style="margin-top: 0; color: var(--primary-color);">Attendance Overview</h3>
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3 style="margin: 0; color: var(--primary-color);">Attendance</h3>
+                            <a href="{% url 'student_attendance' %}" class="btn-sm btn-outline"
+                                style="font-size: 0.8rem; padding: 2px 8px;">View All</a>
+                        </div>
                         <canvas id="attendanceChart"></canvas>
                     </div>
+
                 </div>
 
                 <!-- Right Column: Marks & Status -->
                 <div class="dash-col">
                     <!-- Marks Graph -->
                     <div class="chart-card">
-                        <h3 style="margin-top: 0; color: var(--primary-color);">Academic Performance</h3>
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3 style="margin: 0; color: var(--primary-color);">Academic Performance</h3>
+                            <a href="{% url 'student_marks' %}" class="btn-sm btn-outline"
+                                style="font-size: 0.8rem; padding: 2px 8px;">View All</a>
+                        </div>
+                        <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #666;">Current CGPA: <strong>{{ cgpa}}</strong></p>
                         <canvas id="marksChart"></canvas>
                     </div>
 
-                    <!-- Additional Metrics / Shortcuts could go here -->
+                    <!-- Projects & Skills Widget -->
+                    <div class="chart-card" style="margin-top: 25px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h3 style="margin: 0; color: var(--primary-color);">Projects & Skills</h3>
+                            <a href="{% url 'student_editprofile' %}" class="btn-sm btn-outline"
+                                style="font-size: 0.8rem; padding: 2px 8px;">Add/Edit</a>
+                        </div>
+
+                        <!-- Skills Section -->
+                        <h4 style="margin: 0 0 8px 0; font-size: 0.95rem; color: #475569;">Skills</h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;">
+                            {% for skill in skills %}
+                            <span
+                                style="background: rgba(90, 125, 124, 0.1); color: #5a7d7c; padding: 4px 10px; border-radius: 15px; font-size: 0.85rem; border: 1px solid rgba(90, 125, 124, 0.2);">
+                                {{ skill.skill_name }} <small style="opacity: 0.8;">({{ skill.proficiency }})</small>
+                            </span>
+                            {% empty %}
+                            <p class="text-muted" style="font-size: 0.9rem;">No skills added yet.</p>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Projects Section -->
+                        <h4 style="margin: 0 0 8px 0; font-size: 0.95rem; color: #475569;">Projects</h4>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            {% for project in projects %}
+                            <div
+                                style="padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <strong style="color: #334155;">{{ project.title }}</strong>
+                                    {% if project.project_link %}
+                                    <a href="{{ project.project_link }}" target="_blank"
+                                        style="text-decoration: none;">🔗</a>
+                                    {% endif %}
+                                </div>
+                                <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0;">{{project.description|truncatechars:60 }}</p>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted" style="font-size: 0.9rem;">No projects added yet.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
 
                 </div>
             </div>
@@ -218,25 +279,25 @@
                     }
                 });
 
-                // --- Marks Chart ---
+                // --- Marks Chart (Fixed) ---
                 const ctxMarks = document.getElementById('marksChart').getContext('2d');
                 new Chart(ctxMarks, {
                     type: 'bar',
                     data: {
-                        labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
-                        datasets: [{
-                            label: 'GPA',
-                            data: [7.5, 8.2, 7.8, 8.5], /* Placeholder data */
-                            backgroundColor: '#3b82f6',
-                            borderRadius: 6
+                        labels: {{ gpa_labels| safe }},
+                    datasets: [{
+                        label: 'GPA',
+                        data: {{ gpa_data| safe }},
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 6
                         }]
                     },
                     options: {
-                        responsive: true,
-                        scales: {
-                            y: { beginAtZero: true, max: 10 }
-                        }
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, max: 10 }
                     }
+                }
                 });
             </script>
 
