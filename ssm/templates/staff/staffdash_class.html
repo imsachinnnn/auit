@@ -4,653 +4,536 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Incharge Dashboard | {{ staff.name }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <title>Class Sidebar | {{ staff.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
         type="image/png">
     <style>
         :root {
-            --primary-color: #5a7d7c;
-            --secondary-color: #4a6b69;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-main: #2c3e50;
-            --text-muted: #7f8c8d;
-            --border-color: #e2e8f0;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --radius: 12px;
+            /* --- Site Native Teal Theme --- */
+            --primary: #5a7d7c;
+            --primary-dark: #4a6b69;
+            --primary-light: #eef2f2;
+            --accent: #f59e0b;
+            --bg-body: #f9fafb;
+            --surface: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 16px;
         }
-
-        /* Default hidden toggle button */
-        .menu-toggle-btn {
-            display: none;
-        }
-
-        /* Default hidden overlay */
-        .sidebar-overlay {
-            display: none;
-        }
-
-
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-body);
             color: var(--text-main);
             margin: 0;
             padding: 0;
-            line-height: 1.6;
+            min-height: 100vh;
         }
 
-        /* Layout */
-        .dashboard-container {
+        .app-container {
             display: grid;
-            grid-template-columns: 350px 1fr;
-            /* Fixed sidebar, fluid content */
-            gap: 30px;
-            max-width: 95%;
-            /* Use more screen space */
-            margin: 30px auto;
-            padding: 0 20px;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
         }
 
-        /* Header */
-        .page-header {
-            grid-column: 1 / -1;
+        /* --- Sidebar --- */
+        .sidebar {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding-left: 5px;
+        }
+
+        .brand img {
+            height: 35px;
+        }
+
+        .brand h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .nav-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .nav-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            padding-left: 12px;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .profile-mini {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-body);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .profile-mini img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            padding: 32px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--card-bg);
-            padding: 20px 30px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 10px;
+            margin-bottom: 24px;
         }
 
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .header-brand h1 {
-            margin: 0;
+        .greeting h2 {
             font-size: 1.5rem;
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-
-        .logout-btn {
-            background: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: var(--secondary-color);
-        }
-
-        /* Sidebar Profile */
-        .sidebar {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 20px 15px;
-            /* Compact padding */
-            text-align: center;
-            box-shadow: var(--shadow);
-            height: fit-content;
-            position: sticky;
-            top: 30px;
-            width: 350px;
-            /* Fixed Width */
-            box-sizing: border-box;
-            /* PREVENTS OVERLAP */
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .profile-img {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid var(--bg-color);
-            margin-bottom: 20px;
-        }
-
-        .profile-name {
-            font-size: 1.3rem;
             font-weight: 700;
-            margin-bottom: 5px;
+            margin: 0;
+            color: var(--text-main);
         }
 
-        .profile-role {
-            color: var(--primary-color);
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            display: inline-block;
-            background: #eef6f6;
-            padding: 5px 12px;
-            border-radius: 20px;
-        }
-
-        .profile-meta {
+        /* Combined Clock */
+        .clock-badge {
+            background: var(--surface);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 500;
             color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        /* Main Content */
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        /* Feature Cards */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
-
-        .action-card {
-            background: var(--card-bg);
-            padding: 15px;
-            /* Compact Padding */
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border-left: 5px solid var(--primary-color);
-            transition: transform 0.2s ease;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-
-        .action-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .action-title {
-            font-size: 1rem;
-            /* Compact Title */
-            font-weight: 600;
-            margin-bottom: 5px;
-            /* Tighter margin */
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: var(--text-main);
+            gap: 8px;
+            font-size: 0.95rem;
         }
 
-        .action-desc {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        /* Info Sections */
-        .content-section {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 30px;
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-        }
-
-        .details-grid {
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
         }
 
-        .detail-item label {
-            display: block;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
+        /* News Widget - Fixed Wrapper */
+        .news-section {
+            grid-column: span 8;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            /* Visuals stripped */
         }
 
-        .detail-item span {
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text-main);
+        .news-section .news-ticker-panel {
+            margin-top: 0 !important;
+            height: 100%;
+            box-sizing: border-box;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        .long-text {
-            color: var(--text-main);
-            white-space: pre-line;
+        .news-section .news-scroll-window {
+            height: auto !important;
+            flex: 1;
+            min-height: 0;
+            border: none !important;
         }
 
-        @media (max-width: 900px) {
-            .dashboard-container {
-                display: block;
-                position: relative;
-            }
-
-            /* Off-canvas Sidebar */
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: -360px;
-                width: 300px;
-                height: 100vh;
-                z-index: 1000;
-                overflow-y: auto;
-                transition: left 0.3s ease-in-out;
-                box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
-                border-radius: 0;
-                margin: 0;
-            }
-
-            .sidebar.mobile-active {
-                left: 0;
-            }
-
-            /* Overlay */
-            .sidebar-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 999;
-                display: none;
-                opacity: 0;
-                transition: opacity 0.3s;
-            }
-
-            .sidebar-overlay.active {
-                display: block;
-                opacity: 1;
-            }
-
-            /* Toggle Button */
-            .menu-toggle-btn {
-                display: inline-flex !important;
-                align-items: center;
-                justify-content: center;
-                background: transparent;
-                border: 1px solid var(--border-color);
-                color: var(--text-main);
-                font-size: 1.5rem;
-                width: 40px;
-                height: 40px;
-                border-radius: 8px;
-                cursor: pointer;
-                margin-right: 15px;
-            }
-
-            .header-brand {
-                display: flex;
-                align-items: center;
-            }
+        .stats-column {
+            grid-column: span 4;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
         }
 
-
-        /* Modern Glass Badge Animation */
-        /* Flashy Shockwave Animation */
-        @keyframes shockwave-pulse {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(255, 47, 86, 0.8);
-            }
-
-            70% {
-                transform: scale(1.1);
-                box-shadow: 0 0 0 20px rgba(255, 47, 86, 0);
-            }
-
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(255, 47, 86, 0);
-            }
+        .stat-card {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            transition: transform 0.2s;
+            flex: 1;
         }
 
-        .glass-badge {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 47, 86, 0.9);
-            color: #fff;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 800;
-            font-size: 0.95rem;
-            animation: shockwave-pulse 1.2s infinite;
-            z-index: 10;
-            border: 2px solid #fff;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            font-size: 1.5rem;
         }
 
-        /* Remove inner dot for this cleaner solid look, replace with nothing or a shine */
-        .glass-badge::after {
-            content: none;
+        .stat-info h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
         }
 
-        /* Inner glowing dot for extra pop */
-        .glass-badge::after {
-            content: '';
+        .stat-info span {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .pulse-ring {
             position: absolute;
-            inset: 0;
+            top: 15px;
+            right: 15px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(251, 113, 133, 0.8), rgba(225, 29, 72, 0.9));
-            z-index: -1;
-            opacity: 0.85;
+            background: #ef4444;
+            animation: pulse 2s infinite;
         }
 
-        /* --- Sidebar News Integration (Fixes Nested Card Look) --- */
-        .sidebar .news-ticker-panel {
-            background: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
-            padding: 0 !important;
-            margin-top: 10px !important;
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
         }
 
-        .sidebar .news-header {
-            padding: 10px 0 !important;
-            background: transparent !important;
-            color: var(--text-main) !important;
-            border-bottom: 2px solid var(--border-color) !important;
-            border-radius: 0 !important;
+        .actions-section {
+            grid-column: span 12;
+            margin-top: 24px;
         }
 
-        .sidebar .news-header h3 {
-            color: var(--primary-color) !important;
-            justify-content: flex-start !important;
-            font-size: 1rem !important;
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
-        .sidebar .news-scroll-window {
-            height: 350px !important;
-            /* Fit within sidebar height nicely */
-            background: transparent !important;
+        .section-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-main);
         }
 
-        .sidebar .news-scroll-window::after {
-            background: linear-gradient(to top, var(--card-bg, #fff), transparent) !important;
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
         }
 
-        /* --- Removed Legacy Overrides --- */
-
-        .profile-img {
-            width: 80px !important;
-            height: 80px !important;
-            margin-bottom: 10px !important;
-            border-width: 3px !important;
+        .action-tile {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .profile-name {
-            font-size: 1.1rem !important;
-            margin-bottom: 2px !important;
+        .action-tile:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
-        .profile-role {
-            font-size: 0.85rem !important;
-            margin-bottom: 8px !important;
-            padding: 3px 10px !important;
+        .action-tile-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
         }
 
-        .profile-meta {
-            font-size: 0.8rem !important;
-            margin-bottom: 2px !important;
+        .action-tile h4 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
         }
 
-        /* Make news fit nicely in sidebar */
-        .news-ticker-panel {
-            width: 100%;
-            border: none;
-            box-shadow: none;
-            background: transparent;
-            margin-top: 15px;
+        .action-tile p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
         }
 
-        .news-header {
-            border-radius: 8px 8px 0 0;
-            padding: 8px 12px;
-        }
+        @media (max-width: 1024px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
 
-        .news-header h3 {
-            font-size: 0.9rem;
-        }
+            .sidebar {
+                display: none;
+            }
 
-        .news-scroll-window {
-            border-radius: 0 0 8px 8px;
-            border: 1px solid #e2e8f0;
-            border-top: none;
-            background: #fff;
-            height: 300px;
+            .dashboard-grid {
+                display: flex;
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <div class="dashboard-container">
-        <!-- Mobile Overlay -->
-        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-        <!-- Header -->
-        <header class="page-header">
-            <div class="header-brand">
-                <button class="menu-toggle-btn" onclick="toggleSidebar()">☰</button>
-                <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" alt="Logo"
-                    style="height: 45px;">
-                <h1>Class Incharge Dashboard</h1>
-            </div>
-            <a href="{% url 'staffs:staff_logout' %}" class="logout-btn">Logout</a>
-        </header>
-
+    <div class="app-container">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <!-- Compact Horizontal Profile -->
-            <div
-                style="display: flex; align-items: center; gap: 15px; text-align: left; margin-bottom: 10px; width: 100%;">
-                {% if staff.photo %}
-                <img src="{{ staff.photo.url }}" alt="{{ staff.name }}" class="profile-img"
-                    style="margin: 0 !important; width: 60px !important; height: 60px !important; border-width: 2px !important;">
-                {% else %}
-                <img src="https://ui-avatars.com/api/?name={{ staff.name }}&background=random&size=200"
-                    alt="{{ staff.name }}" class="profile-img"
-                    style="margin: 0 !important; width: 60px !important; height: 60px !important; border-width: 2px !important;">
-                {% endif %}
-
-                <div style="flex: 1; overflow: hidden;">
-                    <div class="profile-name"
-                        style="font-size: 1rem !important; margin: 0 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        {{ staff.salutation }} {{ staff.name }}</div>
-                    <div style="font-size: 0.75rem; color: var(--primary-color); font-weight: 600; line-height: 1.2;">
-                        Class Incharge</div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">{{ staff.department }}
-                        &bull; {{ staff.staff_id }}</div>
-                </div>
+            <div class="brand">
+                <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+                    alt="Logo">
+                <h1>Class<br>Incharge</h1>
             </div>
 
-            <!-- News Scroll Moved to Sidebar -->
-            <hr style="width: 100%; border: 0; border-top: 1px solid rgba(0,0,0,0.1); margin: 10px 0;">
-            {% include 'news_component.html' %}
+            <nav class="nav-section">
+                <div class="nav-label">Menu</div>
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a href="{% url 'staffs:student_list' %}" class="nav-item">
+                    <span class="nav-icon">👨‍🎓</span> My Students
+                </a>
+                <a href="{% url 'staffs:timetable' %}" class="nav-item">
+                    <span class="nav-icon">🗓️</span> My Timetable
+                </a>
+                <a href="{% url 'staffs:view_leave_requests' %}" class="nav-item">
+                    <span class="nav-icon">📝</span> Review Leaves
+                </a>
+                <a href="{% url 'staffs:exam_schedule' %}" class="nav-item">
+                    <span class="nav-icon">📅</span> Exam Duties
+                </a>
+                <a href="{% url 'staffs:staff_apply_leave' %}" class="nav-item">
+                    <span class="nav-icon">✈️</span> Apply Leave
+                </a>
+            </nav>
+
+            <div class="profile-mini">
+                {% if staff.photo %}
+                <img src="{{ staff.photo.url }}" alt="Profile">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ staff.name }}" alt="Profile">
+                {% endif %}
+                <div style="flex: 1; min-width: 0;">
+                    <div
+                        style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem;">
+                        {{ staff.name }}
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Class Incharge</div>
+                </div>
+                <a href="{% url 'staffs:staff_logout' %}" title="Logout"
+                    style="color: #ef4444; font-size: 1.1rem; text-decoration: none;">⏻</a>
+            </div>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
-
-            <!-- Quick Actions -->
-            <section class="quick-actions">
-                <div class="action-card"
-                    style="cursor: default; background: #dce9e1; border: 2px solid var(--accent-color); box-shadow: 0 4px 12px rgba(90, 125, 124, 0.15);">
-                    <div class="action-title" style="color: var(--accent-color);">🏫 Assigned Class</div>
-                    <div class="action-desc"
-                        style="font-size: 1.25rem; color: var(--text-main); font-weight: 600; margin-bottom: 5px;">
-                        Semester {{ staff.assigned_semester|default:"Not Assigned" }}
-                    </div>
-                    <div class="action-desc" style="color: var(--text-secondary); font-size: 0.9rem;">Academic Year
-                        2024-2025</div>
+            <div class="top-bar">
+                <div class="greeting">
+                    <h2>Hello, {{ staff.name }} 👋</h2>
+                    <p>Managing the future leaders.</p>
                 </div>
-                <a href="{% url 'staffs:student_list' %}" class="action-card">
-                    <div class="action-title">👨‍🎓 Student Directory</div>
-                    <div class="action-desc">Access details of {{ student_count }} student{{ student_count|pluralize }}
-                        in your assigned semester.</div>
-                </a>
+                <div class="clock-badge">
+                    <span>{% now "l, d F Y" %}</span>
+                    <span style="opacity: 0.3">|</span>
+                    <span id="digital-clock" style="font-family: monospace; font-weight: 600;">00:00:00</span>
+                </div>
+            </div>
 
-                <a href="{% url 'staffs:view_leave_requests' %}" class="action-card" style="position: relative;">
-                    {% if pending_leaves_count > 0 %}
-                    <div class="glass-badge">{{ pending_leaves_count }}</div>
-                    {% endif %}
-                    <div class="action-title">
-                        📝 Leave Requests
+            <!-- Top Grid -->
+            <div class="dashboard-grid">
+                <!-- News Widget -->
+                <div class="news-section">
+                    <!-- Clean Include -->
+                    {% include 'news_component.html' %}
+                </div>
+
+                <!-- Stats Column -->
+                <div class="stats-column">
+                    <!-- Leave Requests -->
+                    <a href="{% url 'staffs:view_leave_requests' %}" class="stat-card"
+                        style="text-decoration: none; color: inherit;">
+                        {% if pending_leaves_count > 0 %} <div class="pulse-ring"></div> {% endif %}
+                        <div class="stat-icon blue">📝</div>
+                        <div class="stat-info">
+                            <h3>{{ pending_leaves_count }}</h3>
+                            <span>Leave Requests</span>
+                        </div>
+                    </a>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #e0e7ff; color: #4338ca;">👨‍🎓</div>
+                        <div class="stat-info">
+                            <h3>{{ student_count }}</h3>
+                            <span>Assigned Students</span>
+                        </div>
                     </div>
-                    <div class="action-desc">Review pending leave applications.</div>
-                </a>
+                </div>
+            </div>
 
-                <a href="{% url 'staffs:staff_apply_leave' %}" class="action-card">
-                    <div class="action-title">✈️ Apply Leave</div>
-                    <div class="action-desc">Submit your own leave request to HOD.</div>
-                </a>
-
-
-
-                <a href="{% url 'staffs:manage_semesters' %}" class="action-card">
-                    <div class="action-title">📚 Manage Semesters</div>
-                    <div class="action-desc">Promote students and manage semester details.</div>
-                </a>
-
-                <a href="{% url 'staffs:exam_schedule' %}" class="action-card">
-                    <div class="action-title">📅 Exam Schedule</div>
-                    <div class="action-desc">Check upcoming examination dates.</div>
-                </a>
-                <a href="{% url 'staffs:timetable' %}" class="action-card">
-                    <div class="action-title">🗓️ Timetable</div>
-                    <div class="action-desc">View weekly class schedules.</div>
-                </a>
-            </section>
-
-            <!-- News Scroll Section REMOVED (Moved to Sidebar) -->
-
-            <!-- Assigned Subjects -->
-            {% if assigned_subjects %}
-            <section class="content-section">
-                <div class="section-title">My Courses</div>
-                <div style="display: grid; gap: 15px;">
-                    {% for subject in assigned_subjects %}
-                    <div
-                        style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="font-weight: 600; font-size: 1.05rem; color: var(--text-main);">
-                                {{ subject.name}}</div>
-                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
-                                Code: <strong>{{ subject.code }}</strong> &bull; Semester {{ subject.semester }}
-                            </div>
+            <!-- My Teaching Courses Quick Actions -->
+            <section class="actions-section">
+                <div class="section-header">
+                    <h3>My Teaching Courses</h3>
+                </div>
+                <!-- If no courses, show message, else grid -->
+                <div class="actions-grid">
+                    {% for subject in subjects %}
+                    <div class="action-tile" style="border-left: 4px solid var(--primary);">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span
+                                style="font-size: 0.7rem; background: var(--primary-light); color: var(--primary-dark); padding: 2px 8px; border-radius: 4px;">{{
+                                subject.code }}</span>
+                            <span style="font-size: 0.7rem; color: var(--text-muted);">Sem {{ subject.semester }}</span>
                         </div>
-                        <div style="display: flex; gap: 8px;">
+                        <h4 style="font-size: 0.95rem;">{{ subject.name }}</h4>
+                        <!-- Action Buttons inside card -->
+                        <div style="display: flex; gap: 8px; margin-top: auto;">
                             <a href="{% url 'staffs:manage_marks' subject.id %}"
-                                style="text-decoration: none; background: var(--primary-color); color: white; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; transition: 0.3s;"
-                                onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
-                                Marks
-                            </a>
+                                style="flex: 1; text-align: center; background: var(--bg-body); padding: 8px; border-radius: 6px; font-size: 0.8rem; text-decoration: none; color: var(--text-main); border: 1px solid var(--border);">Marks</a>
                             <a href="{% url 'staffs:manage_attendance' subject.id %}"
-                                style="text-decoration: none; background: var(--primary-color); color: white; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; transition: 0.3s;"
-                                onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
-                                Attendance
-                            </a>
+                                style="flex: 1; text-align: center; background: var(--primary); padding: 8px; border-radius: 6px; font-size: 0.8rem; text-decoration: none; color: white;">Attendance</a>
                         </div>
+                    </div>
+                    {% empty %}
+                    <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">
+                        No subjects assigned yet.
                     </div>
                     {% endfor %}
                 </div>
             </section>
-            {% endif %}
-
-            <!-- Personal Info -->
-            <section class="content-section">
-                <div class="section-title">Personal Information</div>
-                <div class="details-grid">
-                    <div class="detail-item">
-                        <label>Email</label>
-                        <span>{{ staff.email|default:"-" }}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Date of Birth</label>
-                        <span>{{ staff.date_of_birth|date:"d M Y"|default:"-" }}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Date of Joining</label>
-                        <span>{{ staff.date_of_joining|date:"d M Y"|default:"-" }}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Qualification</label>
-                        <span>{{ staff.qualification|default:"-" }}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Specialization</label>
-                        <span>{{ staff.specialization|default:"-" }}</span>
-                    </div>
-                    <div class="detail-item" style="grid-column: 1/-1;">
-                        <label>Address</label>
-                        <span>{{ staff.address|default:"-" }}</span>
-                    </div>
-                </div>
-            </section>
-
-            {% if staff.academic_details %}
-            <section class="content-section">
-                <div class="section-title">Academic Details</div>
-                <div class="long-text">{{ staff.academic_details }}</div>
-            </section>
-            {% endif %}
-
-            {% if staff.experience %}
-            <section class="content-section">
-                <div class="section-title">Experience</div>
-                <div class="long-text">{{ staff.experience }}</div>
-            </section>
-            {% endif %}
-
-            {% if staff.publications %}
-            <section class="content-section">
-                <div class="section-title">Publications</div>
-                <div class="long-text">{{ staff.publications }}</div>
-            </section>
-            {% endif %}
-
-            {% if staff.awards_and_memberships %}
-            <section class="content-section">
-                <div class="section-title">Awards & Memberships</div>
-                <div class="long-text">{{ staff.awards_and_memberships }}</div>
-            </section>
-            {% endif %}
-
         </main>
     </div>
-
     <script>
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('mobile-active');
-            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('digital-clock').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+
+            if (sidebar.style.display === 'flex') {
+                sidebar.style.display = '';
+                if (overlay) overlay.remove();
+            } else {
+                sidebar.style.display = 'flex';
+                sidebar.style.position = 'fixed';
+                sidebar.style.zIndex = '1000';
+                sidebar.style.width = '280px';
+
+                // Add overlay
+                const newOverlay = document.createElement('div');
+                newOverlay.className = 'sidebar-overlay';
+                newOverlay.style.position = 'fixed';
+                newOverlay.style.top = '0';
+                newOverlay.style.left = '0';
+                newOverlay.style.right = '0';
+                newOverlay.style.bottom = '0';
+                newOverlay.style.background = 'rgba(0,0,0,0.5)';
+                newOverlay.style.zIndex = '999';
+                newOverlay.onclick = toggleSidebar;
+                document.body.appendChild(newOverlay);
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                const sidebar = document.querySelector('.sidebar');
+                const overlay = document.querySelector('.sidebar-overlay');
+                sidebar.style.display = '';
+                sidebar.style.position = '';
+                if (overlay) overlay.remove();
+            }
+        });
     </script>
-
-
 </body>
 
 </html>

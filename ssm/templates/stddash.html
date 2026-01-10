@@ -112,15 +112,17 @@
             </div>
 
             <nav class="essential-links">
-                <a href="{% url 'exam_timetable' %}"><span class="emoji">📅</span> Exam Timetable</a>
-                <a href="{% url 'class_timetable' %}"><span class="emoji">👩🏻‍🏫</span> Class Timetable</a>
                 <a href="{% url 'student_profile' %}" class="nav-item">
                     <span class="nav-icon">👤</span> My Profile
                 </a>
+                <a href="{% url 'exam_timetable' %}"><span class="emoji">📅</span> Exam Timetable</a>
+                <a href="{% url 'class_timetable' %}"><span class="emoji">👩🏻‍🏫</span> Class Timetable</a>
+
                 <a href="{% url 'gpa_calculator' %}" class="nav-item">
                     <span class="nav-icon">🧮</span> GPA Calculator - AI
                 </a>
                 <div class="nav-divider"></div>
+                <a href="{% url 'student_attendance' %}"><span class="emoji">📊</span> Attendance</a>
                 <a href="{% url 'student_marks' %}"><span class="emoji">📈</span> Marks</a>
                 <a href="{% url 'resume_builder' %}"><span class="emoji">🧠</span>Resume Generator - AI</a>
                 <a href="{% url 'apply_leave' %}"><span class="emoji">📝</span> Leave Application</a>
@@ -205,7 +207,7 @@
                             <a href="{% url 'student_marks' %}" class="btn-sm btn-outline"
                                 style="font-size: 0.8rem; padding: 2px 8px;">View All</a>
                         </div>
-                        <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #666;">Current CGPA: <strong>{{ cgpa}}</strong></p>
+                        <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #666;">Current CGPA: <strong>{{cgpa}}</strong></p>
                         <canvas id="marksChart"></canvas>
                     </div>
 
@@ -214,8 +216,12 @@
                         <div
                             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                             <h3 style="margin: 0; color: var(--primary-color);">Projects & Skills</h3>
-                            <a href="{% url 'student_editprofile' %}" class="btn-sm btn-outline"
-                                style="font-size: 0.8rem; padding: 2px 8px;">Add/Edit</a>
+                            <div style="display: flex; gap: 8px;">
+                                <a href="{% url 'student_editprofile' %}#skills" class="btn-sm btn-outline"
+                                    style="font-size: 0.8rem; padding: 2px 8px;">+ Skill</a>
+                                <a href="{% url 'student_editprofile' %}#projects" class="btn-sm btn-outline"
+                                    style="font-size: 0.8rem; padding: 2px 8px;">+ Project</a>
+                            </div>
                         </div>
 
                         <!-- Skills Section -->
@@ -244,7 +250,8 @@
                                         style="text-decoration: none;">🔗</a>
                                     {% endif %}
                                 </div>
-                                <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0;">{{project.description|truncatechars:60 }}</p>
+                                <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0 0;">
+                                    {{project.description|truncatechars:60 }}</p>
                             </div>
                             {% empty %}
                             <p class="text-muted" style="font-size: 0.9rem;">No projects added yet.</p>
@@ -306,7 +313,12 @@
                     document.querySelector('.profile-sidebar').classList.toggle('mobile-active');
                     document.querySelector('.sidebar-overlay').classList.toggle('active');
                 }
-            </script>
+
+                // Auto Refresh every 60 seconds
+            //     setTimeout(function () {
+            //         window.location.reload();
+            //     }, 10000);
+            // </script>
 
             {% endblock %}
         </main>

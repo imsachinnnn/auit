@@ -349,7 +349,7 @@
             </div>
 
             <!-- Skills Management -->
-            <div class="card">
+            <div class="card" id="skills">
                 <h2 class="card-title">Skills & Expertise</h2>
                 <div class="form-grid">
                     <div class="input-group">
@@ -381,7 +381,7 @@
             </div>
 
             <!-- Projects Management -->
-            <div class="card">
+            <div class="card" id="projects">
                 <div
                     style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;">
                     <h2 class="card-title" style="border: none; margin: 0; padding: 0;">Projects</h2>
@@ -707,6 +707,29 @@
                 console.error(err);
             }
         }
+
+        // --- Handle Direct Links (Hash Navigation) ---
+        document.addEventListener('DOMContentLoaded', function () {
+            const hash = window.location.hash;
+
+            if (hash === '#skills') {
+                const updatedHash = hash; // ensure variable exists to avoid errors if logic expands
+                document.getElementById('skills').scrollIntoView({ behavior: 'smooth' });
+                // Optional: Focus the input
+                document.getElementById('newSkillInput').focus();
+            } else if (hash === '#projects') {
+                document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
+                // Automatically open the form if it's not open
+                const form = document.getElementById('projectForm');
+                if (form.style.display === 'none') {
+                    toggleProjectForm();
+                }
+                // Focus the title input
+                setTimeout(() => {
+                    document.getElementById('projTitle').focus();
+                }, 500); // slight delay to allow toggle animation/render if any
+            }
+        });
     </script>
 </body>
 
