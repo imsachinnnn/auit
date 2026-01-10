@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY=os.getenv('SECRET_KEY')
 
 DEBUG = True
-ALLOWED_HOSTS = ['10.165.244.80', 'localhost', '127.0.0.1','*']
+ALLOWED_HOSTS = ['10.165.244.80', 'localhost', '127.0.0.1','*','13.126.152.167']
 
 
 # --- APPLICATION DEFINITION ---
