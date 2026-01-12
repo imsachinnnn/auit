@@ -1,16 +1,26 @@
 <div class="news-ticker-panel content-section">
-    <div class="section-title"
-        style="margin-bottom: 15px; padding-bottom: 10px; display: flex; align-items: center; gap: 10px;">
-        📢 Announcements
+    <div class="section-title-row"
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color, #e2e8f0);">
+        <div class="section-title"
+            style="display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--text-main);">
+            📢 Announcements
+        </div>
+        <div class="news-filters" style="display: flex; gap: 5px;">
+            <button class="filter-btn active" onclick="filterNews('all', this)">All</button>
+            {% if staff %}
+            <button class="filter-btn" onclick="filterNews('staff', this)">Staff</button>
+            {% endif %}
+            <button class="filter-btn" onclick="filterNews('student', this)">Students</button>
+        </div>
     </div>
 
-    <div class="news-scroll-window">
-        <div class="news-scroll-content">
+    <div class="news-scroll-window" id="newsWindow">
+        <div class="news-scroll-content" id="newsContent">
             {% if news_list %}
             {% for news in news_list %}
-            <div class="news-item">
+            <div class="news-item" data-target="{{ news.target|lower }}">
                 <span class="news-date">{{ news.date|date:"M d, Y" }} <span
-                        style="font-weight: 400; opacity: 0.7; font-size: 0.9em; margin-left: 5px;">{{news.date|time:"h:i A" }}</span></span>
+                        style="font-weight: 400; opacity: 0.7; font-size: 0.9em; margin-left: 5px;">{{news.date|time:"h:iA" }}</span></span>
                 {% if news.link %}
                 <p><a href="{{ news.link }}" target="_blank" class="news-link">
                         {{ news.content }} <span style="font-size: 0.8em;">🔗</span>
@@ -22,7 +32,6 @@
                 {% endif %}
             </div>
             {% endfor %}
-            <!-- Duplicate content logic handling by loop nature/scroll -->
             {% else %}
             <div class="news-item" style="text-align: center; color: var(--text-muted);">
                 <p>No new announcements.</p>
@@ -39,21 +48,40 @@
         border-radius: var(--radius, 12px);
         box-shadow: var(--shadow, 0 4px 6px rgba(0, 0, 0, 0.05));
         padding: 20px;
-        /* Standard card padding */
         margin-top: 25px;
         border: 1px solid var(--border-color, #e2e8f0);
-        /* Subtle border like other cards */
+    }
+
+    /* Filter Buttons */
+    .filter-btn {
+        background: transparent;
+        border: 1px solid var(--border-color, #e2e8f0);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        color: var(--text-muted, #64748b);
+        transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+        background: var(--bg-body, #f8fafc);
+        color: var(--text-main, #334155);
+    }
+
+    .filter-btn.active {
+        background: var(--primary, #5a7d7c);
+        color: white;
+        border-color: var(--primary, #5a7d7c);
     }
 
     /* Scroll Area */
     .news-scroll-window {
         height: 400px;
-        /* Increased height as requested */
         overflow: hidden;
         position: relative;
     }
 
-    /* Masking for smooth fade out */
     .news-scroll-window::after {
         content: "";
         position: absolute;
@@ -81,6 +109,12 @@
         margin-bottom: 20px;
         padding-bottom: 20px;
         border-bottom: 1px dashed var(--border-color, #e2e8f0);
+        display: block;
+        /* Default display */
+    }
+
+    .news-item.hidden {
+        display: none !important;
     }
 
     .news-item:last-child {
@@ -153,7 +187,53 @@
         100% {
             top: -150%;
         }
-
-        /* Ensure clearance */
     }
 </style>
+
+<script>
+    function filterNews(type, btn) {
+        // Update Buttons
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Filter Items
+        const items = document.querySelectorAll('.news-item');
+        items.forEach(item => {
+            const target = item.getAttribute('data-target');
+            if (type === 'all' || target === type || (type === 'student' && target === 'student') || (type === 'staff' && target === 'staff') || target === 'all') {
+                // Logic: 
+                // 'all' filter shows everything.
+                // 'student' filter shows 'student' AND 'all' tagged items? Usually yes, students see 'All' and 'Student'.
+                // 'staff' filter shows 'staff' AND 'all' tagged items.
+
+                // Let's refine based on user request: "filter like all staff,students"
+                // Usually filters are exclusive or inclusive. 
+                // If I click "Students", I expect to see things relevant to students. That includes "Student" specific AND "All".
+
+                if (type === 'all') {
+                    item.classList.remove('hidden');
+                } else if (type === 'student') {
+                    if (target === 'student' || target === 'all') {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                } else if (type === 'staff') {
+                    if (target === 'staff' || target === 'all') {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                }
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+
+        // Reset Animation to ensure flow isn't broken
+        const content = document.getElementById('newsContent');
+        content.style.animation = 'none';
+        content.offsetHeight; /* trigger reflow */
+        content.style.animation = 'scroll-vertical 25s linear infinite';
+    }
+</script>

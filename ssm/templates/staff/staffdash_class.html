@@ -406,7 +406,7 @@
                         style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem;">
                         {{ staff.name }}
                     </div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);">Class Incharge</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Class Incharge {% if staff.assigned_semester %}- Sem {{ staff.assigned_semester }}{% endif %}</div>
                 </div>
                 <a href="{% url 'staffs:staff_logout' %}" title="Logout"
                     style="color: #ef4444; font-size: 1.1rem; text-decoration: none;">⏻</a>
@@ -418,7 +418,8 @@
             <div class="top-bar">
                 <div class="greeting">
                     <h2>Hello, {{ staff.name }} 👋</h2>
-                    <p>Managing the future leaders.</p>
+                    <p style="font-size: 1.1rem; color: var(--text-muted); margin-top: 4px;">Class Incharge &bull; <b
+                            style="color: var(--primary);">Semester {{ staff.assigned_semester }}</b></p>
                 </div>
                 <div class="clock-badge">
                     <span>{% now "l, d F Y" %}</span>
@@ -437,6 +438,17 @@
 
                 <!-- Stats Column -->
                 <div class="stats-column">
+                    <!-- Semester Card (New) -->
+                    {% if staff.assigned_semester %}
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #fef3c7; color: #d97706;">🏛️</div>
+                        <div class="stat-info">
+                            <h3>{{ staff.assigned_semester }}</h3>
+                            <span>Current Semester</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <!-- Leave Requests -->
                     <a href="{% url 'staffs:view_leave_requests' %}" class="stat-card"
                         style="text-decoration: none; color: inherit;">
@@ -471,7 +483,7 @@
                     <div class="action-tile" style="border-left: 4px solid var(--primary);">
                         <div style="display: flex; justify-content: space-between;">
                             <span
-                                style="font-size: 0.7rem; background: var(--primary-light); color: var(--primary-dark); padding: 2px 8px; border-radius: 4px;">{{subject.code }}</span>
+                                style="font-size: 0.7rem; background: var(--primary-light); color: var(--primary-dark); padding: 2px 8px; border-radius: 4px;">{{subject.code}}</span>
                             <span style="font-size: 0.7rem; color: var(--text-muted);">Sem {{ subject.semester }}</span>
                         </div>
                         <h4 style="font-size: 0.95rem;">{{ subject.name }}</h4>

@@ -312,6 +312,58 @@
                 margin-left: 0;
             }
         }
+
+        /* --- Filter Styles --- */
+        .filter-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #e9ecef;
+            color: var(--text-primary);
+        }
+
+        .filter-btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .news-item.hidden {
+            display: none !important;
+        }
+
+        .news-badge {
+            font-size: 0.7em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            text-transform: uppercase;
+            font-weight: normal;
+        }
+
+        .news-badge.all {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .news-badge.staff {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .news-badge.student {
+            background: #fae8ff;
+            color: #86198f;
+        }
     </style>
 </head>
 
@@ -362,13 +414,24 @@
                 </div>
 
                 <div class="news-ticker-container">
-                    <h2>Latest News</h2>
-                    <div class="news-window">
-                        <div class="news-content">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;">
+                        <h2 style="margin: 0; border: none; padding: 0; font-size: 1.8em;">Latest News</h2>
+                        <div class="news-filters" style="display: flex; gap: 5px;">
+                            <button class="filter-btn active" onclick="filterNews('all', this)">All</button>
+                            <button class="filter-btn" onclick="filterNews('staff', this)">Staff</button>
+                            <button class="filter-btn" onclick="filterNews('student', this)">Students</button>
+                        </div>
+                    </div>
+
+                    <div class="news-window" id="newsWindow">
+                        <div class="news-content" id="newsContent">
                             {% if news_list %}
                             {% for news in news_list %}
-                            <div class="news-item">
-                                <span class="date">{{ news.date|date:"M d, Y" }} &bull; {{ news.date|time:"h:i A"}}</span>
+                            <div class="news-item" data-target="{{ news.target|lower }}">
+                                <span class="date">{{ news.date|date:"M d, Y" }} &bull; {{ news.date|time:"h:i A"}}
+                                    <span class="news-badge {{ news.target|lower }}">{{ news.target }}</span>
+                                </span>
                                 <p>
                                     {% if news.link %}
                                     <a href="{{ news.link }}" target="_blank"
@@ -427,6 +490,43 @@
                 setInterval(showNextSlide, 5000);
             }
         });
+
+        function filterNews(type, btn) {
+            // Update Buttons
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Filter Items
+            const items = document.querySelectorAll('.news-item');
+            items.forEach(item => {
+                const target = item.getAttribute('data-target');
+                if (type === 'all' || target === type || (type === 'student' && target === 'student') || (type === 'staff' && target === 'staff') || target === 'all') {
+                    if (type === 'all') {
+                        item.classList.remove('hidden');
+                    } else if (type === 'student') {
+                        if (target === 'student' || target === 'all') {
+                            item.classList.remove('hidden');
+                        } else {
+                            item.classList.add('hidden');
+                        }
+                    } else if (type === 'staff') {
+                        if (target === 'staff' || target === 'all') {
+                            item.classList.remove('hidden');
+                        } else {
+                            item.classList.add('hidden');
+                        }
+                    }
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+
+            // Reset Animation
+            const content = document.getElementById('newsContent');
+            content.style.animation = 'none';
+            content.offsetHeight; /* trigger reflow */
+            content.style.animation = 'scroll-up 20s linear infinite';
+        }
     </script>
 
 </body>

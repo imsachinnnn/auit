@@ -66,7 +66,7 @@ def staff_dashboard(request):
     pending_staff_leaves_count = 0
     
     # Fetch News
-    news_list = News.objects.filter(is_active=True, target__in=['All', 'Staff']).order_by('-date', '-id')
+    news_list = News.objects.filter(is_active=True).order_by('-date', '-id')
     
     if staff.role == 'HOD':
         pending_leaves_count = LeaveRequest.objects.filter(status='Pending HOD').count()

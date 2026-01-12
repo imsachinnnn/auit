@@ -54,7 +54,7 @@ from staffs.models import News
 
 def prevhome(request): 
     # Fetch public news for the home page
-    news_list = News.objects.filter(is_active=True, target='All').order_by('-date', '-id')
+    news_list = News.objects.filter(is_active=True).order_by('-date', '-id')
     return render(request, 'prevhome.html', {'news_list': news_list})
 
 def stdregister(request): 
