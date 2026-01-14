@@ -1,6 +1,6 @@
 # Student and Staff Management System (SSM)
 
-SSM is a Django-based web application designed to manage student and staff data for an educational institution (specifically tailored for Annamalai University). It provides a comprehensive dashboard for students to manage their profiles, academic history, and documents, and for staff to manage their schedules, leave requests, and more.
+SSM is a Django-based web application designed to manage student and staff data for an educational institution (specifically tailored for Annamalai University). It provides a comprehensive dashboard for students to manage their profiles, academic history, and documents, and for staff to manage their schedules, leave requests, and more.####
 
 ## Features
 
