@@ -305,6 +305,9 @@ def student_dashboard(request):
             # If completely absent on a recorded day, streak breaks.
             break
             
+    # Helper for calendar data
+    calendar_data = get_attendance_calendar_data(student)
+
     context = {
         'student': student,
         'news_list': news_list,
@@ -315,9 +318,51 @@ def student_dashboard(request):
         'skills': skills,
         'projects': projects,
         'attendance_streak': attendance_streak,
-        'today': timezone.now().strftime('%A')
+        'today': timezone.now().strftime('%A'),
+        'calendar_data': calendar_data
     }
     return render(request, 'stddash.html', context)
+
+def get_attendance_calendar_data(student):
+    """Helper to prepare attendance data for calendar."""
+    from .models import StudentAttendance
+    all_attendance = StudentAttendance.objects.filter(student=student).select_related('subject')
+    calendar_data = {}
+    
+    for record in all_attendance:
+        date_key = record.date.strftime('%Y-%m-%d')
+        if date_key not in calendar_data:
+            calendar_data[date_key] = {
+                'present_count': 0,
+                'absent_count': 0,
+                'classes': []
+            }
+        
+        calendar_data[date_key]['classes'].append({
+            'subject': record.subject.code if record.subject else 'General',
+            'status': record.status
+        })
+        
+        if record.status == 'Present':
+            calendar_data[date_key]['present_count'] += 1
+        else:
+            calendar_data[date_key]['absent_count'] += 1
+            
+    # Finalize colors
+    final_calendar_data = {}
+    for d, info in calendar_data.items():
+        if info['present_count'] == 0 and info['absent_count'] > 0:
+             dot_color = 'red' # Fully Absent
+        elif info['present_count'] > 0 and info['absent_count'] > 0:
+             dot_color = 'orange' # Partial
+        else:
+             dot_color = 'green' # All Present (or no classes?)
+             
+        final_calendar_data[d] = {
+            'color': dot_color,
+            'details': info['classes']
+        }
+    return final_calendar_data
 
 @student_login_required
 def student_profile(request):
@@ -611,7 +656,6 @@ def student_attendance(request):
     
     subjects = Subject.objects.filter(semester=student.current_semester).order_by('code')
     
-    attendance_data = [] # Keeping this for legacy/chart compatibility if needed
     theory_data = []
     lab_data = []
     
@@ -642,49 +686,50 @@ def student_attendance(request):
             'total_classes': total_classes,
             'present': present_count,
             'absent': absent_count,
-            'percentage': round(percentage, 2),
-            'status_color': 'success' if percentage >= 75 else 'warning' if percentage >= 65 else 'danger'
+            'percentage': round(percentage, 1),
+            'status_color': 'success' if percentage >= 75 else ('warning' if percentage >= 65 else 'danger')
         }
         
-        # Add to comprehensive list
-        attendance_data.append(subject_data)
-        
-        # Split based on Type
-        if subject.subject_type == 'Lab':
-            lab_data.append(subject_data)
-        else:
+        if subject.subject_type == 'Theory':
             theory_data.append(subject_data)
-        
-        # Populate Chart Data if classes exist
-        if total_classes > 0:
-            chart_labels.append(subject.code)
-            chart_present.append(present_count)
-            chart_absent.append(absent_count)
+        elif subject.subject_type == 'Lab':
+            lab_data.append(subject_data)
             
-            total_classes_overall += total_classes
-            present_total_overall += present_count
+        # Stats accumulation
+        total_classes_overall += total_classes
+        present_total_overall += present_count
+    
+    # Combined for charts/legacy support
+    attendance_data = theory_data + lab_data
 
-    # Overall Statistics
-    overall_percentage = 0
+    # Overall Percentage
     if total_classes_overall > 0:
-        overall_percentage = round((present_total_overall / total_classes_overall) * 100, 2)
+        overall_percentage = (present_total_overall / total_classes_overall) * 100
+    else:
+        overall_percentage = 0
+        
+    overall_stats = {
+        'total_classes': total_classes_overall,
+        'present_count': present_total_overall,
+        'overall_percentage': round(overall_percentage, 1),
+        'attendance_status': 'Great!' if overall_percentage >= 75 else ('Needs Improvement' if overall_percentage >= 65 else 'Critical')
+    }
 
+    # Use the helper for calendar data
+    calendar_data = get_attendance_calendar_data(student)
+    
     context = {
         'student': student,
-        'attendance_data': attendance_data, # Kept for backward compat if template uses it for iter
+        'attendance_data': attendance_data, # Restored for charts
         'theory_data': theory_data,
         'lab_data': lab_data,
-        'overall_stats': {
-            'total_classes': total_classes_overall,
-            'present_count': present_total_overall,
-            'overall_percentage': overall_percentage,
-            'attendance_status': 'Good' if overall_percentage >= 75 else 'Average' if overall_percentage >= 65 else 'Low'
-        },
+        'overall_stats': overall_stats,
         'chart_data': {
-            'labels': chart_labels,
+            'labels': chart_labels, 
             'present': chart_present,
             'absent': chart_absent
-        }
+        },
+        'calendar_data': calendar_data
     }
     
     return render(request, 'student_attendance.html', context)

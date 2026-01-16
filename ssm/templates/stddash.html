@@ -133,6 +133,74 @@
             margin-top: 25px;
         }
 
+        /* Standout Feature: Calendar Widget */
+        .calendar-header-static {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            /* Tighter gap */
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            /* Smaller font */
+            cursor: pointer;
+            position: relative;
+            transition: background 0.2s;
+            margin: 2px;
+            /* max-width removed to increase size slightly */
+        }
+
+        .calendar-day:hover {
+            background: #f1f5f9;
+        }
+
+        .calendar-day.has-data::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+        }
+
+        .calendar-day.status-green::after {
+            background: #2ecc71;
+        }
+
+        .calendar-day.status-red::after {
+            background: #e74c3c;
+        }
+
+        .calendar-day.status-orange::after {
+            background: #f59e0b;
+        }
+
+        .calendar-day.selected {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .calendar-day.selected::after {
+            background: #fff !important;
+        }
+
         .sticky-note-widget.active {
             display: block;
             animation: popIn 0.3s ease-out;
@@ -252,8 +320,8 @@
                 <!-- Top Right Actions -->
                 <div class="header-actions">
                     {% block header_actions %}{% endblock %}
-                    <button class="action-btn" onclick="toggleStickyNote()"
-                        style="background: #eab308; border-color: #ca8a04;">� Add Sticky Note</button>
+                    <button class="action-btn" id="stickyToggleBtn" onclick="toggleStickyNote()"
+                        style="background: #eab308; border-color: #ca8a04;">📝 Add Sticky Note</button>
                     <a href="{% url 'student_profile' %}" class="action-btn btn-primary">👤 View Full Profile</a>
                     <a href="{% url 'student_logout' %}" class="action-btn btn-danger">Logout</a>
                 </div>
@@ -283,20 +351,58 @@
             <!-- Dashboard Grid -->
             <div class="dashboard-main-grid">
 
-                <!-- Left Column: News & Attendance -->
+                <!-- Left Column: Calendar & Graphs -->
                 <div class="dash-col">
 
+                    <!-- Attendance Calendar (Left Top) -->
+                    <div class="chart-card" id="calendarCard">
+                        <div class="calendar-header-static">
+                            <h3 style="margin: 0; color: var(--primary-color); font-size: 1rem;">
+                                📅 Attendance Calendar
+                            </h3>
+                            <a href="{% url 'student_attendance' %}"
+                                style="font-size: 0.8rem; color: #64748b; text-decoration: none;">View Full Details
+                                &rarr;</a>
+                        </div>
+
+                        <div class="calendar-body" id="calendarBody" style="margin-top: 10px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <button onclick="changeMonth(-1)"
+                                    style="border: none; background: none; cursor: pointer; font-size: 1rem; color: #64748b;">◀</button>
+                                <h4 id="currentMonthYear" style="margin: 0; color: #334155; font-size: 0.95rem;">January
+                                    2026</h4>
+                                <button onclick="changeMonth(1)"
+                                    style="border: none; background: none; cursor: pointer; font-size: 1rem; color: #64748b;">▶</button>
+                            </div>
+
+                            <div class="calendar-grid" id="calendarGrid">
+                                <!-- JS will populate this -->
+                            </div>
+
+                            <div id="selectedDateDetails"
+                                style="margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 8px; font-size: 0.85rem; display: none;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                                    <strong id="detailDate" style="color: #334155;"></strong>
+                                    <span onclick="document.getElementById('selectedDateDetails').style.display='none'"
+                                        style="cursor:pointer; color:#94a3b8;">×</span>
+                                </div>
+                                <ul id="detailList" style="list-style: none; padding: 0; margin: 0; color: #64748b;">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Marks Graph -->
-                    <div class="chart-card">
+                    <div class="chart-card" style="margin-top: 25px;">
                         <div
                             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <h3 style="margin: 0; color: var(--primary-color);">Academic Performance</h3>
                             <a href="{% url 'cgpa_history' %}" class="btn-sm btn-outline"
                                 style="font-size: 0.8rem; padding: 2px 8px;">View History</a>
                         </div>
-                        <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #666;">Current CGPA:
-                            <strong>{{ cgpa }}</strong>
-                        </p>
+                        <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #666;">Current CGPA: <strong>{{ cgpa
+                                }}</strong></p>
                         <canvas id="marksChart"></canvas>
                     </div>
 
@@ -313,9 +419,9 @@
 
                 </div>
 
-                <!-- Right Column: News & Marks -->
+                <!-- Right Column: News & Widgets -->
                 <div class="dash-col">
-                    <!-- News Widget moved here -->
+                    <!-- News Widget (Top Right) -->
                     {% include 'news_component.html' %}
 
                     <!-- Standout Feature: Sticky Note -->
@@ -342,8 +448,7 @@
                                     style="font-size: 0.8rem; padding: 2px 8px;">+ Project</a>
                             </div>
                         </div>
-
-                        <!-- Skills Section -->
+                        <!-- ... Skills and Projects Loop (Keeping existing logic inside) ... -->
                         <h4 style="margin: 0 0 8px 0; font-size: 0.95rem; color: #475569;">Skills</h4>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;">
                             {% for skill in skills %}
@@ -385,19 +490,131 @@
             {{ attendance_percentage|default:0|json_script:"attendance-data" }}
             {{ gpa_labels|json_script:"gpa-labels-data" }}
             {{ gpa_data|json_script:"gpa-data-data" }}
+            {{ calendar_data|json_script:"calendar-data-json" }}
 
             <script>
+                // Calendar Logic
+                let calendarData = {};
+                try {
+                    const el = document.getElementById('calendar-data-json');
+                    if (el) {
+                        calendarData = JSON.parse(el.textContent);
+                    }
+                } catch (e) {
+                    console.error("Calendar Data Parse Error", e);
+                }
+
+                let currentDate = new Date();
+
+                // Initialize on load to ensuring ready
+                document.addEventListener('DOMContentLoaded', () => {
+                    renderCalendar();
+                });
+
+                function changeMonth(delta) {
+                    currentDate.setMonth(currentDate.getMonth() + delta);
+                    renderCalendar();
+                }
+
+                function renderCalendar() {
+                    const grid = document.getElementById('calendarGrid');
+                    const title = document.getElementById('currentMonthYear');
+                    if (!grid || !title) return;
+
+                    grid.innerHTML = '';
+
+                    const year = currentDate.getFullYear();
+                    const month = currentDate.getMonth();
+
+                    // Update Header
+                    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                    title.textContent = `${monthNames[month]} ${year}`;
+
+                    // First day 
+                    const firstDay = new Date(year, month, 1);
+                    const lastDay = new Date(year, month + 1, 0);
+                    const daysInMonth = lastDay.getDate();
+                    const startingDay = firstDay.getDay(); // 0 = Sun
+
+                    // Headers
+                    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+                    days.forEach(d => {
+                        const cell = document.createElement('div');
+                        cell.style.fontWeight = 'bold';
+                        cell.style.fontSize = '0.8rem';
+                        cell.style.color = '#94a3b8';
+                        cell.style.padding = '5px 0';
+                        grid.appendChild(cell);
+                    });
+
+                    // Empty slots
+                    for (let i = 0; i < startingDay; i++) {
+                        grid.appendChild(document.createElement('div'));
+                    }
+
+                    // Days
+                    for (let i = 1; i <= daysInMonth; i++) {
+                        const dayCell = document.createElement('div');
+                        dayCell.className = 'calendar-day';
+                        dayCell.textContent = i;
+
+                        // Format YYYY-MM-DD
+                        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+
+                        if (calendarData[dateStr]) {
+                            dayCell.classList.add('has-data');
+                            dayCell.classList.add(`status-${calendarData[dateStr].color}`);
+                        }
+
+                        dayCell.onclick = () => selectDate(dateStr, dayCell);
+                        grid.appendChild(dayCell);
+                    }
+                }
+
+                function selectDate(dateStr, cell) {
+                    document.querySelectorAll('.calendar-day').forEach(c => c.classList.remove('selected'));
+                    cell.classList.add('selected');
+
+                    const detailsDiv = document.getElementById('selectedDateDetails');
+                    const detailList = document.getElementById('detailList');
+                    const dateTitle = document.getElementById('detailDate');
+
+                    if (detailsDiv) detailsDiv.style.display = 'block';
+                    if (dateTitle) dateTitle.textContent = new Date(dateStr).toDateString();
+                    if (detailList) {
+                        detailList.innerHTML = '';
+
+                        const data = calendarData[dateStr];
+                        if (data && data.details) {
+                            data.details.forEach(cls => {
+                                const li = document.createElement('li');
+                                li.style.display = 'flex';
+                                li.style.justifyContent = 'space-between';
+                                li.style.marginBottom = '4px';
+                                li.innerHTML = `<span>${cls.subject}</span> <span style="font-weight:600; color:${cls.status === 'Present' ? '#2ecc71' : '#e74c3c'}">${cls.status}</span>`;
+                                detailList.appendChild(li);
+                            });
+                        } else {
+                            detailList.innerHTML = '<li>No attendance records for this date.</li>';
+                        }
+                    }
+                }
+
                 // Sticky Note Logic 
                 function toggleStickyNote() {
                     const widget = document.getElementById('stickyWidget');
-                    const isHidden = getComputedStyle(widget).display === 'none';
+                    const btn = document.getElementById('stickyToggleBtn');
+                    if (!widget) return;
+
+                    const isHidden = window.getComputedStyle(widget).display === 'none';
 
                     if (isHidden) {
                         widget.classList.add('active');
-                        // Optional: Store state to keep it open
+                        if (btn) btn.textContent = "🙈 Hide Sticky Note";
                         localStorage.setItem('stickyNoteOpen', 'true');
                     } else {
                         widget.classList.remove('active');
+                        if (btn) btn.textContent = "📝 Add Sticky Note";
                         localStorage.removeItem('stickyNoteOpen');
                     }
                 }
@@ -405,21 +622,23 @@
                 document.addEventListener('DOMContentLoaded', function () {
                     const stickyInput = document.getElementById('stickyNoteInput');
                     const widget = document.getElementById('stickyWidget');
+                    const btn = document.getElementById('stickyToggleBtn');
 
-                    // Restore Note Content
-                    const savedNote = localStorage.getItem('studentStickyNote');
-                    if (savedNote) {
-                        stickyInput.value = savedNote;
+                    if (stickyInput) {
+                        const savedNote = localStorage.getItem('studentStickyNote');
+                        if (savedNote) stickyInput.value = savedNote;
+
+                        stickyInput.addEventListener('input', function () {
+                            localStorage.setItem('studentStickyNote', this.value);
+                        });
                     }
 
-                    // Restore Visibility
-                    if (localStorage.getItem('stickyNoteOpen') === 'true') {
+                    if (widget && localStorage.getItem('stickyNoteOpen') === 'true') {
                         widget.classList.add('active');
+                        if (btn) btn.textContent = "🙈 Hide Sticky Note";
+                    } else {
+                        if (btn) btn.textContent = "📝 Add Sticky Note"; // Default
                     }
-
-                    stickyInput.addEventListener('input', function () {
-                        localStorage.setItem('studentStickyNote', this.value);
-                    });
                 });
             </script>
 
