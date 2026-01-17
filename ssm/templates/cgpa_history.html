@@ -684,6 +684,8 @@
                                 <th>Subject Code</th>
                                 <th>Subject Name</th>
                                 <th>Credits</th>
+                                <th>Attendance</th>
+                                <th>Internals</th>
                                 <th>Grade</th>
                                 <th>Points</th>
                             </tr>
@@ -694,6 +696,21 @@
                                 <td>{{ sub.code }}</td>
                                 <td>{{ sub.name }}</td>
                                 <td>{{ sub.credits }}</td>
+                                <td>
+                                    {% if sub.attendance_percentage %}
+                                    <span style="font-weight: 500; color: #0f172a;">{{ sub.attendance_percentage
+                                        }}%</span>
+                                    {% else %}
+                                    <span style="color: #94a3b8;">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if sub.internal_marks %}
+                                    <span style="font-weight: 500; color: #0f172a;">{{ sub.internal_marks }}</span>
+                                    {% else %}
+                                    <span style="color: #94a3b8;">-</span>
+                                    {% endif %}
+                                </td>
                                 <td><span class="grade-badge grade-{{ sub.grade|slugify }}">{{ sub.grade }}</span></td>
                                 <td>{{ sub.points }}</td>
                             </tr>

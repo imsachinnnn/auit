@@ -287,24 +287,7 @@ def student_dashboard(request):
     skills = student.skills.all()
     projects = student.projects.all()
 
-    # --- Standout Feature: Attendance Streak ---
-    attendance_streak = 0
-    # Fetch all attendance records ordered by date descending (unique dates)
-    # We aggregate by date to handle multiple subjects on same day => if present in ALL or ANY?
-    # Usually streak implies "Showed up to college". So if present in at least 1 class that day.
-    dates = StudentAttendance.objects.filter(student=student).values_list('date', flat=True).distinct().order_by('-date')
-    
-    # We need to check consecutiveness based on *recorded* days, ignoring weekends/holidays naturally
-    # (since no records exist for those).
-    for i, date_obj in enumerate(dates):
-        # Check if present on this date (if any 'Present' entry exists for this date)
-        is_present = StudentAttendance.objects.filter(student=student, date=date_obj, status='Present').exists()
-        if is_present:
-            attendance_streak += 1
-        else:
-            # If completely absent on a recorded day, streak breaks.
-            break
-            
+
     # Helper for calendar data
     calendar_data = get_attendance_calendar_data(student)
 
@@ -314,10 +297,12 @@ def student_dashboard(request):
         'attendance_percentage': attendance_percentage,
         'gpa_labels': gpa_labels,
         'gpa_data': gpa_data,
+        'gpa_data': gpa_data,
         'cgpa': cgpa,
+        'gpa_records': gpa_records,  # Added for History View
         'skills': skills,
         'projects': projects,
-        'attendance_streak': attendance_streak,
+
         'today': timezone.now().strftime('%A'),
         'calendar_data': calendar_data
     }

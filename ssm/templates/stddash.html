@@ -84,35 +84,7 @@
             border: 1px solid #e2e8f0;
         }
 
-        /* Standout Feature: Streak Badge */
-        .streak-badge {
-            background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
-            color: #e11d48;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            border: 1px solid #fecdd3;
-            margin-top: 10px;
-            animation: pulse-soft 2s infinite;
-        }
 
-        @keyframes pulse-soft {
-            0% {
-                box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.2);
-            }
-
-            70% {
-                box-shadow: 0 0 0 10px rgba(225, 29, 72, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(225, 29, 72, 0);
-            }
-        }
 
         /* Standout Feature: Sticky Note */
         .sticky-note-widget {
@@ -267,11 +239,7 @@
             <div class="profile-name">{{ student.student_name }}</div>
             <div class="profile-meta">{{ student.roll_number }}</div>
 
-            {% if attendance_streak > 0 %}
-            <div class="streak-badge" title="Consecutive days present">
-                <span>🔥</span> {{ attendance_streak }} Day Streak
-            </div>
-            {% endif %}
+
 
             <div class="profile-badge" style="margin-top: 15px;">
                 {% if student.current_semester > 8 %}
@@ -361,7 +329,7 @@
                                 📅 Attendance Calendar
                             </h3>
                             <a href="{% url 'student_attendance' %}"
-                                style="font-size: 0.8rem; color: #64748b; text-decoration: none;">View Full Details
+                                style="font-size: 0.8rem; color: #64748b; text-decoration: none;">View Attendance
                                 &rarr;</a>
                         </div>
 
@@ -484,6 +452,93 @@
                     </div>
 
                 </div>
+            </div>
+            <!-- Academic History (Generic Layout) -->
+            <div
+                style="margin-top: 30px; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                <h3
+                    style="margin: 0 0 20px 0; color: var(--primary-color); border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">
+                    📚 Academic History
+                </h3>
+
+                {% if gpa_records %}
+                <!-- Semester Selector -->
+                <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+                    <label for="stdSemSelector" style="font-weight: 500; color: #64748b;">Select Semester:</label>
+                    <select id="stdSemSelector" onchange="showStudentSemester(this.value)"
+                        style="padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; color: #334155; outline: none; background: #fff;">
+                        {% for record in gpa_records %}
+                        <option value="std_sem_{{ record.semester }}">Semester {{ record.semester }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Semester Tables Container -->
+                <div id="studentSemesterTables">
+                    {% for record in gpa_records %}
+                    <div id="std_sem_{{ record.semester }}" class="std-semester-table"
+                        style="display: {% if forloop.last %}block{% else %}none{% endif %};">
+
+                        {% if record.subject_data %}
+                        <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                                <thead>
+                                    <tr style="background: #f8fafc; color: #475569;">
+                                        <th style="text-align: left; padding: 12px 20px; font-weight: 600;">Subject</th>
+                                        <th style="text-align: center; padding: 12px 20px; font-weight: 600;">Attn %
+                                        </th>
+                                        <th style="text-align: center; padding: 12px 20px; font-weight: 600;">Internal
+                                            Marks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sub in record.subject_data %}
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 12px 20px; color: #334155;">
+                                            <div style="font-weight: 500;">{{ sub.name }}</div>
+                                            <div style="font-size: 0.85em; color: #64748b;">{{ sub.code }}</div>
+                                        </td>
+                                        <td style="text-align: center; padding: 12px 20px;">
+                                            {% if sub.attendance_percentage %}
+                                            <span
+                                                style="font-weight:500; color: {% if sub.attendance_percentage < 75 %}#ef4444{% else %}#16a34a{% endif %};">
+                                                {{ sub.attendance_percentage }}%
+                                            </span>
+                                            {% else %} - {% endif %}
+                                        </td>
+                                        <td style="text-align: center; padding: 12px 20px;">
+                                            {% if sub.internal_marks or sub.internal_marks == 0 %}
+                                            <span style="font-weight: 600; color: #334155;">{{ sub.internal_marks
+                                                }}</span>
+                                            {% else %} - {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div style="padding: 20px; text-align: center; color: #94a3b8;">No subject data archived for
+                            this semester.</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <script>
+                    function showStudentSemester(semId) {
+                        // Hide all tables
+                        document.querySelectorAll('.std-semester-table').forEach(el => el.style.display = 'none');
+                        // Show selected
+                        document.getElementById(semId).style.display = 'block';
+                    }
+                </script>
+                {% else %}
+                <div
+                    style="text-align: center; padding: 40px; color: #64748b; background: #f8fafc; border-radius: 8px;">
+                    <p style="margin: 0;">No academic history records found.</p>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Data for Charts passed via json_script to avoid linter errors -->

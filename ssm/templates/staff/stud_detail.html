@@ -22,6 +22,14 @@
             --card-radius: 8px;
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             background-color: var(--primary-bg);
@@ -47,6 +55,8 @@
             border-radius: var(--card-radius);
             box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .header-left {
@@ -86,6 +96,7 @@
             text-decoration: none;
             font-size: 0.9em;
             transition: all 0.3s;
+            cursor: pointer;
         }
 
         .action-btn:hover {
@@ -144,6 +155,10 @@
             text-decoration: underline;
         }
 
+        .file-link:hover {
+            color: var(--accent-color-hover);
+        }
+
         .photo-large {
             width: 150px;
             height: 150px;
@@ -152,13 +167,93 @@
             margin-bottom: 15px;
             border: 1px solid var(--border-color);
         }
-                /* --- SCROLL TO TOP BUTTON STYLES --- */
+
+        /* Academic History Styles */
+        .semester-container {
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .semester-header {
+            background: var(--light-accent-bg);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .gpa-badge {
+            font-size: 0.9em;
+            background: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .subject-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        .subject-table thead tr {
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+
+        .subject-table th {
+            text-align: left;
+            padding: 8px 15px;
+            font-weight: 600;
+        }
+
+        .subject-table th.center {
+            text-align: center;
+        }
+
+        .subject-table tbody tr {
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .subject-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .subject-table td {
+            padding: 8px 15px;
+        }
+
+        .subject-table td.center {
+            text-align: center;
+        }
+
+        .no-data {
+            padding: 15px;
+            text-align: center;
+            color: #888;
+        }
+
+        .subsection-title {
+            margin: 0 0 10px 0;
+            color: var(--text-primary);
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .subsection {
+            margin-bottom: 20px;
+        }
+
+        /* Scroll to Top Button */
         #scrollToTopBtn {
-            display: none; /* Hidden by default */
-            position: fixed; /* Fixed/sticky position */
-            bottom: 30px; /* Place the button at the bottom of the page */
-            right: 30px; /* Place the button 30px from the right */
-            z-index: 99; /* Make sure it does not overlap */
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 99;
             border: none;
             outline: none;
             background-color: var(--accent-color);
@@ -166,31 +261,75 @@
             cursor: pointer;
             width: 50px;
             height: 50px;
-            border-radius: 50%; /* Circle shape */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             font-size: 24px;
+            transition: background-color 0.3s, transform 0.3s, opacity 0.3s;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.3s, transform 0.3s, opacity 0.3s;
+            line-height: 1;
         }
 
+        #scrollToTopBtn:hover {
+            background-color: var(--accent-color-hover);
+            transform: scale(1.1);
+        }
+
+        #scrollToTopBtn:active {
+            transform: scale(0.95);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-left {
+                width: 100%;
+            }
+
+            .action-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .subject-table {
+                font-size: 0.8em;
+            }
+
+            .subject-table th,
+            .subject-table td {
+                padding: 6px 8px;
+            }
+        }
     </style>
 </head>
 
 <body>
     <!-- Scroll To Top Button -->
-    <button onclick="topFunction()" id="scrollToTopBtn" title="Go to top">↑</button>
+    <button onclick="topFunction()" id="scrollToTopBtn" title="Go to top" aria-label="Scroll to top">↑</button>
 
     <div class="container">
 
         <!-- Header with Back Button -->
         <header class="page-header">
             <div class="header-left">
-                {% if student.studentdocuments.student_photo %}
-                <img src="{{ student.studentdocuments.student_photo.url }}" alt="Photo" class="student-photo-header">
-                {% else %}
-                <img src="https://ui-avatars.com/api/?name={{ student.student_name }}&background=random" alt="Photo"
+                {% if student.studentdocuments and student.studentdocuments.student_photo %}
+                <img src="{{ student.studentdocuments.student_photo.url }}" alt="{{ student.student_name }} Photo"
                     class="student-photo-header">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ student.student_name }}&background=random"
+                    alt="{{ student.student_name }} Avatar" class="student-photo-header">
                 {% endif %}
                 <div>
                     <h1>{{ student.student_name }}</h1>
@@ -223,45 +362,55 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Date of Birth</span>
-                    <span class="info-value">{% if personal_info.date_of_birth %}{{ personal_info.date_of_birth|date:"Y-m-d" }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.date_of_birth %}{{
+                        personal_info.date_of_birth|date:"Y-m-d" }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Gender</span>
-                    <span class="info-value">{% if personal_info.gender %}{{ personal_info.gender }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.gender %}{{ personal_info.gender }}{% else %}-{% endif
+                        %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Blood Group</span>
-                    <span class="info-value">{% if personal_info.blood_group %}{{ personal_info.blood_group }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.blood_group %}{{ personal_info.blood_group }}{% else
+                        %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Mobile</span>
-                    <span class="info-value">{% if personal_info.student_mobile %}{{ personal_info.student_mobile }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.student_mobile %}{{ personal_info.student_mobile }}{%
+                        else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Aadhaar</span>
-                    <span class="info-value">{% if personal_info.aadhaar_number %}{{ personal_info.aadhaar_number }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.aadhaar_number %}{{ personal_info.aadhaar_number }}{%
+                        else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Community</span>
-                    <span class="info-value">{% if personal_info.community %}{{ personal_info.community }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.community %}{{ personal_info.community }}{% else %}-{%
+                        endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Caste</span>
-                    <span class="info-value">{% if personal_info.caste %}{{ personal_info.caste.name }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.caste %}{{ personal_info.caste.name }}{% else %}-{%
+                        endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Religion</span>
-                    <span class="info-value">{% if personal_info.religion %}{{ personal_info.religion }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.religion %}{{ personal_info.religion }}{% else %}-{%
+                        endif %}</span>
                 </div>
             </div>
             <div class="info-grid" style="margin-top: 15px;">
                 <div class="info-item">
                     <span class="info-label">Present Address</span>
-                    <span class="info-value">{% if personal_info.present_address %}{{ personal_info.present_address }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.present_address %}{{ personal_info.present_address }}{%
+                        else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Permanent Address</span>
-                    <span class="info-value">{% if personal_info.permanent_address %}{{ personal_info.permanent_address }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.permanent_address %}{{ personal_info.permanent_address
+                        }}{% else %}-{% endif %}</span>
                 </div>
             </div>
             {% else %}
@@ -280,7 +429,8 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Father's Occupation</span>
-                    <span class="info-value">{% if personal_info.father_occupation %}{{ personal_info.father_occupation }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.father_occupation %}{{ personal_info.father_occupation
+                        }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Father's Mobile</span>
@@ -292,7 +442,8 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Mother's Occupation</span>
-                    <span class="info-value">{% if personal_info.mother_occupation %}{{ personal_info.mother_occupation }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.mother_occupation %}{{ personal_info.mother_occupation
+                        }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Mother's Mobile</span>
@@ -300,7 +451,8 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Annual Income</span>
-                    <span class="info-value">{% if personal_info.parent_annual_income %}{{ personal_info.parent_annual_income }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.parent_annual_income %}{{
+                        personal_info.parent_annual_income }}{% else %}-{% endif %}</span>
                 </div>
             </div>
             {% else %}
@@ -309,56 +461,193 @@
         </section>
 
         <!-- Academic History -->
-        <!-- Academic History -->
         <section class="section-card">
-            <div class="section-title">Academic History</div>
+            <div class="section-title">Academic History (Semesters)</div>
+
+            {% if gpa_records %}
+            <!-- Semester Selector -->
+            <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+                <label for="semSelector" style="font-weight: 500; color: var(--text-secondary);">Select
+                    Semester:</label>
+                <select id="semSelector" onchange="showSemester(this.value)"
+                    style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); color: var(--text-primary); outline: none;">
+                    {% for record in gpa_records %}
+                    <option value="sem_{{ record.semester }}">Semester {{ record.semester }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Semester Tables Container -->
+            <div id="semesterTablesContainer">
+                {% for record in gpa_records %}
+                <div id="sem_{{ record.semester }}" class="semester-data-table"
+                    style="display: {% if forloop.first %}block{% else %}none{% endif %};">
+                    <div class="semester-header" style="background: transparent; padding: 0 0 15px 0; border: none;">
+                        <!-- GPA Removed as requested -->
+                    </div>
+
+                    {% if record.subject_data %}
+                    <div style="border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden;">
+                        <table class="subject-table">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th class="center">Attn %</th>
+                                    <th class="center">Internal Marks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sub in record.subject_data %}
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 500;">{{ sub.name }}</div>
+                                        <div style="font-size: 0.85em; color: var(--text-secondary);">{{ sub.code }}
+                                        </div>
+                                    </td>
+                                    <td class="center">
+                                        {% if sub.attendance_percentage %}
+                                        <span
+                                            style="font-weight:500; color: {% if sub.attendance_percentage < 75 %}#dc3545{% else %}#198754{% endif %};">
+                                            {{ sub.attendance_percentage }}%
+                                        </span>
+                                        {% else %} - {% endif %}
+                                    </td>
+                                    <td class="center">
+                                        {% if sub.internal_marks or sub.internal_marks == 0 %}
+                                        <span style="font-weight: 600;">{{ sub.internal_marks }}</span>
+                                        {% else %} - {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="no-data">No subject data archived for this semester.</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <script>
+                function showSemester(semId) {
+                    // Hide all tables
+                    document.querySelectorAll('.semester-data-table').forEach(el => el.style.display = 'none');
+                    // Show selected
+                    document.getElementById(semId).style.display = 'block';
+                }
+            </script>
+
+            {% else %}
+            <p style="color: var(--text-secondary);">No semester history records found.</p>
+            {% endif %}
+        </section>
+
+        <!-- Previous Academic Info -->
+        <section class="section-card">
+            <div class="section-title">Previous Education</div>
 
             {% if academic_history %}
-            <div style="margin-bottom: 20px;">
-                <h4 style="margin: 0 0 10px 0; color: var(--text-primary);">SSLC</h4>
+            <div class="subsection">
+                <h4 class="subsection-title">SSLC</h4>
                 <div class="info-grid">
-                    <div class="info-item"><span class="info-label">School</span><span class="info-value">{% if academic_history.sslc_school_name %}{{ academic_history.sslc_school_name }}{% else %}-{% endif %}</span></div>
-                    <div class="info-item"><span class="info-label">Percentage</span><span class="info-value">{% if academic_history.sslc_percentage %}{{ academic_history.sslc_percentage }}%{% else %}-{% endif %}</span></div>
-                    <div class="info-item"><span class="info-label">Year</span><span class="info-value">{% if academic_history.sslc_year_of_passing %}{{ academic_history.sslc_year_of_passing }}{% else %}-{% endif %}</span></div>
+                    <div class="info-item">
+                        <span class="info-label">School</span>
+                        <span class="info-value">{% if academic_history.sslc_school_name %}{{
+                            academic_history.sslc_school_name }}{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Percentage</span>
+                        <span class="info-value">{% if academic_history.sslc_percentage %}{{
+                            academic_history.sslc_percentage }}%{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Year</span>
+                        <span class="info-value">{% if academic_history.sslc_year_of_passing %}{{
+                            academic_history.sslc_year_of_passing }}{% else %}-{% endif %}</span>
+                    </div>
                 </div>
             </div>
-            <div style="margin-bottom: 20px;">
-                <h4 style="margin: 0 0 10px 0; color: var(--text-primary);">HSC</h4>
+
+            <div class="subsection">
+                <h4 class="subsection-title">HSC</h4>
                 <div class="info-grid">
-                    <div class="info-item"><span class="info-label">School</span><span class="info-value">{% if academic_history.hsc_school_name %}{{ academic_history.hsc_school_name }}{% else %}-{% endif %}</span></div>
-                    <div class="info-item"><span class="info-label">Percentage</span><span class="info-value">{% if academic_history.hsc_percentage %}{{ academic_history.hsc_percentage }}%{% else %}-{% endif %}</span></div>
-                    <div class="info-item"><span class="info-label">Year</span><span class="info-value">{% if academic_history.hsc_year_of_passing %}{{ academic_history.hsc_year_of_passing }}{% else %}-{% endif %}</span></div>
+                    <div class="info-item">
+                        <span class="info-label">School</span>
+                        <span class="info-value">{% if academic_history.hsc_school_name %}{{
+                            academic_history.hsc_school_name }}{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Percentage</span>
+                        <span class="info-value">{% if academic_history.hsc_percentage %}{{
+                            academic_history.hsc_percentage }}%{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Year</span>
+                        <span class="info-value">{% if academic_history.hsc_year_of_passing %}{{
+                            academic_history.hsc_year_of_passing }}{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Batch</span>
+                        <span class="info-value">
+                            {% if student.joining_year and student.ending_year %}
+                            {{ student.joining_year }} - {{ student.ending_year }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </span>
+                    </div>
                 </div>
-                <strong>Batch : </strong>
-                <span>
-                                {% if student.joining_year and student.ending_year %}
-                                {{ student.joining_year }} - {{ student.ending_year }}
-                                {% else %}
-                                -
-                                {% endif %}
-                </span>
             </div>
             {% endif %}
 
             {% if diploma_details %}
-            <div style="margin-bottom: 20px;">
-                <h4 style="margin: 0 0 10px 0; color: var(--text-primary);">Diploma</h4>
+            <div class="subsection">
+                <h4 class="subsection-title">Diploma</h4>
                 <div class="info-grid">
-                    <div class="info-item"><span class="info-label">College</span><span class="info-value">{% if diploma_details.diploma_college_name %}{{ diploma_details.diploma_college_name }}{% else %}-{% endif %}</span></div>
-                    <div class="info-item"><span class="info-label">Percentage</span><span class="info-value">{% if diploma_details.diploma_percentage %}{{ diploma_details.diploma_percentage }}%{% else %}-{% endif %}</span></div>
-                    <div class="info-item"><span class="info-label">Year</span><span class="info-value">{% if diploma_details.diploma_year_of_passing %}{{ diploma_details.diploma_year_of_passing }}{% else %}-{% endif %}</span></div>
+                    <div class="info-item">
+                        <span class="info-label">College</span>
+                        <span class="info-value">{% if diploma_details.diploma_college_name %}{{
+                            diploma_details.diploma_college_name }}{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Percentage</span>
+                        <span class="info-value">{% if diploma_details.diploma_percentage %}{{
+                            diploma_details.diploma_percentage }}%{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Year</span>
+                        <span class="info-value">{% if diploma_details.diploma_year_of_passing %}{{
+                            diploma_details.diploma_year_of_passing }}{% else %}-{% endif %}</span>
+                    </div>
                 </div>
             </div>
             {% endif %}
 
             {% if ug_details %}
-            <div style="margin-bottom: 20px;">
-                <h4 style="margin: 0 0 10px 0; color: var(--text-primary);">Undergraduate</h4>
+            <div class="subsection">
+                <h4 class="subsection-title">Undergraduate</h4>
                 <div class="info-grid">
-                    <div class="info-item"><span class="info-label">Course</span><span class="info-value">{% if ug_details.ug_course %}{{ ug_details.ug_course }}{% else %}-{% endif %}</span></div>
-                    <div class="info-item"><span class="info-label">University</span><span class="info-value">{% if ug_details.ug_university %}{{ ug_details.ug_university }}{% else %}-{% endif %}</span></div>
-                    <div class="info-item"><span class="info-label">OGPA</span><span class="info-value">{% if ug_details.ug_ogpa %}{{ ug_details.ug_ogpa }}{% else %}-{% endif %}</span></div>
-                    <div class="info-item"><span class="info-label">Year</span><span class="info-value">{% if ug_details.ug_year_of_passing %}{{ ug_details.ug_year_of_passing }}{% else %}-{% endif %}</span></div>
+                    <div class="info-item">
+                        <span class="info-label">Course</span>
+                        <span class="info-value">{% if ug_details.ug_course %}{{ ug_details.ug_course }}{% else %}-{%
+                            endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">University</span>
+                        <span class="info-value">{% if ug_details.ug_university %}{{ ug_details.ug_university }}{% else
+                            %}-{% endif %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">OGPA</span>
+                        <span class="info-value">{% if ug_details.ug_ogpa %}{{ ug_details.ug_ogpa }}{% else %}-{% endif
+                            %}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Year</span>
+                        <span class="info-value">{% if ug_details.ug_year_of_passing %}{{ ug_details.ug_year_of_passing
+                            }}{% else %}-{% endif %}</span>
+                    </div>
                 </div>
             </div>
             {% endif %}
@@ -373,11 +662,31 @@
             <div class="section-title">Bank Details</div>
             {% if bank_details %}
             <div class="info-grid">
-                <div class="info-item"><span class="info-label">Account Holder</span><span class="info-value">{% if bank_details.account_holder_name %}{{ bank_details.account_holder_name }}{% else %}-{% endif %}</span></div>
-                <div class="info-item"><span class="info-label">Account Number</span><span class="info-value">{% if bank_details.account_number %}{{ bank_details.account_number }}{% else %}-{% endif %}</span></div>
-                <div class="info-item"><span class="info-label">Bank Name</span><span class="info-value">{% if bank_details.bank_name %}{{ bank_details.bank_name }}{% else %}-{% endif %}</span></div>
-                <div class="info-item"><span class="info-label">Branch</span><span class="info-value">{% if bank_details.branch_name %}{{ bank_details.branch_name }}{% else %}-{% endif %}</span></div>
-                <div class="info-item"><span class="info-label">IFSC Code</span><span class="info-value">{% if bank_details.ifsc_code %}{{ bank_details.ifsc_code }}{% else %}-{% endif %}</span></div>
+                <div class="info-item">
+                    <span class="info-label">Account Holder</span>
+                    <span class="info-value">{% if bank_details.account_holder_name %}{{
+                        bank_details.account_holder_name }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Account Number</span>
+                    <span class="info-value">{% if bank_details.account_number %}{{ bank_details.account_number }}{%
+                        else %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Bank Name</span>
+                    <span class="info-value">{% if bank_details.bank_name %}{{ bank_details.bank_name }}{% else %}-{%
+                        endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Branch</span>
+                    <span class="info-value">{% if bank_details.branch_name %}{{ bank_details.branch_name }}{% else
+                        %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">IFSC Code</span>
+                    <span class="info-value">{% if bank_details.ifsc_code %}{{ bank_details.ifsc_code }}{% else %}-{%
+                        endif %}</span>
+                </div>
             </div>
             {% else %}
             <p style="color: var(--text-secondary);">No bank details available.</p>
@@ -392,42 +701,48 @@
                 {% if docs.student_photo %}
                 <div class="info-item">
                     <span class="info-label">Photo</span>
-                    <a href="{{ docs.student_photo.url }}" class="file-link" target="_blank">View File</a>
+                    <a href="{{ docs.student_photo.url }}" class="file-link" target="_blank"
+                        rel="noopener noreferrer">View File</a>
                 </div>
                 {% endif %}
 
                 {% if docs.student_id_card %}
                 <div class="info-item">
                     <span class="info-label">ID Card</span>
-                    <a href="{{ docs.student_id_card.url }}" class="file-link" target="_blank">View File</a>
+                    <a href="{{ docs.student_id_card.url }}" class="file-link" target="_blank"
+                        rel="noopener noreferrer">View File</a>
                 </div>
                 {% endif %}
 
                 {% if docs.community_certificate %}
                 <div class="info-item">
                     <span class="info-label">Community Cert</span>
-                    <a href="{{ docs.community_certificate.url }}" class="file-link" target="_blank">View File</a>
+                    <a href="{{ docs.community_certificate.url }}" class="file-link" target="_blank"
+                        rel="noopener noreferrer">View File</a>
                 </div>
                 {% endif %}
 
                 {% if docs.aadhaar_card %}
                 <div class="info-item">
                     <span class="info-label">Aadhaar Card</span>
-                    <a href="{{ docs.aadhaar_card.url }}" class="file-link" target="_blank">View File</a>
+                    <a href="{{ docs.aadhaar_card.url }}" class="file-link" target="_blank"
+                        rel="noopener noreferrer">View File</a>
                 </div>
                 {% endif %}
 
                 {% if docs.sslc_marksheet %}
                 <div class="info-item">
                     <span class="info-label">SSLC Marksheet</span>
-                    <a href="{{ docs.sslc_marksheet.url }}" class="file-link" target="_blank">View File</a>
+                    <a href="{{ docs.sslc_marksheet.url }}" class="file-link" target="_blank"
+                        rel="noopener noreferrer">View File</a>
                 </div>
                 {% endif %}
 
                 {% if docs.hsc_marksheet %}
                 <div class="info-item">
                     <span class="info-label">HSC Marksheet</span>
-                    <a href="{{ docs.hsc_marksheet.url }}" class="file-link" target="_blank">View File</a>
+                    <a href="{{ docs.hsc_marksheet.url }}" class="file-link" target="_blank"
+                        rel="noopener noreferrer">View File</a>
                 </div>
                 {% endif %}
             </div>
@@ -436,13 +751,26 @@
             {% endif %}
         </section>
 
+        <!-- Other Details -->
         <section class="section-card">
             <div class="section-title">Other Details</div>
             {% if other_details %}
             <div class="info-grid">
-                <div class="info-item"><span class="info-label">Ambition</span><span class="info-value">{% if other_details.ambition %}{{ other_details.ambition }}{% else %}-{% endif %}</span></div>
-                <div class="info-item"><span class="info-label">Role Model</span><span class="info-value">{% if other_details.role_model %}{{ other_details.role_model }}{% else %}-{% endif %}</span></div>
-                <div class="info-item"><span class="info-label">Hobbies</span><span class="info-value">{% if other_details.hobbies %}{{ other_details.hobbies }}{% else %}-{% endif %}</span></div>
+                <div class="info-item">
+                    <span class="info-label">Ambition</span>
+                    <span class="info-value">{% if other_details.ambition %}{{ other_details.ambition }}{% else %}-{%
+                        endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Role Model</span>
+                    <span class="info-value">{% if other_details.role_model %}{{ other_details.role_model }}{% else
+                        %}-{% endif %}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Hobbies</span>
+                    <span class="info-value">{% if other_details.hobbies %}{{ other_details.hobbies }}{% else %}-{%
+                        endif %}</span>
+                </div>
             </div>
             {% else %}
             <p style="color: var(--text-secondary);">No other details available.</p>
@@ -450,17 +778,18 @@
         </section>
 
     </div>
+
     <!-- JavaScript for Scroll To Top -->
     <script>
         // Get the button
-        let mybutton = document.getElementById("scrollToTopBtn");
+        const mybutton = document.getElementById("scrollToTopBtn");
 
         // When the user scrolls down 300px from the top of the document, show the button
-        window.onscroll = function() {scrollFunction()};
+        window.onscroll = function () { scrollFunction(); };
 
         function scrollFunction() {
             if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-                mybutton.style.display = "flex"; // Use flex to keep the arrow centered
+                mybutton.style.display = "flex";
             } else {
                 mybutton.style.display = "none";
             }
@@ -468,7 +797,6 @@
 
         // When the user clicks on the button, scroll to the top of the document
         function topFunction() {
-            // Smooth scroll is also handled by CSS 'scroll-behavior: smooth' on body
             document.body.scrollTop = 0; // For Safari
             document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
         }

@@ -56,6 +56,7 @@ class Subject(models.Model):
         ('Lab', 'Lab'),
     ]
     subject_type = models.CharField(max_length=10, choices=SUBJECT_Types, default='Theory')
+    credits = models.IntegerField(default=3, help_text="Credit points for this subject")
     
     staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, blank=True, related_name='subjects')
     

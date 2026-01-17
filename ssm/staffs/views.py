@@ -179,13 +179,15 @@ def student_detail(request, roll_number):
     # but preferably they should be at top. Let's assume they are available or import them.
     from students.models import (
         PersonalInfo, AcademicHistory, DiplomaDetails, UGDetails, PGDetails, 
-        PhDDetails, ScholarshipInfo, StudentDocuments, BankDetails, OtherDetails
+        PhDDetails, ScholarshipInfo, StudentDocuments, BankDetails, OtherDetails,
+        StudentGPA 
     )
 
     context = {
         'student': student,
         'personal_info': get_or_none(PersonalInfo, student=student),
         'academic_history': get_or_none(AcademicHistory, student=student),
+        'gpa_records': StudentGPA.objects.filter(student=student).order_by('semester'), # Added history
         'diploma_details': get_or_none(DiplomaDetails, student=student),
         'ug_details': get_or_none(UGDetails, student=student),
         'pg_details': get_or_none(PGDetails, student=student),
@@ -213,10 +215,23 @@ def manage_semesters(request):
             from django.db.models import F
             
             if action == 'promote':
-                # Only promote if current_semester <= 8. 
-                # If they are already 9 (Course Completed), do not increment further.
-                Student.objects.filter(roll_number__in=student_ids, current_semester__lte=8).update(current_semester=F('current_semester') + 1)
-                messages.success(request, f"Successfully promoted selected students.")
+                # Loop through students to archive data individually BEFORE promoting
+                count = 0
+                for roll in student_ids:
+                    try:
+                        student = Student.objects.get(roll_number=roll)
+                        if student.current_semester <= 8:
+                            # ARCHIVE DATA FIRST
+                            archive_semester_data(student)
+                            
+                            # PROMOTE
+                            student.current_semester += 1
+                            student.save()
+                            count += 1
+                    except Student.DoesNotExist:
+                        continue
+                        
+                messages.success(request, f"Successfully promoted {count} students and archived their semester data.")
             
             elif action == 'demote':
                 # Only demote if current_semester > 1.
@@ -1204,3 +1219,154 @@ def staff_profile(request):
         return redirect('staffs:stafflogin')
 
     return render(request, 'staff/profile.html', {'staff': staff})
+
+def archive_semester_data(student):
+    """
+    Helper to archive attendance and marks for all subjects in the student's current semester.
+    """
+    from staffs.models import Subject
+    from students.models import StudentMarks, StudentAttendance, StudentGPA
+    import datetime
+
+    # Get all subjects for the student's current semester
+    subjects = Subject.objects.filter(semester=student.current_semester)
+    
+    # Create/Get GPA record for this semester
+    student_gpa, created = StudentGPA.objects.get_or_create(
+        student=student, 
+        semester=student.current_semester,
+        defaults={'gpa': 0.0, 'total_credits': 0.0}
+    )
+    
+    # Reset subject_data to avoid stale/duplicate entries if re-run
+    student_gpa.subject_data = [] 
+    
+    total_points = 0
+    total_sc = 0
+    
+    for subject in subjects:
+        # 1. Calculate Attendance %
+        total_classes = StudentAttendance.objects.filter(student=student, subject=subject).count()
+        present_classes = StudentAttendance.objects.filter(student=student, subject=subject, status='Present').count()
+        attendance_percentage = round((present_classes / total_classes) * 100, 1) if total_classes > 0 else 0.0
+        
+        # 2. Get Internals & Calculate Grade Point
+        internal_marks = 0
+        try:
+            marks_record = StudentMarks.objects.get(student=student, subject=subject)
+            internal_marks = marks_record.internal_marks or 0
+        except StudentMarks.DoesNotExist:
+            pass # Keep internal as 0
+            
+        # Simple Grade Point Logic 
+        score = internal_marks 
+        grade = 'RA'
+        grade_point = 0
+        
+        if score >= 90: 
+            grade_point = 10
+            grade = 'O'
+        elif score >= 80: 
+            grade_point = 9
+            grade = 'A+'
+        elif score >= 70: 
+            grade_point = 8
+            grade = 'A'
+        elif score >= 60: 
+            grade_point = 7
+            grade = 'B+'
+        elif score >= 50: 
+            grade_point = 6
+            grade = 'B'
+        else: 
+            grade_point = 0
+            grade = 'RA'
+            
+        # Append data
+        new_entry = {
+            'code': subject.code,
+            'name': subject.name,
+            'credits': getattr(subject, 'credits', 3), 
+            'internal_marks': internal_marks,
+            'attendance_percentage': attendance_percentage,
+            'points': grade_point,
+            'grade': grade,
+            'archived_at': str(datetime.date.today())
+        }
+        student_gpa.subject_data.append(new_entry)
+        
+        # Accumulate for GPA
+        creds = getattr(subject, 'credits', 3)
+        total_points += (grade_point * creds)
+        total_sc += creds
+
+    # Finalize GPA
+    student_gpa.gpa = round(total_points / total_sc, 2) if total_sc > 0 else 0.0
+    student_gpa.total_credits = total_sc
+    student_gpa.save()
+
+
+def manage_semesters(request):
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+    
+    selected_semester = request.GET.get('semester')
+    students = []
+    
+    if request.method == 'POST':
+        student_ids = request.POST.getlist('student_ids')
+        action = request.POST.get('action')
+
+        if student_ids and action:
+            from django.db.models import F
+            
+            if action == 'promote':
+                # Loop through students to archive data individually BEFORE promoting
+                count = 0
+                for roll in student_ids:
+                    try:
+                        student = Student.objects.get(roll_number=roll)
+                        if student.current_semester <= 8:
+                            # ARCHIVE DATA FIRST
+                            archive_semester_data(student)
+                            
+                            # PROMOTE
+                            student.current_semester += 1
+                            student.save()
+                            count += 1
+                    except Student.DoesNotExist:
+                        continue
+                        
+                messages.success(request, f"Successfully promoted {count} students and archived their semester data.")
+            
+            elif action == 'demote':
+                # Only demote if current_semester > 1.
+                Student.objects.filter(roll_number__in=student_ids, current_semester__gt=1).update(current_semester=F('current_semester') - 1)
+                messages.success(request, f"Successfully demoted selected students.")
+                
+            return redirect(f"{request.path}?semester={selected_semester}") # Stay on same page
+        else:
+            messages.warning(request, "No students selected or invalid action.")
+
+    display_semester_selector = True
+    header_text = "Filter by Current Semester"
+
+    # Restrict for Class Incharge
+    try:
+        current_staff = Staff.objects.get(staff_id=request.session['staff_id'])
+        if current_staff.role == 'Class Incharge' and current_staff.assigned_semester:
+            selected_semester = str(current_staff.assigned_semester)
+            display_semester_selector = False
+            header_text = f"Managing Semester {selected_semester} (Assigned)"
+    except Staff.DoesNotExist:
+        pass
+
+    if selected_semester:
+        students = Student.objects.filter(current_semester=selected_semester)
+    
+    return render(request, 'staff/manage_semesters.html', {
+        'students': students, 
+        'selected_semester': selected_semester,
+        'display_semester_selector': display_semester_selector,
+        'header_text': header_text
+    })
