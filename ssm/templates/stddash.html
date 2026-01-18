@@ -374,16 +374,7 @@
                         <canvas id="marksChart"></canvas>
                     </div>
 
-                    <!-- Attendance Graph -->
-                    <div class="chart-card" style="margin-top: 25px;">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <h3 style="margin: 0; color: var(--primary-color);">Attendance</h3>
-                            <a href="{% url 'student_attendance' %}" class="btn-sm btn-outline"
-                                style="font-size: 0.8rem; padding: 2px 8px;">View All</a>
-                        </div>
-                        <canvas id="attendanceChart"></canvas>
-                    </div>
+
 
                 </div>
 
@@ -402,6 +393,17 @@
                         </div>
                         <textarea id="stickyNoteInput" class="sticky-textarea"
                             placeholder="Type a reminder here... (Auto-saved)"></textarea>
+                    </div>
+
+                    <!-- Attendance Graph -->
+                    <div class="chart-card" style="margin-top: 25px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3 style="margin: 0; color: var(--primary-color);">Attendance</h3>
+                            <a href="{% url 'student_attendance' %}" class="btn-sm btn-outline"
+                                style="font-size: 0.8rem; padding: 2px 8px;">View All</a>
+                        </div>
+                        <canvas id="attendanceChart"></canvas>
                     </div>
 
                     <!-- Projects & Skills Widget -->
@@ -471,6 +473,12 @@
                         <option value="std_sem_{{ record.semester }}">Semester {{ record.semester }}</option>
                         {% endfor %}
                     </select>
+
+                    <a href="{% url 'cgpa_history' %}#sem-{{ gpa_records.0.semester }}" id="viewAnalysisBtn"
+                        class="btn-sm btn-outline"
+                        style="font-size: 0.85rem; padding: 6px 12px; height: fit-content; margin-left: auto;">
+                        View GPA Analysis &rarr;
+                    </a>
                 </div>
 
                 <!-- Semester Tables Container -->
@@ -486,6 +494,10 @@
                                     <tr style="background: #f8fafc; color: #475569;">
                                         <th style="text-align: left; padding: 12px 20px; font-weight: 600;">Subject</th>
                                         <th style="text-align: center; padding: 12px 20px; font-weight: 600;">Attn %
+                                        </th>
+                                        <th style="text-align: center; padding: 12px 20px; font-weight: 600;">Mid Term 1
+                                        </th>
+                                        <th style="text-align: center; padding: 12px 20px; font-weight: 600;">Mid Term 2
                                         </th>
                                         <th style="text-align: center; padding: 12px 20px; font-weight: 600;">Internal
                                             Marks</th>
@@ -507,9 +519,19 @@
                                             {% else %} - {% endif %}
                                         </td>
                                         <td style="text-align: center; padding: 12px 20px;">
+                                            {% if sub.test1_marks or sub.test1_marks == 0 %}
+                                            <span style="font-weight: 600; color: #334155;">{{ sub.test1_marks }}</span>
+                                            {% else %} - {% endif %}
+                                        </td>
+                                        <td style="text-align: center; padding: 12px 20px;">
+                                            {% if sub.test2_marks or sub.test2_marks == 0 %}
+                                            <span style="font-weight: 600; color: #334155;">{{ sub.test2_marks }}</span>
+                                            {% else %} - {% endif %}
+                                        </td>
+                                        <td style="text-align: center; padding: 12px 20px;">
                                             {% if sub.internal_marks or sub.internal_marks == 0 %}
-                                            <span style="font-weight: 600; color: #334155;">{{ sub.internal_marks
-                                                }}</span>
+                                            <span style="font-weight: 600; color: #334155;">{{
+                                                sub.internal_marks}}</span>
                                             {% else %} - {% endif %}
                                         </td>
                                     </tr>
@@ -531,6 +553,13 @@
                         document.querySelectorAll('.std-semester-table').forEach(el => el.style.display = 'none');
                         // Show selected
                         document.getElementById(semId).style.display = 'block';
+
+                        // Update the analysis button link
+                        var semNum = semId.replace('std_sem_', '');
+                        var btn = document.getElementById('viewAnalysisBtn');
+                        if (btn) {
+                            btn.href = "{% url 'cgpa_history' %}#sem-" + semNum;
+                        }
                     }
                 </script>
                 {% else %}

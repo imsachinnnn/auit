@@ -440,84 +440,7 @@
             font-size: 1.2rem;
         }
 
-        /* Heatmap Section */
-        .heatmap-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
-            gap: 6px;
-            margin-top: 15px;
-            padding: 15px;
-            background: #fff;
-            border-radius: 12px;
-            border: 1px solid #f1f5f9;
-        }
 
-        .heatmap-cell {
-            width: 100%;
-            aspect-ratio: 1;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-            position: relative;
-        }
-
-        .heatmap-cell:hover {
-            transform: scale(1.15);
-            z-index: 2;
-        }
-
-        /* Tooltip hack for heatmap */
-        .heatmap-cell:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #334155;
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            white-space: nowrap;
-            margin-bottom: 5px;
-            z-index: 10;
-        }
-
-        .bg-O {
-            background-color: #10b981;
-            color: #fff;
-        }
-
-        .bg-A_plus {
-            background-color: #34d399;
-            color: #fff;
-        }
-
-        .bg-A {
-            background-color: #6ee7b7;
-            color: #064e3b;
-        }
-
-        .bg-B_plus {
-            background-color: #fca5a5;
-            color: #7f1d1d;
-        }
-
-        /* Example logic: simplified */
-        .bg-B {
-            background-color: #cbd5e1;
-            color: #334155;
-        }
-
-        .bg-default {
-            background-color: #e2e8f0;
-            color: #94a3b8;
-        }
 
         /* Print Styles */
         @media print {
@@ -639,23 +562,7 @@
             </div>
         </div>
 
-        <!-- Performance Heatmap -->
-        <div class="chart-section" style="height: auto; min-height: auto;">
-            <div class="section-title">Performance Heatmap</div>
-            <p style="font-size: 0.85rem; color: #64748b; margin-top: -10px; margin-bottom: 15px;">
-                Visual overview of your grades across all subjects.
-            </p>
-            <div class="heatmap-grid">
-                {% for item in all_grades %}
-                <div class="heatmap-cell bg-{{ item.grade|slugify|default:'default' }}"
-                    data-tooltip="{{ item.code }}: {{ item.grade }}">
-                    {{ item.grade }}
-                </div>
-                {% empty %}
-                <p style="text-align: center; color: #94a3b8; width: 100%;">No grade data available yet.</p>
-                {% endfor %}
-            </div>
-        </div>
+
 
         <!-- Visualization -->
         <div class="chart-section">
@@ -667,7 +574,7 @@
         <h3 class="section-title">Semester Breakdown</h3>
         <div class="timeline-container">
             {% for sem in detailed_history reversed %}
-            <div class="semester-card">
+            <div class="semester-card" id="sem-{{ sem.semester }}">
                 <div class="semester-header" onclick="toggleSem(this)">
                     <div class="sem-title">Semester {{ sem.semester }}</div>
                     <div class="sem-stats">
@@ -830,5 +737,29 @@
     </script>
 
 </body>
+
+<script>
+    // Auto-expand semester based on URL hash
+    document.addEventListener("DOMContentLoaded", function () {
+        if (window.location.hash) {
+            const targetId = window.location.hash.substring(1); // e.g. "sem-5"
+            const targetCard = document.getElementById(targetId);
+            if (targetCard) {
+                const header = targetCard.querySelector('.semester-header');
+                if (header) {
+                    // Small delay to ensure styles are ready
+                    setTimeout(() => {
+                        // Expand
+                        if (!header.classList.contains('active')) {
+                            toggleSem(header);
+                        }
+                        // Smooth scroll
+                        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                }
+            }
+        }
+    });
+</script>
 
 </html>

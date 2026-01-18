@@ -266,21 +266,68 @@ def student_dashboard(request):
     # Fetch News
     news_list = News.objects.filter(is_active=True, target__in=['All', 'Student']).order_by('-date', '-id')
 
-    # Calculate Attendance
-    total_classes = StudentAttendance.objects.filter(student=student).count()
-    present_classes = StudentAttendance.objects.filter(student=student, status='Present').count()
+    # Calculate Attendance (Current Semester Only)
+    total_classes = StudentAttendance.objects.filter(student=student, subject__semester=student.current_semester).count()
+    present_classes = StudentAttendance.objects.filter(student=student, subject__semester=student.current_semester, status='Present').count()
     attendance_percentage = 0
     if total_classes > 0:
         attendance_percentage = round((present_classes / total_classes) * 100, 1)
 
     # Fetch GPA Data for Chart
-    gpa_records = StudentGPA.objects.filter(student=student).order_by('semester')
-    gpa_labels = [f"Sem {r.semester}" for r in gpa_records]
-    gpa_data = [r.gpa for r in gpa_records]
+    gpa_records = list(StudentGPA.objects.filter(student=student).order_by('semester'))
+    
+    # Check if current semester is in gpa_records
+    existing_sems = [r.semester for r in gpa_records]
+    if student.current_semester not in existing_sems:
+        # Fetch current semester data manually
+        from staffs.models import Subject
+        from students.models import StudentMarks
+        
+        current_subs = Subject.objects.filter(semester=student.current_semester)
+        subject_data = []
+        for sub in current_subs:
+            # Calculate Subject Attendance
+            sub_total = StudentAttendance.objects.filter(student=student, subject=sub).count()
+            sub_present = StudentAttendance.objects.filter(student=student, subject=sub, status='Present').count()
+            sub_attn = round((sub_present / sub_total) * 100, 1) if sub_total > 0 else 0
+
+            try:
+                marks = StudentMarks.objects.get(student=student, subject=sub)
+                subject_data.append({
+                    'code': sub.code,
+                    'name': sub.name,
+                    'credits': sub.credits,
+                    'test1_marks': marks.test1_marks,
+                    'test2_marks': marks.test2_marks,
+                    'internal_marks': marks.internal_marks,
+                    'attendance_percentage': sub_attn,
+                    'grade': 'N/A' # Not generated yet
+                })
+            except StudentMarks.DoesNotExist:
+                subject_data.append({
+                    'code': sub.code,
+                    'name': sub.name,
+                    'credits': sub.credits,
+                    'attendance_percentage': sub_attn, 
+                    'grade': 'N/A'
+                })
+        
+        if subject_data:
+            # Append a dict that mimics the structure needed by the template
+            gpa_records.append({
+                'semester': student.current_semester,
+                'gpa': 0.0, # Placeholder
+                'subject_data': subject_data
+            })
+
+    gpa_labels = [f"Sem {r.semester if isinstance(r, StudentGPA) else r.get('semester')}" for r in gpa_records]
+    gpa_data = [r.gpa if isinstance(r, StudentGPA) else 0.0 for r in gpa_records]
     
     # Calculate CGPA
-    total_points = sum(r.gpa * r.total_credits for r in gpa_records)
-    total_credits = sum(r.total_credits for r in gpa_records)
+    # Filter only actual StudentGPA objects for calculation
+    real_records = [r for r in gpa_records if isinstance(r, StudentGPA)]
+    total_points = sum(r.gpa * r.total_credits for r in real_records)
+    total_credits = sum(r.total_credits for r in real_records)
     cgpa = round(total_points / total_credits, 2) if total_credits > 0 else 0.0
 
     # Skills & Projects (New)
@@ -868,8 +915,8 @@ def cgpa_history(request):
     
     detailed_history = []
     
-    # For Heatmap and Analysis
-    all_grades = []
+    
+    # For Analysis
     theory_points = []
     lab_points = []
     
@@ -897,19 +944,6 @@ def cgpa_history(request):
             # In absence of strict type in JSON, we rely on 'subject_type' field if we had it joined.
             # Since we store JSON, let's try to infer or just collect all.
             # For this 'standout' feature, we'll try to guess based on simple heuristic or just general stats.
-            
-            # Heatmap Data
-            all_grades.append({
-                'semester': record.semester,
-                'code': sub.get('code'),
-                'grade': grade,
-                'points': sub.get('points')
-            })
-            
-            # Simple heuristic for Lab vs Theory if not in JSON (typically Labs have 'Lab' in name or specific codes)
-            # Since we don't have type in JSON typically, let's assume if it exists or default to general.
-            # Ideally we should fetch Subject objects but that's expensive inside loop.
-            # Let's rely on standard high grades for "Strength" analysis instead.
             
             pts = grade_points_map.get(grade, 0)
             if 'LAB' in sub.get('name', '').upper() or 'PRACTICAL' in sub.get('name', '').upper():
@@ -970,7 +1004,7 @@ def cgpa_history(request):
         'gpas': gpas,
         'cgpas': cgpas,
         'detailed_history': detailed_history,
-        'all_grades': all_grades, # For Heatmap
+        'detailed_history': detailed_history,
         'insights': insights,
         'summary': {
             'max_gpa': max_gpa,
