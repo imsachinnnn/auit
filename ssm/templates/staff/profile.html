@@ -137,6 +137,57 @@
                 grid-column: span 1;
             }
         }
+
+        /* Print Optimization */
+        @media print {
+            body {
+                padding: 0;
+                background-color: white;
+            }
+
+            .profile-container {
+                box-shadow: none;
+                border: none;
+                max-width: 100%;
+                border-radius: 0;
+            }
+
+            .profile-header {
+                background: white !important;
+                color: black !important;
+                padding: 0 0 20px 0;
+                border-bottom: 2px solid black;
+                text-align: left;
+            }
+
+            /* Hide elements */
+            .profile-avatar,
+            .back-btn {
+                display: none !important;
+            }
+
+            .profile-name {
+                color: black;
+                font-size: 24px;
+            }
+
+            .profile-role {
+                color: black;
+                opacity: 1;
+            }
+
+            .profile-body {
+                padding: 20px 0;
+                gap: 20px;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .info-value {
+                border-bottom: 1px solid #ccc;
+                color: black;
+            }
+        }
     </style>
 </head>
 
@@ -160,6 +211,12 @@
         </div>
 
         <div class="profile-body">
+            <!-- Section 1: Registration / Official Details -->
+            <div class="full-width"
+                style="margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
+                <h2 style="color: var(--primary); margin: 0; font-size: 1.5rem;">Official Information</h2>
+            </div>
+
             <div class="info-group">
                 <div class="info-label">Staff ID</div>
                 <div class="info-value">{{ staff.staff_id }}</div>
@@ -172,40 +229,93 @@
 
             <div class="info-group">
                 <div class="info-label">Role</div>
-                <div class="info-value">{{ staff.role }} {% if staff.assigned_semester %}(Sem {{ staff.assigned_semester
-                    }}){% endif %}</div>
+                <div class="info-value">{{ staff.role }} {% if staff.assigned_semester %}(Sem {{
+                    staff.assigned_semester}}){% endif %}</div>
             </div>
 
             <div class="info-group">
-                <div class="info-label">Date of Joining</div>
+                <div class="info-label">Designation</div>
+                <div class="info-value">{{ staff.designation }}</div>
+            </div>
+
+            <div class="info-group full-width">
+                <div class="info-label">Department</div>
+                <div class="info-value">{{ staff.department }}</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">Date of Birth</div>
+                <div class="info-value">{{ staff.date_of_birth|default:"-" }}</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">Date of JOINING</div>
                 <div class="info-value">{{ staff.date_of_joining|default:"-" }}</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">Gender</div>
+                <div class="info-value">{{ staff.gender|default:"-" }}</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">Blood Group</div>
+                <div class="info-value">{{ staff.blood_group|default:"-" }}</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">Mobile Number</div>
+                <div class="info-value">{{ staff.mobile_number|default:"-" }}</div>
+            </div>
+
+            <!-- Section 2: Professional Details -->
+            <div class="full-width"
+                style="margin-top: 40px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="color: var(--primary); margin: 0; font-size: 1.5rem;">Professional Profile</h2>
+                <a href="{% url 'staffs:staff_edit_profile' %}"
+                    style="background-color: var(--accent); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 500;">✎
+                    Edit Profile</a>
+            </div>
+
+            <div class="info-group full-width">
+                <div class="info-label">Address for Communication</div>
+                <div class="info-value">{{ staff.address|default:"-"|linebreaksbr }}</div>
             </div>
 
             <div class="info-group full-width">
                 <div class="info-label">Qualification</div>
-                <div class="info-value">{{ staff.qualification }}</div>
+                <div class="info-value">{{ staff.qualification|default:"-" }}</div>
             </div>
 
             <div class="info-group full-width">
                 <div class="info-label">Specialization</div>
-                <div class="info-value">{{ staff.specialization }}</div>
+                <div class="info-value">{{ staff.specialization|default:"-" }}</div>
             </div>
 
-            {% if staff.academic_details %}
             <div class="info-group full-width">
-                <div class="info-label">Academic Details</div>
+                <div class="info-label">Academic Detail</div>
                 <div class="info-value" style="font-size: 1rem; line-height: 1.5;">{{
-                    staff.academic_details|linebreaksbr }}</div>
+                    staff.academic_details|default:"-"|linebreaksbr }}</div>
             </div>
-            {% endif %}
 
-            {% if staff.experience %}
             <div class="info-group full-width">
                 <div class="info-label">Experience</div>
-                <div class="info-value" style="font-size: 1rem; line-height: 1.5;">{{ staff.experience|linebreaksbr }}
-                </div>
+                <div class="info-value" style="font-size: 1rem; line-height: 1.5;">{{
+                    staff.experience|default:"-"|linebreaksbr }}</div>
             </div>
-            {% endif %}
+
+            <div class="info-group full-width">
+                <div class="info-label">Publications</div>
+                <div class="info-value" style="font-size: 1rem; line-height: 1.5;">{{
+                    staff.publications|default:"-"|linebreaksbr }}</div>
+            </div>
+
+            <div class="info-group full-width">
+                <div class="info-label">Awards / Honours / Memberships</div>
+                <div class="info-value" style="font-size: 1rem; line-height: 1.5;">{{
+                    staff.awards_and_memberships|default:"-"|linebreaksbr }}</div>
+            </div>
+
         </div>
     </div>
 

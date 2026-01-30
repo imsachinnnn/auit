@@ -242,11 +242,42 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-size: 1.05em;
+        }
+
+        .back-btn:hover {
+            color: var(--accent-color-hover);
+            transform: translateX(-3px);
+        }
+
+        .back-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2.5;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
+        <a href="{% url 'student_dashboard' %}" class="back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to Dashboard
+        </a>
         <div class="form-header">
             <img src="{% static 'imgs/aublack.png' %}" alt="University Logo" width="200" height="auto" />
             <h1>Edit Your Profile</h1>

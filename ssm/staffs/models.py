@@ -27,12 +27,16 @@ class Staff(models.Model):
     # Personal & Employment Dates
     date_of_birth = models.DateField(null=True, blank=True)
     date_of_joining = models.DateField(null=True, blank=True)
+    gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')], null=True, blank=True)
+    blood_group = models.CharField(max_length=5, null=True, blank=True)
+    mobile_number = models.CharField(max_length=15, null=True, blank=True)
     address = models.TextField(blank=True)
 
     # Professional Accomplishments (using TextField for flexibility)
     academic_details = models.TextField(blank=True, help_text="List your degrees and qualifications.")
     experience = models.TextField(blank=True, help_text="Describe your previous work experience.")
     publications = models.TextField(blank=True, help_text="List your key publications, one per line.")
+    seminars = models.TextField(blank=True, help_text="List seminars, workshops, and conferences.")
     awards_and_memberships = models.TextField(blank=True, help_text="List any awards, honors, or professional memberships.")
 
     is_active = models.BooleanField(default=True)

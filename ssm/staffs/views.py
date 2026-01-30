@@ -1220,6 +1220,46 @@ def staff_profile(request):
 
     return render(request, 'staff/profile.html', {'staff': staff})
 
+def staff_edit_profile(request):
+    """View to edit staff professional profile."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+
+    staff = get_object_or_404(Staff, staff_id=request.session['staff_id'])
+
+    if request.method == 'POST':
+        staff.address = request.POST.get('address')
+        staff.qualification = request.POST.get('qualification')
+        staff.specialization = request.POST.get('specialization')
+        staff.academic_details = request.POST.get('academic_details')
+        staff.experience = request.POST.get('experience')
+        staff.publications = request.POST.get('publications')
+        staff.awards_and_memberships = request.POST.get('awards_and_memberships')
+        
+        staff.save()
+        messages.success(request, "Profile updated successfully.")
+        return redirect('staffs:staff_profile')
+
+    return render(request, 'staff/staff_edit_profile.html', {'staff': staff})
+
+def staff_portfolio(request):
+    """View to manage staff publications, seminars, and awards."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+
+    staff = get_object_or_404(Staff, staff_id=request.session['staff_id'])
+
+    if request.method == 'POST':
+        staff.publications = request.POST.get('publications')
+        staff.seminars = request.POST.get('seminars')
+        staff.awards_and_memberships = request.POST.get('awards_and_memberships')
+        
+        staff.save()
+        messages.success(request, "Portfolio updated successfully.")
+        return redirect('staffs:staff_profile')
+
+    return render(request, 'staff/staff_portfolio.html', {'staff': staff})
+
 def archive_semester_data(student):
     """
     Helper to archive attendance and marks for all subjects in the student's current semester.

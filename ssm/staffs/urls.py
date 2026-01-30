@@ -15,6 +15,8 @@ urlpatterns = [
     # The URL will be /staff/dashboard/
     path('dashboard/', views.staff_dashboard, name='staff_dashboard'),
     path('profile/', views.staff_profile, name='staff_profile'), # User profile
+    path('profile/edit/', views.staff_edit_profile, name='staff_edit_profile'),
+    path('profile/portfolio/', views.staff_portfolio, name='staff_portfolio'),
 
     # The URL will be /staff/logout/
     path('logout/', views.staff_logout, name='staff_logout'),

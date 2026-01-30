@@ -312,6 +312,109 @@
                 padding: 6px 8px;
             }
         }
+
+        /* Print Optimization */
+        @media print {
+            body {
+                padding: 0;
+                background-color: white;
+                font-size: 12px;
+            }
+
+            .container {
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            /* Hide elements */
+            .student-photo-header,
+            .action-btn,
+            #scrollToTopBtn,
+            .file-link,
+            #semSelector,
+            label[for="semSelector"],
+            img {
+                display: none !important;
+            }
+
+            /* Reset Header */
+            .page-header {
+                box-shadow: none;
+                border: none;
+                background: transparent;
+                padding: 0 0 10px 0;
+                margin-bottom: 20px;
+                border-bottom: 2px solid #000;
+                border-radius: 0;
+            }
+
+            .page-header h1 {
+                font-size: 1.8em;
+                color: black;
+            }
+
+            /* Reset Cards */
+            .section-card {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                margin-bottom: 20px;
+                break-inside: avoid;
+            }
+
+            .section-title {
+                margin-bottom: 10px;
+                padding-bottom: 5px;
+                color: black;
+                border-bottom: 1px solid #ccc;
+                font-size: 1.1em;
+            }
+
+            /* Optimize Grid */
+            .info-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 10px;
+            }
+
+            .info-item {
+                margin-bottom: 5px;
+            }
+
+            .info-label {
+                color: #555;
+                font-size: 0.75em;
+                margin-bottom: 2px;
+            }
+
+            .info-value {
+                color: black;
+                font-size: 0.9em;
+            }
+
+            /* Table Optimization */
+            .semester-container,
+            .semester-container>div {
+                border: none;
+            }
+
+            .subject-table {
+                font-size: 0.85em;
+                border: 1px solid #ddd;
+            }
+
+            .subject-table th {
+                background-color: #f0f0f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Hide large photos (e.g. uploaded docs previews if any) */
+            .photo-large {
+                display: none;
+            }
+        }
     </style>
 </head>
 
@@ -367,50 +470,41 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Gender</span>
-                    <span class="info-value">{% if personal_info.gender %}{{ personal_info.gender }}{% else %}-{% endif
-                        %}</span>
+                    <span class="info-value">{% if personal_info.gender %}{{ personal_info.gender }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Blood Group</span>
-                    <span class="info-value">{% if personal_info.blood_group %}{{ personal_info.blood_group }}{% else
-                        %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.blood_group %}{{ personal_info.blood_group }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Mobile</span>
-                    <span class="info-value">{% if personal_info.student_mobile %}{{ personal_info.student_mobile }}{%
-                        else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.student_mobile %}{{ personal_info.student_mobile }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Aadhaar</span>
-                    <span class="info-value">{% if personal_info.aadhaar_number %}{{ personal_info.aadhaar_number }}{%
-                        else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.aadhaar_number %}{{ personal_info.aadhaar_number }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Community</span>
-                    <span class="info-value">{% if personal_info.community %}{{ personal_info.community }}{% else %}-{%
-                        endif %}</span>
+                    <span class="info-value">{% if personal_info.community %}{{ personal_info.community }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Caste</span>
-                    <span class="info-value">{% if personal_info.caste %}{{ personal_info.caste.name }}{% else %}-{%
-                        endif %}</span>
+                    <span class="info-value">{% if personal_info.caste %}{{ personal_info.caste.name }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Religion</span>
-                    <span class="info-value">{% if personal_info.religion %}{{ personal_info.religion }}{% else %}-{%
-                        endif %}</span>
+                    <span class="info-value">{% if personal_info.religion %}{{ personal_info.religion }}{% else %}-{% endif %}</span>
                 </div>
             </div>
             <div class="info-grid" style="margin-top: 15px;">
                 <div class="info-item">
                     <span class="info-label">Present Address</span>
-                    <span class="info-value">{% if personal_info.present_address %}{{ personal_info.present_address }}{%
-                        else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.present_address %}{{ personal_info.present_address }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Permanent Address</span>
-                    <span class="info-value">{% if personal_info.permanent_address %}{{ personal_info.permanent_address
-                        }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.permanent_address %}{{ personal_info.permanent_address }}{% else %}-{% endif %}</span>
                 </div>
             </div>
             {% else %}
@@ -429,8 +523,7 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Father's Occupation</span>
-                    <span class="info-value">{% if personal_info.father_occupation %}{{ personal_info.father_occupation
-                        }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.father_occupation %}{{ personal_info.father_occupation }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Father's Mobile</span>
@@ -442,8 +535,7 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Mother's Occupation</span>
-                    <span class="info-value">{% if personal_info.mother_occupation %}{{ personal_info.mother_occupation
-                        }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.mother_occupation %}{{ personal_info.mother_occupation }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Mother's Mobile</span>
@@ -451,8 +543,7 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Annual Income</span>
-                    <span class="info-value">{% if personal_info.parent_annual_income %}{{
-                        personal_info.parent_annual_income }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if personal_info.parent_annual_income %}{{ personal_info.parent_annual_income }}{% else %}-{% endif %}</span>
                 </div>
             </div>
             {% else %}
@@ -589,13 +680,8 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">Batch</span>
-                        <span class="info-value">
-                            {% if student.joining_year and student.ending_year %}
-                            {{ student.joining_year }} - {{ student.ending_year }}
-                            {% else %}
-                            -
-                            {% endif %}
-                        </span>
+                        <span class="info-value">{% if student.joining_year and student.ending_year %}{{
+                            student.joining_year }} - {{ student.ending_year }}{% else %}-{% endif %}</span>
                     </div>
                 </div>
             </div>
@@ -630,23 +716,19 @@
                 <div class="info-grid">
                     <div class="info-item">
                         <span class="info-label">Course</span>
-                        <span class="info-value">{% if ug_details.ug_course %}{{ ug_details.ug_course }}{% else %}-{%
-                            endif %}</span>
+                        <span class="info-value">{% if ug_details.ug_course %}{{ ug_details.ug_course }}{% else %}-{% endif %}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">University</span>
-                        <span class="info-value">{% if ug_details.ug_university %}{{ ug_details.ug_university }}{% else
-                            %}-{% endif %}</span>
+                        <span class="info-value">{% if ug_details.ug_university %}{{ ug_details.ug_university }}{% else %}-{% endif %}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">OGPA</span>
-                        <span class="info-value">{% if ug_details.ug_ogpa %}{{ ug_details.ug_ogpa }}{% else %}-{% endif
-                            %}</span>
+                        <span class="info-value">{% if ug_details.ug_ogpa %}{{ ug_details.ug_ogpa }}{% else %}-{% endif %}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Year</span>
-                        <span class="info-value">{% if ug_details.ug_year_of_passing %}{{ ug_details.ug_year_of_passing
-                            }}{% else %}-{% endif %}</span>
+                        <span class="info-value">{% if ug_details.ug_year_of_passing %}{{ ug_details.ug_year_of_passing }}{% else %}-{% endif %}</span>
                     </div>
                 </div>
             </div>
@@ -664,28 +746,23 @@
             <div class="info-grid">
                 <div class="info-item">
                     <span class="info-label">Account Holder</span>
-                    <span class="info-value">{% if bank_details.account_holder_name %}{{
-                        bank_details.account_holder_name }}{% else %}-{% endif %}</span>
+                    <span class="info-value">{% if bank_details.account_holder_name %}{{ bank_details.account_holder_name }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Account Number</span>
-                    <span class="info-value">{% if bank_details.account_number %}{{ bank_details.account_number }}{%
-                        else %}-{% endif %}</span>
+                    <span class="info-value">{% if bank_details.account_number %}{{ bank_details.account_number }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Bank Name</span>
-                    <span class="info-value">{% if bank_details.bank_name %}{{ bank_details.bank_name }}{% else %}-{%
-                        endif %}</span>
+                    <span class="info-value">{% if bank_details.bank_name %}{{ bank_details.bank_name }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Branch</span>
-                    <span class="info-value">{% if bank_details.branch_name %}{{ bank_details.branch_name }}{% else
-                        %}-{% endif %}</span>
+                    <span class="info-value">{% if bank_details.branch_name %}{{ bank_details.branch_name }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">IFSC Code</span>
-                    <span class="info-value">{% if bank_details.ifsc_code %}{{ bank_details.ifsc_code }}{% else %}-{%
-                        endif %}</span>
+                    <span class="info-value">{% if bank_details.ifsc_code %}{{ bank_details.ifsc_code }}{% else %}-{% endif %}</span>
                 </div>
             </div>
             {% else %}
@@ -758,18 +835,15 @@
             <div class="info-grid">
                 <div class="info-item">
                     <span class="info-label">Ambition</span>
-                    <span class="info-value">{% if other_details.ambition %}{{ other_details.ambition }}{% else %}-{%
-                        endif %}</span>
+                    <span class="info-value">{% if other_details.ambition %}{{ other_details.ambition }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Role Model</span>
-                    <span class="info-value">{% if other_details.role_model %}{{ other_details.role_model }}{% else
-                        %}-{% endif %}</span>
+                    <span class="info-value">{% if other_details.role_model %}{{ other_details.role_model }}{% else %}-{% endif %}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Hobbies</span>
-                    <span class="info-value">{% if other_details.hobbies %}{{ other_details.hobbies }}{% else %}-{%
-                        endif %}</span>
+                    <span class="info-value">{% if other_details.hobbies %}{{ other_details.hobbies }}{% else %}-{% endif %}</span>
                 </div>
             </div>
             {% else %}

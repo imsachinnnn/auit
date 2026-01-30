@@ -16,15 +16,15 @@ class StaffRegistrationForm(forms.ModelForm):
     designation = forms.CharField(validators=[RegexValidator(r'^[a-zA-Z\s\.]+$', "Designation contains invalid characters.")])
     department = forms.CharField(validators=[RegexValidator(r'^[a-zA-Z\s\.]+$', "Department contains invalid characters.")])
     
-    date_of_birth = forms.DateField(required=False)
-    date_of_joining = forms.DateField(required=False)
+    date_of_birth = forms.DateField(required=True, widget=forms.DateInput(attrs={'type': 'date'}))
+    date_of_joining = forms.DateField(required=True, widget=forms.DateInput(attrs={'type': 'date'}))
 
     class Meta:
         model = Staff
         fields = [
             'staff_id', 'name', 'email', 'password', 'photo',
             'salutation', 'designation', 'department', 'qualification',
-            'specialization', 'date_of_birth', 'date_of_joining', 'address',
+            'specialization', 'date_of_birth', 'date_of_joining', 'gender', 'blood_group', 'mobile_number', 'address',
             'academic_details', 'experience', 'publications', 'awards_and_memberships'
         ]
 
