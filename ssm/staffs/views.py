@@ -36,8 +36,7 @@ def staff_dashboard(request):
     try:
         staff = Staff.objects.get(staff_id=request.session['staff_id'])
     except Staff.DoesNotExist:
-        if 'staff_id' in request.session:
-            del request.session['staff_id']
+        request.session.flush()
         return redirect('staffs:stafflogin')
 
     student_count = Student.objects.count()
@@ -100,7 +99,7 @@ def staff_logout(request):
         from .utils import log_audit
         log_audit(request, 'logout', actor_type='staff', actor_id=staff_id or '', actor_name=staff_name, message='Staff logged out')
     try:
-        del request.session['staff_id']
+        request.session.flush() # Securely clears the entire session
     except KeyError:
         pass
     messages.success(request, "You have been successfully logged out.")
@@ -373,7 +372,14 @@ def manage_marks(request, subject_id):
         messages.error(request, "Access Denied: You are not assigned to this subject.")
         return redirect('staffs:staff_dashboard')
 
-    students = Student.objects.filter(current_semester=subject.semester).order_by('roll_number')
+    # Basic Access Control completed.
+
+    from django.db.models import Q
+    # Fetch students who are CURRENTLY in this semester OR have GPA data for this semester
+    students = Student.objects.filter(
+        Q(current_semester=subject.semester) | 
+        Q(gpa_records__semester=subject.semester)
+    ).distinct().order_by('roll_number')
 
     # Import StudentMarks locally to ensure it is available
     from students.models import StudentMarks
@@ -414,10 +420,33 @@ def manage_marks(request, subject_id):
     for entry in marks_entries:
         student_marks_map[entry.student.roll_number] = entry
 
+    # Correlation Logic: Fetch Claimed Grades from StudentGPA
+    from students.models import StudentGPA
+    claimed_grades_map = {}
+    
+    # Fetch GPA records for this semester for these students
+    gpa_records = StudentGPA.objects.filter(student__in=students, semester=subject.semester)
+    
+    for record in gpa_records:
+        if record.subject_data:
+            # Find the grade for this specific subject
+            for sub_data in record.subject_data:
+                # Match by Code (Case insensitive comparison just in case)
+                if sub_data.get('code', '').strip().upper() == subject.code.strip().upper():
+                    grade = sub_data.get('grade', '-')
+                    code = sub_data.get('code', '')
+                    if grade:
+                        claimed_grades_map[record.student.roll_number] = {
+                            'grade': grade,
+                            'code': code
+                        }
+                    break
+
     return render(request, 'staff/manage_marks.html', {
         'subject': subject,
         'students': students,
         'student_marks_map': student_marks_map,
+        'claimed_grades_map': claimed_grades_map,
         'is_readonly': is_readonly
     })
 
@@ -1673,3 +1702,161 @@ def manage_semesters(request):
         'display_semester_selector': display_semester_selector,
         'header_text': header_text
     })
+
+# --- Staff Password Reset Logic ---
+
+def staff_password_reset_identify(request):
+    """Step 1: User provides their Staff ID."""
+    staff = None
+    if request.method == 'POST':
+        staff_id = request.POST.get('staff_id')
+        try:
+            staff = Staff.objects.get(staff_id=staff_id)
+            request.session['reset_staff_pk'] = staff.pk
+            return redirect('staffs:password_reset_verify')
+        except Staff.DoesNotExist:
+            messages.error(request, 'No staff found with that Staff ID.')
+
+    return render(request, 'staff/password_reset/p1.html', {'staff': staff})
+
+def staff_password_reset_verify(request):
+    """Step 2: User verifies with Mobile and Email (OTP)."""
+    staff_pk = request.session.get('reset_staff_pk')
+    if not staff_pk:
+        return redirect('staffs:password_reset_identify')
+
+    try:
+        staff = Staff.objects.get(pk=staff_pk)
+    except Staff.DoesNotExist:
+        return redirect('staffs:password_reset_identify')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        # Only OTP supported
+        if action == 'send_otp':
+            mobile_number = request.POST.get('staff_mobile')
+            email_address = request.POST.get('staff_email')
+            
+            # Validation: Check if Mobile AND Email match
+            if (staff.mobile_number == mobile_number and 
+                staff.email == email_address):
+                
+                # Generate OTP
+                import random
+                from django.utils import timezone
+                import datetime
+                
+                otp = str(random.randint(100000, 999999))
+                
+                # Store in session with expiry
+                request.session['staff_reset_otp'] = otp
+                request.session['staff_reset_otp_expiry'] = (timezone.now() + datetime.timedelta(minutes=10)).isoformat()
+                
+                # Send Email
+                from django.core.mail import send_mail
+                from django.template.loader import render_to_string
+                from django.utils.html import strip_tags
+                from django.conf import settings
+                
+                # Reuse student template or create generic? Using student generic one but passing staff name
+                # 'emails/password_reset_email.html' expects 'otp' and 'student_name'. 
+                # We can pass 'student_name' as staff.name to reuse it.
+                
+                html_content = render_to_string('emails/password_reset_email.html', {
+                    'otp': otp,
+                    'student_name': staff.name 
+                })
+                plain_message = strip_tags(html_content)
+
+                try:
+                    send_mail(
+                        subject = "Password Reset OTP – Annamalai University - IT Department Staff Portal",
+                        message = plain_message,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[staff.email],
+                        html_message=html_content,
+                        fail_silently=False,
+                    )
+                    messages.success(request, f'OTP sent to registered email.')
+                except Exception as e:
+                    messages.error(request, f'Failed to send email: {str(e)}')
+                
+                return render(request, 'staff/password_reset/p2_otp.html', {
+                    'email_mask': staff.email
+                })
+            else:
+                 messages.error(request, 'Mobile Number or Email Address does not match our records.')
+
+    return render(request, 'staff/password_reset/p2.html', {'staff': staff})
+
+def staff_password_reset_otp_verify(request):
+    """Step 2.5: Verify the entered OTP."""
+    if request.method == 'POST':
+        entered_otp = request.POST.get('otp')
+        session_otp = request.session.get('staff_reset_otp')
+        expiry_str = request.session.get('staff_reset_otp_expiry')
+        
+        if not session_otp or not expiry_str:
+            messages.error(request, 'No OTP found or session expired. Please request a new one.')
+            return redirect('staffs:password_reset_verify') 
+
+        # Check expiry
+        from django.utils import timezone
+        import datetime
+        expiry_time = datetime.datetime.fromisoformat(expiry_str)       
+        if timezone.now() > expiry_time:
+            messages.error(request, 'OTP has expired. Please request a new one.')
+            return redirect('staffs:password_reset_identify')
+
+        if entered_otp == session_otp:
+            # Success
+            request.session['staff_reset_verified'] = True
+            # clear OTP session
+            del request.session['staff_reset_otp']
+            del request.session['staff_reset_otp_expiry']
+            return redirect('staffs:password_reset_confirm')
+        else:
+            messages.error(request, 'Invalid OTP. Please try again.')
+            # Re-render the OTP page
+            staff_pk = request.session.get('reset_staff_pk')
+            staff = Staff.objects.get(pk=staff_pk)
+            return render(request, 'staff/password_reset/p2_otp.html', {
+                 'email_mask': staff.email
+            })
+            
+    return redirect('staffs:password_reset_identify')
+
+def staff_password_reset_confirm(request):
+    """Step 3: If verified, the user sets a new password."""
+    staff_pk = request.session.get('reset_staff_pk')
+    is_verified = request.session.get('staff_reset_verified')
+
+    if not staff_pk or not is_verified:
+        return redirect('staffs:password_reset_identify')
+
+    try:
+        staff = Staff.objects.get(pk=staff_pk)
+    except Staff.DoesNotExist:
+        return redirect('staffs:password_reset_identify')
+
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if not password or password != confirm_password:
+            messages.error(request, 'Passwords do not match or are empty.')
+            return render(request, 'staff/password_reset/p3.html', {'staff': staff})
+
+        staff.set_password(password)
+        staff.save()
+
+        # Cleanup Session
+        keys_to_delete = ['reset_staff_pk', 'staff_reset_verified', 'staff_reset_otp', 'staff_reset_otp_expiry']
+        for key in keys_to_delete:
+            if key in request.session:
+                del request.session[key]
+        
+        messages.success(request, 'Your password has been reset successfully!')
+        return redirect('staffs:stafflogin')
+        
+    return render(request, 'staff/password_reset/p3.html', {'staff': staff})

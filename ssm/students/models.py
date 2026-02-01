@@ -258,3 +258,16 @@ class StudentGPA(models.Model):
 
     def __str__(self):
         return f"{self.student.student_name} - Sem {self.semester}: {self.gpa}"
+
+
+class ResultScreenshot(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='result_screenshots')
+    subject = models.ForeignKey('staffs.Subject', on_delete=models.CASCADE, related_name='result_screenshots')
+    screenshot = models.ImageField(upload_to='result_screenshots/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return f"Result: {self.student.student_name} - {self.subject.code}"

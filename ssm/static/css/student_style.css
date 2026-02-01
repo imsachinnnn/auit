@@ -510,8 +510,41 @@ h3 {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     position: sticky;
     top: var(--container-padding);
-    height: fit-content;
+    height: auto;
+    max-height: calc(100vh - 2 * var(--container-padding));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* Prevents scroll chaining to parent */
     border-top: clamp(3px, 0.4vw, 5px) solid var(--accent-color);
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    /* Hide by default in Firefox */
+    transition: scrollbar-color 0.3s;
+}
+
+.profile-sidebar:hover {
+    scrollbar-color: var(--accent-color) transparent;
+    /* Show in Firefox on hover */
+}
+
+/* Webkit Scrollbar Styling */
+.profile-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.profile-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.profile-sidebar::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    /* Hidden by default */
+    border-radius: 20px;
+}
+
+.profile-sidebar:hover::-webkit-scrollbar-thumb {
+    background-color: var(--accent-color);
+    /* Visible on hover */
 }
 
 .profile-photo {

@@ -62,4 +62,10 @@ urlpatterns = [
     path('admin-portal/', views.admin_portal_login, name='admin_portal_login'),
     path('risk-students/', views.risk_students, name='risk_students'),
     path('risk-students/export/<int:subject_id>/', views.export_risk_list, name='export_risk_list'),
+    
+    # Password Reset
+    path('password-reset/', views.staff_password_reset_identify, name='password_reset_identify'),
+    path('password-reset/verify/', views.staff_password_reset_verify, name='password_reset_verify'),
+    path('password-reset/verify-otp/', views.staff_password_reset_otp_verify, name='password_reset_otp_verify'),
+    path('password-reset/confirm/', views.staff_password_reset_confirm, name='password_reset_confirm'),
 ]

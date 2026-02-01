@@ -466,13 +466,14 @@
                         </div>
                     </a>
 
-                    <div class="stat-card">
+                    <a href="{% url 'staffs:student_list' %}" class="stat-card"
+                        style="text-decoration: none; color: inherit;">
                         <div class="stat-icon" style="background: #e0e7ff; color: #4338ca;">👨‍🎓</div>
                         <div class="stat-info">
                             <h3>{{ student_count }}</h3>
                             <span>Assigned Students</span>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </div>
 

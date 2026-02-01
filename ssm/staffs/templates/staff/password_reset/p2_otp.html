@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Login - Student Portal</title>
+    <title>Verify OTP - Step 2</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
         type="image/png">
@@ -19,6 +19,8 @@
             --border-color: #dee2e6;
             --accent-color: #5a7d7c;
             --accent-color-hover: #4a6b69;
+            --success-bg: #d1e7dd;
+            --success-text: #0f5132;
             --error-bg: #f8d7da;
             --error-text: #842029;
         }
@@ -32,14 +34,15 @@
         body {
             font-family: 'Poppins', sans-serif;
             background-color: var(--primary-bg);
+            color: var(--text-primary);
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
             padding: 20px;
         }
 
-        .login-container {
+        .reset-container {
             background-color: var(--secondary-bg);
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -78,13 +81,18 @@
             padding: 12px 15px;
             border-radius: 6px;
             margin-bottom: 10px;
-            border: 1px solid;
+        }
+
+        .messages li.success {
+            background-color: var(--success-bg);
+            color: var(--success-text);
+            border: 1px solid #a3cfbb;
         }
 
         .messages li.error {
             background-color: var(--error-bg);
             color: var(--error-text);
-            border-color: #f1aeb5;
+            border: 1px solid #f1aeb5;
         }
 
         .form-group {
@@ -97,7 +105,6 @@
             font-weight: 500;
             color: var(--text-secondary);
             font-size: 0.9em;
-            text-align: left;
         }
 
         .form-group input {
@@ -106,7 +113,17 @@
             border: 1px solid var(--border-color);
             border-radius: 6px;
             font-family: 'Poppins', sans-serif;
-            font-size: 1em;
+            font-size: 1.2em;
+            /* Larger for OTP */
+            text-align: center;
+            letter-spacing: 0.5em;
+            /* Spacing for OTP */
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
         }
 
         .submit-btn {
@@ -116,62 +133,89 @@
             color: white;
             border: none;
             border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
             font-size: 1em;
             font-weight: 600;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
 
-        .back-link {
+        .submit-btn:hover {
+            background-color: var(--accent-color-hover);
+        }
+
+        .otp-info {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--text-primary);
+        }
+
+        .otp-info strong {
+            color: var(--accent-color);
+        }
+
+        .actions-link {
             text-align: center;
             margin-top: 20px;
+            font-size: 0.9em;
+            color: var(--text-secondary);
         }
 
-        .back-link a {
+        .actions-link a,
+        .actions-link button {
             color: var(--accent-color);
             text-decoration: none;
             font-weight: 500;
+            background: none;
+            border: none;
+            padding: 0;
+            font-family: inherit;
+            font-size: inherit;
+            cursor: pointer;
+        }
+
+        .actions-link a:hover,
+        .actions-link button:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 
 <body>
-    <div class="login-container">
+    <div class="reset-container">
         <div class="logo-section">
-            <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" alt="Logo">
-            <h1>Staff Portal</h1>
-            <p>Please log in to continue.</p>
+            <img src="{% static 'imgs/aublack.png' %}" alt="University Logo" />
+            <h1>Enter OTP</h1>
+            <p>Step 3 of 3: A One-Time Password has been sent to your email.</p>
         </div>
 
         {% if messages %}
         <ul class="messages">
-            {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
         </ul>
         {% endif %}
 
-        <form method="POST">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="staff_id">Staff ID</label>
-                <input type="text" id="staff_id" name="staff_id" required placeholder="Enter your Staff ID">
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-                <div style="text-align: right; margin-top: 5px;">
-                    <a href="{% url 'staffs:password_reset_identify' %}"
-                        style="font-size: 0.85em; color: var(--accent-color); text-decoration: none;">Forgot
-                        Password?</a>
-                </div>
-            </div>
-            <button type="submit" class="submit-btn">Login</button>
-        </form>
-
-        <div class="back-link">
-            <a href="{% url 'staffs:staff_register' %}"> Register </a>
+        <div class="otp-info">
+            Sent to email ending in: <strong>{{ email_mask }}</strong>
         </div>
 
-        <div class="back-link">
-            <a href="{% url 'homepage' %}">← Go to Main Site</a>
+        <form method="POST" action="{% url 'staffs:password_reset_otp_verify' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <input type="text" id="otp" name="otp" placeholder="XXXXXX" maxlength="6" required autofocus>
+            </div>
+
+            <button type="submit" class="submit-btn" style="background-color: #5a7d7c;">Verify & Proceed</button>
+        </form>
+
+        <div class="actions-link">
+            <p>Didn't receive code?</p>
+            <a href="{% url 'staffs:password_reset_verify' %}">Try sending again</a>
+            <br><br>
+            <a href="{% url 'staffs:password_reset_identify' %}">Back to Identity Verification</a>
         </div>
     </div>
 </body>

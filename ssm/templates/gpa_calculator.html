@@ -198,6 +198,7 @@
                             <table class="data-table grade-table">
                                 <thead>
                                     <tr>
+                                        <th style="width: 120px;">Subject Code</th>
                                         <th>Subject Name</th>
                                         <th style="width: 100px;">Grade</th>
                                         <th style="width: 80px;">Credits</th>
@@ -294,10 +295,11 @@
 
         // --- Core Logic ---
 
-        function addRow(name = '', grade = 'S', credits = 3) {
+        function addRow(code = '', name = '', grade = 'S', credits = 3) {
             const tbody = document.getElementById('gradeBody');
             const row = document.createElement('tr');
             row.innerHTML = `
+                <td><input type="text" value="${code}" placeholder="Code (e.g. IT101)" style="text-transform: uppercase;"></td>
                 <td><input type="text" value="${name}" placeholder="Subject Name"></td>
                 <td>
                     <select onchange="calculateGPA()">
@@ -324,12 +326,15 @@
             const subject_data = [];
 
             document.querySelectorAll('#gradeBody tr').forEach(row => {
-                const name = row.querySelector('input[type="text"]').value;
+                const inputs = row.querySelectorAll('input[type="text"]');
+                const code = inputs[0] ? inputs[0].value.trim() : '';
+                const name = inputs[1] ? inputs[1].value.trim() : '';
+
                 const grade = row.querySelector('select').value;
-                const credits = parseFloat(row.querySelectorAll('input')[1].value) || 0;
+                const credits = parseFloat(row.querySelector('input[type="number"]').value) || 0;
 
                 // Collect data for saving
-                subject_data.push({ name, grade, credits });
+                subject_data.push({ code, name, grade, credits });
 
                 if (credits > 0) {
                     if (grade === 'W') return; // W is neutral
@@ -362,12 +367,12 @@
 
                 if (data.found && data.subject_data && data.subject_data.length > 0) {
                     data.subject_data.forEach(sub => {
-                        addRow(sub.name, sub.grade, sub.credits);
+                        addRow(sub.code || '', sub.name, sub.grade, sub.credits);
                     });
                     showToast(`Loaded data for Semester ${semester}`, 'info');
                 } else {
                     // Empty state
-                    addRow('', 'S', 3);
+                    addRow('', '', 'S', 3);
                 }
             } catch (err) {
                 console.error("Failed to load saved data:", err);
@@ -398,7 +403,7 @@
                     const tbody = document.getElementById('gradeBody');
                     tbody.innerHTML = ''; // Clear existing
                     data.subjects.forEach(sub => {
-                        addRow(sub.name || sub.subject_name, sub.grade, sub.credits);
+                        addRow(sub.code || '', sub.name || sub.subject_name, sub.grade, sub.credits);
                     });
                     Swal.fire({
                         title: "Grades Extracted!",

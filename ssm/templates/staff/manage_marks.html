@@ -155,6 +155,8 @@
                         <th>Mid Term Test - 1</th>
                         <th>Mid Term Test - 2</th>
                         <th>Overall Internal Marks</th>
+                        <th style="min-width: 100px;">Claimed Grade<br><small
+                                style="font-weight: normal; color: #64748b;">(Student GPA)</small></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -173,7 +175,22 @@
                         </td>
                         <td>
                             <input type="number" name="internal_{{ student.roll_number }}"
-                                value="{{ marks.internal_marks|default:'' }}" class="form-control mark-input" {% if is_readonly %}disabled style="background-color: #f9f9f9; border: none; font-weight: bold;" {% endif %}>
+                                value="{{ marks.internal_marks|default:'' }}" class="form-control mark-input" {% if is_readonly %}disabled
+                                style="background-color: #f9f9f9; border: none; font-weight: bold;" {% endif %}>
+                        </td>
+                        <td style="text-align: center;">
+                            {% with grade_info=claimed_grades_map|get_item:student.roll_number %}
+                            {% if grade_info %}
+                            <span
+                                style="font-weight: 600; color: #5a7d7c; background-color: #e0f2f1; padding: 4px 10px; border-radius: 12px; font-size: 0.9rem;">
+                                {{ grade_info.grade }}
+                            </span>
+                            <br>
+                            <small style="color: #64748b; font-size: 0.75rem;">({{ grade_info.code }})</small>
+                            {% else %}
+                            <span style="color: #cbd5e1; font-size: 0.9rem;">-</span>
+                            {% endif %}
+                            {% endwith %}
                         </td>
                     </tr>
                     {% endwith %}

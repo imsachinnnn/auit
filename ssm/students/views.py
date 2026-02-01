@@ -748,6 +748,11 @@ def student_attendance(request):
         # Stats accumulation
         total_classes_overall += total_classes
         present_total_overall += present_count
+
+        # Populate Chart Data
+        chart_labels.append(subject.code)
+        chart_present.append(present_count)
+        chart_absent.append(absent_count)
     
     # Combined for charts/legacy support
     attendance_data = theory_data + lab_data
@@ -1368,6 +1373,37 @@ def leave_history(request):
     leaves = LeaveRequest.objects.filter(student=student).order_by('-created_at')
     
     return render(request, 'leave_list.html', {'student': student, 'leaves': leaves})
+
+def upload_result(request):
+    """Allows students to upload result screenshots for their current semester subjects."""
+    if 'student_roll_number' not in request.session:
+        return redirect('student_login')
+    
+    student = Student.objects.get(roll_number=request.session['student_roll_number'])
+    
+    # Fetch subjects for the student's current semester
+    from staffs.models import Subject
+    from django.shortcuts import get_object_or_404
+    from .models import ResultScreenshot
+    from django.contrib import messages
+    subjects = Subject.objects.filter(semester=student.current_semester)
+    
+    if request.method == 'POST':
+        subject_id = request.POST.get('subject')
+        screenshot = request.FILES.get('screenshot')
+        
+        if subject_id and screenshot:
+            subject = get_object_or_404(Subject, id=subject_id)
+            
+            # Save the screenshot
+            ResultScreenshot.objects.create(student=student, subject=subject, screenshot=screenshot)
+            
+            messages.success(request, 'Result screenshot uploaded successfully.')
+            return redirect('upload_result')
+        else:
+            messages.error(request, 'Please select a subject and upload a file.')
+            
+    return render(request, 'student/upload_result.html', {'subjects': subjects})
 
 
 # --- GPA Calculator Views ---
