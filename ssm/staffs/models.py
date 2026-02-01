@@ -38,6 +38,16 @@ class Staff(models.Model):
     publications = models.TextField(blank=True, help_text="List your key publications, one per line.")
     seminars = models.TextField(blank=True, help_text="List seminars, workshops, and conferences.")
     awards_and_memberships = models.TextField(blank=True, help_text="List any awards, honors, or professional memberships.")
+    pg_students_guided = models.PositiveIntegerField(default=0, blank=True, help_text="Number of PG (Postgraduate) students guided.")
+    pg_students_guided = models.PositiveIntegerField(default=0, blank=True, help_text="Number of PG (Postgraduate) students guided.")
+    phd_students_guided = models.PositiveIntegerField(default=0, blank=True, help_text="Number of PhD students guided.")
+
+    # Research & Social
+    research_interests = models.TextField(blank=True, help_text="Comma-separated list of research interests.")
+    google_scholar_link = models.URLField(blank=True, null=True)
+    linkedin_link = models.URLField(blank=True, null=True)
+    orcid_link = models.URLField(blank=True, null=True)
+    research_gate_link = models.URLField(blank=True, null=True)
 
     is_active = models.BooleanField(default=True)
 
@@ -49,6 +59,88 @@ class Staff(models.Model):
 
     def __str__(self):
         return f"{self.salutation} {self.name}"
+
+
+class StaffPublication(models.Model):
+    """Individual publication entry for staff."""
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='publication_list')
+    title = models.CharField(max_length=500)
+    venue_or_journal = models.CharField(max_length=300, blank=True)
+    year = models.CharField(max_length=20, blank=True)
+    PUB_TYPE_CHOICES = [
+        ('Journal', 'Journal'),
+        ('Conference', 'Conference'),
+        ('Book', 'Book'),
+        ('Book Chapter', 'Book Chapter'),
+        ('Other', 'Other'),
+    ]
+    pub_type = models.CharField(max_length=20, choices=PUB_TYPE_CHOICES, default='Journal')
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['-order', '-year', 'title']
+
+    def __str__(self):
+        return f"{self.title} ({self.year})"
+
+
+class StaffAwardHonour(models.Model):
+    """Individual award, honour, or membership entry."""
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='award_list')
+    title = models.CharField(max_length=300)
+    description = models.TextField(blank=True)
+    year = models.CharField(max_length=20, blank=True)
+    CATEGORY_CHOICES = [
+        ('Award', 'Award'),
+        ('Honour', 'Honour'),
+        ('Membership', 'Membership'),
+    ]
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='Award')
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['-order', '-year', 'title']
+
+    def __str__(self):
+        return f"{self.title} ({self.category})"
+
+
+class StaffSeminar(models.Model):
+    """Seminar, workshop, or conference entry."""
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='seminar_list')
+    title = models.CharField(max_length=400)
+    EVENT_TYPE_CHOICES = [
+        ('Seminar', 'Seminar'),
+        ('Workshop', 'Workshop'),
+        ('Conference', 'Conference'),
+    ]
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPE_CHOICES, default='Seminar')
+    venue_or_description = models.CharField(max_length=300, blank=True)
+    year = models.CharField(max_length=20, blank=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['-order', '-year', 'title']
+
+    def __str__(self):
+        return f"{self.title} ({self.event_type})"
+
+
+class StaffStudentGuided(models.Model):
+    """PG or PhD student guided by staff."""
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='student_guided_list')
+    student_name = models.CharField(max_length=255)
+    degree_type = models.CharField(max_length=10, choices=[('PG', 'PG'), ('PhD', 'PhD')])
+    status = models.CharField(max_length=20, choices=[('Ongoing', 'Ongoing'), ('Completed', 'Completed')], default='Ongoing')
+    year = models.CharField(max_length=20, blank=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['-order', 'degree_type', 'student_name']
+
+    def __str__(self):
+        return f"{self.student_name} ({self.degree_type})"
+
 
 class Subject(models.Model):
     name = models.CharField(max_length=255)
@@ -152,4 +244,42 @@ class News(models.Model):
 
     def __str__(self):
         return f"{self.date} - {self.target}: {self.content[:30]}..."
+
+
+class AuditLog(models.Model):
+    """Stores audit trail for admin and application actions (logins, edits, etc.)."""
+    ACTION_CHOICES = [
+        ('login', 'Login'),
+        ('logout', 'Logout'),
+        ('create', 'Create'),
+        ('update', 'Update'),
+        ('delete', 'Delete'),
+        ('view', 'View'),
+        ('other', 'Other'),
+    ]
+    ACTOR_TYPE_CHOICES = [
+        ('admin', 'Admin'),
+        ('staff', 'Staff'),
+        ('student', 'Student'),
+        ('system', 'System'),
+    ]
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES, default='other', db_index=True)
+    actor_type = models.CharField(max_length=20, choices=ACTOR_TYPE_CHOICES, blank=True)
+    actor_id = models.CharField(max_length=100, blank=True, help_text="Staff ID, roll no, or username")
+    actor_name = models.CharField(max_length=255, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=500, blank=True)
+    object_type = models.CharField(max_length=100, blank=True, help_text="e.g. Staff, Student, News")
+    object_id = models.CharField(max_length=100, blank=True)
+    message = models.TextField(blank=True)
+    extra_data = models.JSONField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = 'Audit Log'
+        verbose_name_plural = 'Audits / Logs'
+
+    def __str__(self):
+        return f"{self.timestamp} | {self.get_action_display()} | {self.actor_type}:{self.actor_id or '—'} | {self.message[:50] or '—'}"
 

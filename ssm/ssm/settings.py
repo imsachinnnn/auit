@@ -192,6 +192,7 @@ JAZZMIN_SETTINGS = {
     # Top Menu
     "topmenu_links": [
         {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Audits / Logs", "url": "admin:staffs_auditlog_changelist", "permissions": ["staffs.view_auditlog"]},
         {"name": "Main Site", "url": "/", "new_window": True},
     ],
     "show_sidebar": True,
@@ -204,6 +205,7 @@ JAZZMIN_SETTINGS = {
         "auth.Group": "fas fa-users",
         "students.Student": "fas fa-user-graduate",
         "staffs.Staff": "fas fa-chalkboard-teacher",
+        "staffs.AuditLog": "fas fa-clipboard-list",
     },
     "default_icon_parents": "fas fa-chevron-circle-right",
     "default_icon_children": "fas fa-circle",

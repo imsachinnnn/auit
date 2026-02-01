@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 
-from .models import Staff, ExamSchedule, Timetable
+from .models import Staff, ExamSchedule, Timetable, StaffPublication, StaffAwardHonour, StaffSeminar, StaffStudentGuided, AuditLog
 from students.models import Student
 from django.db.models import Q
 
@@ -17,8 +17,8 @@ def stafflogin(request):
             staff = Staff.objects.get(staff_id=staff_id)
             if staff.check_password(password):
                 request.session['staff_id'] = staff.staff_id
-                # --- THIS IS THE FIX ---
-                # Use the correct URL name 'staff_dashboard' with the namespace
+                from .utils import log_audit
+                log_audit(request, 'login', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, message='Staff logged in')
                 return redirect('staffs:staff_dashboard')
             else:
                 messages.error(request, 'Invalid Staff ID or Password.')
@@ -89,6 +89,16 @@ def staff_dashboard(request):
 
 def staff_logout(request):
     """Logs the staff member out."""
+    staff_id = request.session.get('staff_id')
+    staff_name = ''
+    if staff_id:
+        try:
+            s = Staff.objects.get(staff_id=staff_id)
+            staff_name = s.name
+        except Staff.DoesNotExist:
+            pass
+        from .utils import log_audit
+        log_audit(request, 'logout', actor_type='staff', actor_id=staff_id or '', actor_name=staff_name, message='Staff logged out')
     try:
         del request.session['staff_id']
     except KeyError:
@@ -103,6 +113,8 @@ def staff_register(request):
         form = StaffRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             new_staff = form.save()
+            from .utils import log_audit
+            log_audit(request, 'create', actor_type='system', actor_name='System', object_type='Staff', object_id=new_staff.staff_id, message=f'New staff registered: {new_staff.name}')
             messages.success(request, f"Staff member {new_staff.name} has been registered successfully.")
             return redirect('staffs:stafflogin')
         else:
@@ -1228,37 +1240,288 @@ def staff_edit_profile(request):
     staff = get_object_or_404(Staff, staff_id=request.session['staff_id'])
 
     if request.method == 'POST':
-        staff.address = request.POST.get('address')
-        staff.qualification = request.POST.get('qualification')
-        staff.specialization = request.POST.get('specialization')
-        staff.academic_details = request.POST.get('academic_details')
-        staff.experience = request.POST.get('experience')
-        staff.publications = request.POST.get('publications')
-        staff.awards_and_memberships = request.POST.get('awards_and_memberships')
-        
+        staff.address = request.POST.get('address', '')
+        staff.mobile_number = request.POST.get('mobile_number', '') or None
+        staff.blood_group = request.POST.get('blood_group', '') or None
+        staff.gender = request.POST.get('gender', '') or None
+        dob = request.POST.get('date_of_birth')
+        staff.date_of_birth = dob if dob else None
+        staff.qualification = request.POST.get('qualification', '')
+        staff.specialization = request.POST.get('specialization', '')
+        staff.academic_details = request.POST.get('academic_details', '')
+        staff.experience = request.POST.get('experience', '')
+
+        # New Fields
+        staff.research_interests = request.POST.get('research_interests', '')
+        staff.google_scholar_link = request.POST.get('google_scholar_link', '') or None
+        staff.linkedin_link = request.POST.get('linkedin_link', '') or None
+        staff.orcid_link = request.POST.get('orcid_link', '') or None
+        staff.research_gate_link = request.POST.get('research_gate_link', '') or None
+
         staff.save()
+        from .utils import log_audit
+        log_audit(request, 'update', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, object_type='Staff', object_id=staff.staff_id, message='Updated profile details')
         messages.success(request, "Profile updated successfully.")
         return redirect('staffs:staff_profile')
 
     return render(request, 'staff/staff_edit_profile.html', {'staff': staff})
 
-def staff_portfolio(request):
-    """View to manage staff publications, seminars, and awards."""
+def _get_staff_for_portfolio(request):
+    """Helper to get logged-in staff for portfolio views."""
     if 'staff_id' not in request.session:
+        return None
+    try:
+        return get_object_or_404(Staff, staff_id=request.session['staff_id'])
+    except Exception:
+        return None
+
+
+def staff_portfolio(request):
+    """View to manage staff publications, awards, honours, and research guidance."""
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
         return redirect('staffs:stafflogin')
 
-    staff = get_object_or_404(Staff, staff_id=request.session['staff_id'])
+    publications = staff.publication_list.all()
+    awards = staff.award_list.all()
+    seminars = staff.seminar_list.all()
+    students_guided = staff.student_guided_list.all()
 
+    return render(request, 'staff/staff_portfolio.html', {
+        'staff': staff,
+        'publications': publications,
+        'awards': awards,
+        'seminars': seminars,
+        'students_guided': students_guided,
+    })
+
+
+def portfolio_add_publication(request):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
     if request.method == 'POST':
-        staff.publications = request.POST.get('publications')
-        staff.seminars = request.POST.get('seminars')
-        staff.awards_and_memberships = request.POST.get('awards_and_memberships')
-        
-        staff.save()
-        messages.success(request, "Portfolio updated successfully.")
-        return redirect('staffs:staff_profile')
+        StaffPublication.objects.create(
+            staff=staff,
+            title=request.POST.get('title', '').strip(),
+            venue_or_journal=request.POST.get('venue_or_journal', '').strip(),
+            year=request.POST.get('year', '').strip(),
+            pub_type=request.POST.get('pub_type', 'Journal'),
+        )
+        from .utils import log_audit
+        log_audit(request, 'create', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, object_type='Publication', message='Added new publication')
+        messages.success(request, "Publication added.")
+        return redirect('staffs:staff_portfolio')
+    return render(request, 'staff/portfolio_form.html', {
+        'staff': staff, 'form_type': 'publication', 'item': None, 'title': 'Add Publication',
+    })
 
-    return render(request, 'staff/staff_portfolio.html', {'staff': staff})
+
+def portfolio_edit_publication(request, pk):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    item = get_object_or_404(StaffPublication, pk=pk, staff=staff)
+    if request.method == 'POST':
+        item.title = request.POST.get('title', '').strip()
+        item.venue_or_journal = request.POST.get('venue_or_journal', '').strip()
+        item.year = request.POST.get('year', '').strip()
+        item.pub_type = request.POST.get('pub_type', 'Journal')
+        item.save()
+        from .utils import log_audit
+        log_audit(request, 'update', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, object_type='Publication', object_id=str(item.pk), message='Updated publication')
+        messages.success(request, "Publication updated.")
+        return redirect('staffs:staff_portfolio')
+    return render(request, 'staff/portfolio_form.html', {
+        'staff': staff, 'form_type': 'publication', 'item': item, 'title': 'Edit Publication',
+    })
+
+
+def portfolio_delete_publication(request, pk):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    item = get_object_or_404(StaffPublication, pk=pk, staff=staff)
+    if request.method == 'POST':
+        item.delete()
+        from .utils import log_audit
+        log_audit(request, 'delete', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, object_type='Publication', object_id=str(pk), message='Deleted publication')
+        messages.success(request, "Publication removed.")
+        return redirect('staffs:staff_portfolio')
+    return render(request, 'staff/portfolio_confirm_delete.html', {
+        'staff': staff, 'item': item, 'item_label': item.title, 'cancel_url': 'staffs:staff_portfolio',
+    })
+
+
+def portfolio_add_award(request):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    if request.method == 'POST':
+        StaffAwardHonour.objects.create(
+            staff=staff,
+            title=request.POST.get('title', '').strip(),
+            description=request.POST.get('description', '').strip(),
+            year=request.POST.get('year', '').strip(),
+            category=request.POST.get('category', 'Award'),
+        )
+        from .utils import log_audit
+        log_audit(request, 'create', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, object_type='Award', message='Added new award/honour')
+        messages.success(request, "Entry added.")
+        return redirect('staffs:staff_portfolio')
+    return render(request, 'staff/portfolio_form.html', {
+        'staff': staff, 'form_type': 'award', 'item': None, 'title': 'Add Award / Honour / Membership',
+    })
+
+
+def portfolio_edit_award(request, pk):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    item = get_object_or_404(StaffAwardHonour, pk=pk, staff=staff)
+    if request.method == 'POST':
+        item.title = request.POST.get('title', '').strip()
+        item.description = request.POST.get('description', '').strip()
+        item.year = request.POST.get('year', '').strip()
+        item.category = request.POST.get('category', 'Award')
+        item.save()
+        from .utils import log_audit
+        log_audit(request, 'update', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, object_type='Award', object_id=str(item.pk), message='Updated award/honour')
+        messages.success(request, "Entry updated.")
+        return redirect('staffs:staff_portfolio')
+    return render(request, 'staff/portfolio_form.html', {
+        'staff': staff, 'form_type': 'award', 'item': item, 'title': 'Edit Award / Honour / Membership',
+    })
+
+
+def portfolio_add_seminar(request):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    if request.method == 'POST':
+        StaffSeminar.objects.create(
+            staff=staff,
+            title=request.POST.get('title', '').strip(),
+            event_type=request.POST.get('event_type', 'Seminar'),
+            venue_or_description=request.POST.get('venue_or_description', '').strip(),
+            year=request.POST.get('year', '').strip(),
+        )
+        from .utils import log_audit
+        log_audit(request, 'create', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, object_type='Seminar', message='Added new seminar')
+        messages.success(request, "Seminar/Workshop/Conference added.")
+        return redirect('staffs:staff_portfolio')
+    return render(request, 'staff/portfolio_form.html', {
+        'staff': staff, 'form_type': 'seminar', 'item': None, 'title': 'Add Seminar / Workshop / Conference',
+    })
+
+
+def portfolio_edit_seminar(request, pk):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    item = get_object_or_404(StaffSeminar, pk=pk, staff=staff)
+    if request.method == 'POST':
+        item.title = request.POST.get('title', '').strip()
+        item.event_type = request.POST.get('event_type', 'Seminar')
+        item.venue_or_description = request.POST.get('venue_or_description', '').strip()
+        item.year = request.POST.get('year', '').strip()
+        item.save()
+        from .utils import log_audit
+        log_audit(request, 'update', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, object_type='Seminar', object_id=str(item.pk), message='Updated seminar')
+        messages.success(request, "Entry updated.")
+        return redirect('staffs:staff_portfolio')
+    return render(request, 'staff/portfolio_form.html', {
+        'staff': staff, 'form_type': 'seminar', 'item': item, 'title': 'Edit Seminar / Workshop / Conference',
+    })
+
+
+def portfolio_delete_seminar(request, pk):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    item = get_object_or_404(StaffSeminar, pk=pk, staff=staff)
+    if request.method == 'POST':
+        item.delete()
+        from .utils import log_audit
+        log_audit(request, 'delete', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, object_type='Seminar', object_id=str(pk), message='Deleted seminar')
+        messages.success(request, "Entry removed.")
+        return redirect('staffs:staff_portfolio')
+    return render(request, 'staff/portfolio_confirm_delete.html', {
+        'staff': staff, 'item': item, 'item_label': item.title, 'cancel_url': 'staffs:staff_portfolio',
+    })
+
+
+def portfolio_delete_award(request, pk):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    item = get_object_or_404(StaffAwardHonour, pk=pk, staff=staff)
+    if request.method == 'POST':
+        item.delete()
+        from .utils import log_audit
+        log_audit(request, 'delete', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, object_type='Award', object_id=str(pk), message='Deleted award/honour')
+        messages.success(request, "Entry removed.")
+        return redirect('staffs:staff_portfolio')
+    return render(request, 'staff/portfolio_confirm_delete.html', {
+        'staff': staff, 'item': item, 'item_label': item.title, 'cancel_url': 'staffs:staff_portfolio',
+    })
+
+
+def portfolio_add_student(request):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    if request.method == 'POST':
+        StaffStudentGuided.objects.create(
+            staff=staff,
+            student_name=request.POST.get('student_name', '').strip(),
+            degree_type=request.POST.get('degree_type', 'PG'),
+            status=request.POST.get('status', 'Ongoing'),
+            year=request.POST.get('year', '').strip(),
+        )
+        from .utils import log_audit
+        log_audit(request, 'create', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, object_type='StudentGuided', message='Added new student guidance')
+        messages.success(request, "Student added.")
+        return redirect('staffs:staff_portfolio')
+    return render(request, 'staff/portfolio_form.html', {
+        'staff': staff, 'form_type': 'student', 'item': None, 'title': 'Add Student Guided',
+    })
+
+
+def portfolio_edit_student(request, pk):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    item = get_object_or_404(StaffStudentGuided, pk=pk, staff=staff)
+    if request.method == 'POST':
+        item.student_name = request.POST.get('student_name', '').strip()
+        item.degree_type = request.POST.get('degree_type', 'PG')
+        item.status = request.POST.get('status', 'Ongoing')
+        item.year = request.POST.get('year', '').strip()
+        item.save()
+        from .utils import log_audit
+        log_audit(request, 'update', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, object_type='StudentGuided', object_id=str(item.pk), message='Updated student guidance')
+        messages.success(request, "Student entry updated.")
+        return redirect('staffs:staff_portfolio')
+    return render(request, 'staff/portfolio_form.html', {
+        'staff': staff, 'form_type': 'student', 'item': item, 'title': 'Edit Student Guided',
+    })
+
+
+def portfolio_delete_student(request, pk):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    item = get_object_or_404(StaffStudentGuided, pk=pk, staff=staff)
+    if request.method == 'POST':
+        item.delete()
+        from .utils import log_audit
+        log_audit(request, 'delete', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, object_type='StudentGuided', object_id=str(pk), message='Deleted student guidance')
+        messages.success(request, "Student entry removed.")
+        return redirect('staffs:staff_portfolio')
+    return render(request, 'staff/portfolio_confirm_delete.html', {
+        'staff': staff, 'item': item, 'item_label': f"{item.student_name} ({item.degree_type})", 'cancel_url': 'staffs:staff_portfolio',
+    })
 
 def archive_semester_data(student):
     """

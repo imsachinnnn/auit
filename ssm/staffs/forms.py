@@ -23,9 +23,8 @@ class StaffRegistrationForm(forms.ModelForm):
         model = Staff
         fields = [
             'staff_id', 'name', 'email', 'password', 'photo',
-            'salutation', 'designation', 'department', 'qualification',
-            'specialization', 'date_of_birth', 'date_of_joining', 'gender', 'blood_group', 'mobile_number', 'address',
-            'academic_details', 'experience', 'publications', 'awards_and_memberships'
+            'salutation', 'designation', 'department', 
+            'date_of_birth', 'date_of_joining', 'gender', 'blood_group', 'mobile_number', 'address'
         ]
 
     def clean_staff_id(self):

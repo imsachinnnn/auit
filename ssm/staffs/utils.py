@@ -89,3 +89,23 @@ def get_risk_metrics(subject):
             })
             
     return risk_students
+
+
+def log_audit(request, action, actor_type='system', actor_id='', actor_name='', object_type='', object_id='', message='', extra_data=None):
+    """Record an audit log entry. Call from views (e.g. login, edit) to populate Audits / Logs in admin."""
+    from .models import AuditLog
+    x_forwarded = request.META.get('HTTP_X_FORWARDED_FOR') if request else None
+    ip = x_forwarded.split(',')[0].strip() if x_forwarded else (request.META.get('REMOTE_ADDR') if request else None)
+    user_agent = (request.META.get('HTTP_USER_AGENT') or '')[:500] if request else ''
+    AuditLog.objects.create(
+        action=action,
+        actor_type=actor_type,
+        actor_id=actor_id or '',
+        actor_name=actor_name or '',
+        ip_address=ip,
+        user_agent=user_agent,
+        object_type=object_type or '',
+        object_id=object_id or '',
+        message=message or '',
+        extra_data=extra_data,
+    )

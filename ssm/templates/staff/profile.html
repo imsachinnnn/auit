@@ -28,27 +28,29 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             margin: 0;
-            padding: 40px;
+            padding: 20px;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
         .profile-container {
             background: var(--surface);
             border-radius: var(--radius);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 800px;
+            max-width: 1600px;
+            /* Increased width */
+            margin: 0 auto;
             overflow: hidden;
             border: 1px solid var(--border);
         }
 
         .profile-header {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            padding: 40px;
-            text-align: center;
+            padding: 30px;
+            display: flex;
+            /* Horizontal alignment */
+            align-items: center;
+            gap: 30px;
             color: white;
             position: relative;
         }
@@ -56,7 +58,9 @@
         .back-btn {
             position: absolute;
             top: 20px;
-            left: 20px;
+            right: 20px;
+            /* Moved to right for cleaner look */
+            left: auto;
             color: white;
             text-decoration: none;
             background: rgba(255, 255, 255, 0.2);
@@ -69,72 +73,123 @@
 
         .back-btn:hover {
             background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
         }
 
         .profile-avatar {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            border: 4px solid white;
+            border: 3px solid white;
             object-fit: cover;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            margin-bottom: 16px;
             background: white;
+            flex-shrink: 0;
+            margin-bottom: 0;
+            /* Reset margin */
+        }
+
+        .profile-header-content {
+            text-align: left;
         }
 
         .profile-name {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 700;
             margin: 0;
+            line-height: 1.2;
         }
 
         .profile-role {
             font-size: 1rem;
             opacity: 0.9;
-            margin-top: 5px;
+            margin-top: 4px;
             font-weight: 500;
         }
 
         .profile-body {
-            padding: 40px;
+            padding: 30px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
+            grid-template-columns: repeat(4, 1fr);
+            /* 4 Column Grid for density */
+            gap: 24px;
+        }
+
+        .section-header {
+            grid-column: 1 / -1;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h2 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
         }
 
         .info-group {
-            margin-bottom: 20px;
+            margin-bottom: 0;
+            /* Remove bottom margin in grid */
         }
 
         .info-label {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             font-weight: 600;
         }
 
         .info-value {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 500;
             color: var(--text-main);
             border-bottom: 1px solid var(--border);
-            padding-bottom: 8px;
+            padding-bottom: 4px;
+            min-height: 24px;
+            /* Ensure height alignment */
         }
 
         .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .half-width {
             grid-column: span 2;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
+            .profile-body {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .half-width {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .profile-header-content {
+                text-align: center;
+            }
+
             .profile-body {
                 grid-template-columns: 1fr;
             }
 
-            .full-width {
-                grid-column: span 1;
+            .profile-avatar {
+                margin: 0 auto;
             }
         }
 
@@ -195,8 +250,6 @@
 
     <div class="profile-container">
         <div class="profile-header">
-            <a href="{% url 'staffs:staff_dashboard' %}" class="back-btn">← Back to Dashboard</a>
-
             {% if staff.photo %}
             <img src="{{ staff.photo.url }}" alt="{{ staff.name }}" class="profile-avatar">
             {% else %}
@@ -204,17 +257,20 @@
                 alt="{{ staff.name }}" class="profile-avatar">
             {% endif %}
 
-            <h1 class="profile-name">{{ staff.salutation }} {{ staff.name }}</h1>
-            <div class="profile-role">
-                {{ staff.designation }} &bull; {{ staff.department }}
+            <div class="profile-header-content">
+                <h1 class="profile-name">{{ staff.salutation }} {{ staff.name }}</h1>
+                <div class="profile-role">
+                    {{ staff.designation }} &bull; {{ staff.department }}
+                </div>
             </div>
+
+            <a href="{% url 'staffs:staff_dashboard' %}" class="back-btn">Back to Dashboard</a>
         </div>
 
         <div class="profile-body">
-            <!-- Section 1: Registration / Official Details -->
-            <div class="full-width"
-                style="margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px;">
-                <h2 style="color: var(--primary); margin: 0; font-size: 1.5rem;">Official Information</h2>
+            <!-- Section 1: Official Information -->
+            <div class="section-header">
+                <h2>Official Information</h2>
             </div>
 
             <div class="info-group">
@@ -227,18 +283,13 @@
                 <div class="info-value">{{ staff.email }}</div>
             </div>
 
-            <div class="info-group">
+            <div class="info-group half-width">
                 <div class="info-label">Role</div>
-                <div class="info-value">{{ staff.role }} {% if staff.assigned_semester %}(Sem {{
-                    staff.assigned_semester}}){% endif %}</div>
+                <div class="info-value">{{ staff.role }} {% if staff.assigned_semester %}(Sem
+                    {{staff.assigned_semester}}){% endif %}</div>
             </div>
 
-            <div class="info-group">
-                <div class="info-label">Designation</div>
-                <div class="info-value">{{ staff.designation }}</div>
-            </div>
-
-            <div class="info-group full-width">
+            <div class="info-group half-width">
                 <div class="info-label">Department</div>
                 <div class="info-value">{{ staff.department }}</div>
             </div>
@@ -249,7 +300,7 @@
             </div>
 
             <div class="info-group">
-                <div class="info-label">Date of JOINING</div>
+                <div class="info-label">Date of Joining</div>
                 <div class="info-value">{{ staff.date_of_joining|default:"-" }}</div>
             </div>
 
@@ -268,18 +319,115 @@
                 <div class="info-value">{{ staff.mobile_number|default:"-" }}</div>
             </div>
 
-            <!-- Section 2: Professional Details -->
+            <!-- Stats Summary -->
             <div class="full-width"
-                style="margin-top: 40px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                <h2 style="color: var(--primary); margin: 0; font-size: 1.5rem;">Professional Profile</h2>
-                <a href="{% url 'staffs:staff_edit_profile' %}"
-                    style="background-color: var(--accent); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 500;">✎
-                    Edit Profile</a>
+                style="margin-top: 20px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; text-align: center;">
+                <div
+                    style="background: var(--primary-light); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--primary);">{{ staff.publication_list.count }}</div>
+                    <div
+                        style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                        Publications</div>
+                </div>
+                <div
+                    style="background: var(--primary-light); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--primary);">{{ staff.student_guided_list.count }}</div>
+                    <div
+                        style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                        Students Guided</div>
+                </div>
+                <div
+                    style="background: var(--primary-light); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--primary);">{{ staff.seminar_list.count }}</div>
+                    <div
+                        style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                        Seminars</div>
+                </div>
+                <div
+                    style="background: var(--primary-light); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--primary);">{{ staff.award_list.count }}</div>
+                    <div
+                        style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+                        Awards</div>
+                </div>
+            </div>
+
+            <!-- New Section: Research & Connect -->
+            <div class="section-header">
+                <h2>Research & Connect</h2>
+                <button onclick="window.print()"
+                    style="background: var(--text-main); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 0.85rem;">🖨️
+                    Print Bio-Data</button>
+            </div>
+
+            <div class="info-group full-width">
+                <div class="info-label">Research Interests</div>
+                <div class="info-value" style="border-bottom: none;">
+                    {% if staff.research_interests %}
+                    {% for tag in staff.research_interests.split|join:","|make_list %}
+                    {% comment %} Simple split logic needed, or just display text {% endcomment %}
+                    {% endfor %}
+                    {{ staff.research_interests }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="info-group full-width" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                {% if staff.google_scholar_link %}
+                <a href="{{ staff.google_scholar_link }}" target="_blank"
+                    style="text-decoration: none; color: white; background: #4285F4; padding: 8px 16px; border-radius: 50px; font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
+                    🎓 Google Scholar
+                </a>
+                {% endif %}
+                {% if staff.linkedin_link %}
+                <a href="{{ staff.linkedin_link }}" target="_blank"
+                    style="text-decoration: none; color: white; background: #0077b5; padding: 8px 16px; border-radius: 50px; font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
+                    🔗 LinkedIn
+                </a>
+                {% endif %}
+                {% if staff.orcid_link %}
+                <a href="{{ staff.orcid_link }}" target="_blank"
+                    style="text-decoration: none; color: white; background: #A6CE39; padding: 8px 16px; border-radius: 50px; font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; color: black;">
+                    🆔 ORCID
+                </a>
+                {% endif %}
+                {% if staff.research_gate_link %}
+                <a href="{{ staff.research_gate_link }}" target="_blank"
+                    style="text-decoration: none; color: white; background: #00CCBB; padding: 8px 16px; border-radius: 50px; font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">🔬
+                    ResearchGate
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Section 2: Professional Details -->
+            <div class="section-header">
+                <h2>Professional Profile</h2>
+                <div class="action-buttons" style="display: flex; gap: 10px;">
+                    <a href="{% url 'staffs:staff_edit_profile' %}"
+                        style="background-color: var(--primary); color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 500;">
+                        ✎ Edit Profile
+                    </a>
+                    <a href="{% url 'staffs:staff_portfolio' %}"
+                        style="background-color: var(--accent); color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 500;">
+                        📚 Portfolio
+                    </a>
+                </div>
             </div>
 
             <div class="info-group full-width">
                 <div class="info-label">Address for Communication</div>
                 <div class="info-value">{{ staff.address|default:"-"|linebreaksbr }}</div>
+            </div>
+
+            <!-- Section 3: Publications & Accomplishments -->
+            <div class="full-width"
+                style="margin-top: 40px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="color: var(--primary); margin: 0; font-size: 1.5rem;">Publications & Accomplishments</h2>
+                <a href="{% url 'staffs:staff_portfolio' %}"
+                    style="background-color: var(--primary); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 500;">➕
+                    Add / Edit</a>
             </div>
 
             <div class="info-group full-width">
@@ -294,26 +442,81 @@
 
             <div class="info-group full-width">
                 <div class="info-label">Academic Detail</div>
-                <div class="info-value" style="font-size: 1rem; line-height: 1.5;">{{
-                    staff.academic_details|default:"-"|linebreaksbr }}</div>
+                <div class="info-value" style="font-size: 1rem; line-height: 1.5;">
+                    {{staff.academic_details|default:"-"|linebreaksbr }}</div>
             </div>
 
             <div class="info-group full-width">
                 <div class="info-label">Experience</div>
-                <div class="info-value" style="font-size: 1rem; line-height: 1.5;">{{
-                    staff.experience|default:"-"|linebreaksbr }}</div>
+                <div class="info-value" style="font-size: 1rem; line-height: 1.5;">
+                    {{staff.experience|default:"-"|linebreaksbr }}</div>
             </div>
 
             <div class="info-group full-width">
                 <div class="info-label">Publications</div>
-                <div class="info-value" style="font-size: 1rem; line-height: 1.5;">{{
-                    staff.publications|default:"-"|linebreaksbr }}</div>
+                <div class="info-value" style="font-size: 1rem; line-height: 1.6;">
+                    {% if staff.publication_list.all %}
+                    {% for p in staff.publication_list.all %}
+                    <div style="margin-bottom: 8px;">
+                        • {{ p.title }}
+                        {% if p.venue_or_journal %} ({{ p.venue_or_journal }}){% endif %}
+                        {% if p.year %} · {{ p.year }}{% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    —
+                    {% endif %}
+                </div>
             </div>
 
             <div class="info-group full-width">
                 <div class="info-label">Awards / Honours / Memberships</div>
-                <div class="info-value" style="font-size: 1rem; line-height: 1.5;">{{
-                    staff.awards_and_memberships|default:"-"|linebreaksbr }}</div>
+                <div class="info-value" style="font-size: 1rem; line-height: 1.6;">
+                    {% if staff.award_list.all %}
+                    {% for a in staff.award_list.all %}
+                    <div style="margin-bottom: 8px;">
+                        • {{ a.title }}
+                        {% if a.description %} — {{ a.description }}{% endif %}
+                        {% if a.year %} ({{ a.year }}){% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    —
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="info-group full-width">
+                <div class="info-label">Seminars / Workshops / Conferences</div>
+                <div class="info-value" style="font-size: 1rem; line-height: 1.6;">
+                    {% if staff.seminar_list.all %}
+                    {% for s in staff.seminar_list.all %}
+                    <div style="margin-bottom: 8px;">
+                        • {{ s.title }} ({{ s.get_event_type_display }})
+                        {% if s.venue_or_description %} — {{ s.venue_or_description }}{% endif %}
+                        {% if s.year %} · {{ s.year }}{% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    —
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="info-group full-width">
+                <div class="info-label">Students Guided (PG / PhD)</div>
+                <div class="info-value" style="font-size: 1rem; line-height: 1.6;">
+                    {% if staff.student_guided_list.all %}
+                    {% for s in staff.student_guided_list.all %}
+                    <div style="margin-bottom: 8px;">
+                        • {{ s.student_name }} — {{ s.degree_type }} ({{ s.status }})
+                        {% if s.year %} · {{ s.year }}{% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    —
+                    {% endif %}
+                </div>
             </div>
 
         </div>

@@ -48,7 +48,32 @@ class TimetableAdmin(admin.ModelAdmin):
     list_filter = ('semester', 'day')
     ordering = ('semester', 'day', 'period')
 
-from .models import News, StaffLeaveRequest
+from .models import News, StaffLeaveRequest, AuditLog
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    list_display = ('timestamp', 'action', 'actor_type', 'actor_id', 'actor_name', 'ip_address', 'object_type', 'message_short')
+    list_filter = ('action', 'actor_type', 'timestamp')
+    search_fields = ('actor_id', 'actor_name', 'message', 'object_type', 'ip_address')
+    readonly_fields = ('timestamp', 'action', 'actor_type', 'actor_id', 'actor_name', 'ip_address', 'user_agent', 'object_type', 'object_id', 'message', 'extra_data')
+    ordering = ('-timestamp',)
+    date_hierarchy = 'timestamp'
+    list_per_page = 50
+
+    def message_short(self, obj):
+        return (obj.message[:60] + '...') if obj.message and len(obj.message) > 60 else (obj.message or '—')
+    message_short.short_description = 'Message'
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):

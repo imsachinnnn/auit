@@ -4,13 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profile | Staff Dashboard</title>
+    <title>Edit Profile | Staff Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
         type="image/png">
     <style>
         :root {
-            /* --- Site Native Teal Theme --- */
             --primary: #5a7d7c;
             --primary-dark: #4a6b69;
             --primary-light: #eef2f2;
@@ -21,8 +20,8 @@
             --text-muted: #6b7280;
             --border: #e2e8f0;
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --radius: 16px;
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+            --radius: 12px;
         }
 
         body {
@@ -34,308 +33,257 @@
             min-height: 100vh;
         }
 
-        .app-container {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            min-height: 100vh;
+        /* Page header – matches profile page */
+        .page-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 20px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .page-header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .page-header img {
+            height: 40px;
+            width: auto;
+        }
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        .page-header .back-btn {
+            color: white;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .page-header .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
-        /* --- Sidebar --- */
+        .app-container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: calc(100vh - 72px);
+        }
+
         .sidebar {
             background: var(--surface);
             border-right: 1px solid var(--border);
-            padding: 24px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            position: sticky;
-            top: 0;
-            height: 100vh;
             overflow-y: auto;
-            box-sizing: border-box;
-            z-index: 100;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 30px;
-            padding-left: 5px;
-        }
-
-        .brand img {
-            height: 35px;
-        }
-
-        .brand h1 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin: 0;
-            line-height: 1.2;
         }
 
         .nav-section {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 30px;
+            gap: 4px;
+            margin-bottom: 24px;
         }
-
         .nav-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.06em;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             padding-left: 12px;
             font-weight: 600;
         }
-
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: 12px;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
             color: var(--text-muted);
             text-decoration: none;
             font-weight: 500;
-            font-size: 1rem;
-            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            transition: all 0.2s;
         }
-
-        .nav-item:hover,
-        .nav-item.active {
-            background-color: var(--primary-light);
-            color: var(--primary-dark);
-        }
-
-        .nav-icon {
-            font-size: 1.1rem;
-            width: 24px;
-            text-align: center;
-        }
+        .nav-item:hover { background-color: var(--primary-light); color: var(--primary-dark); }
+        .nav-item.active { background-color: var(--primary-light); color: var(--primary); font-weight: 600; }
+        .nav-icon { font-size: 1rem; width: 22px; text-align: center; }
 
         .profile-mini {
             margin-top: auto;
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 16px;
+            gap: 10px;
+            padding: 14px;
             background: var(--bg-body);
-            border-radius: 12px;
+            border-radius: 10px;
             border: 1px solid var(--border);
         }
-
         .profile-mini img {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             object-fit: cover;
         }
+        .profile-mini .name { font-weight: 600; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* --- Main Content --- */
         .main-content {
-            padding: 32px;
-            max-width: 1000px;
-            /* Constrained width for form readability */
+            padding: 28px 32px 40px;
+            max-width: 900px;
             margin: 0 auto;
             width: 100%;
             box-sizing: border-box;
         }
 
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-
-        .page-title h2 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin: 0;
-            color: var(--text-main);
-        }
-
-        .page-title p {
-            margin: 4px 0 0 0;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        /* --- Form Card --- */
         .form-card {
             background: var(--surface);
             border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-card);
             border: 1px solid var(--border);
-            padding: 32px;
+            padding: 28px 32px;
         }
 
         .form-section-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
-            color: var(--primary-dark);
-            margin-bottom: 24px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
+            color: var(--primary);
+            margin: 0 0 18px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding-left: 12px;
         }
 
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 18px;
         }
-
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 500;
             color: var(--text-main);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
-
-        .form-group input[type="text"],
+        .form-group input,
+        .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 12px;
+            padding: 10px 12px;
             border: 1px solid var(--border);
             border-radius: 8px;
             font-family: inherit;
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: var(--text-main);
-            background: #fff;
+            background: var(--surface);
             transition: border-color 0.2s, box-shadow 0.2s;
             box-sizing: border-box;
         }
-
-        .form-group input[type="text"]:focus,
+        .form-group input:focus,
+        .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-light);
+            box-shadow: 0 0 0 2px var(--primary-light);
         }
-
-        .form-group textarea {
-            min-height: 120px;
-            resize: vertical;
-            line-height: 1.5;
-        }
-
-        .form-help {
-            display: block;
-            margin-top: 6px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
+        .form-group textarea { min-height: 100px; resize: vertical; line-height: 1.5; }
+        .form-group.full-width { grid-column: 1 / -1; }
 
         .action-bar {
-            margin-top: 32px;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
             display: flex;
             justify-content: flex-end;
-            gap: 16px;
+            gap: 12px;
             align-items: center;
         }
-
         .btn-cancel {
             color: var(--text-muted);
             text-decoration: none;
             font-weight: 500;
             padding: 10px 20px;
             border-radius: 8px;
+            border: 1px solid var(--border);
             transition: background 0.2s;
         }
-
-        .btn-cancel:hover {
-            background: var(--bg-body);
-            color: var(--text-main);
-        }
-
+        .btn-cancel:hover { background: var(--bg-body); color: var(--text-main); }
         .btn-save {
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 12px 32px;
+            padding: 12px 28px;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
+            transition: background 0.2s;
         }
+        .btn-save:hover { background-color: var(--primary-dark); }
 
-        .btn-save:hover {
-            background-color: var(--primary-dark);
+        @media (max-width: 900px) {
+            .form-row { grid-template-columns: 1fr; }
         }
-
-        .btn-save:active {
-            transform: translateY(1px);
-        }
-
-        @media (max-width: 1024px) {
-            .app-container {
-                grid-template-columns: 1fr;
-            }
-
-            .sidebar {
-                display: none;
-            }
-
-            .main-content {
-                padding: 24px;
-            }
+        @media (max-width: 768px) {
+            .app-container { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .main-content { padding: 20px 16px; }
         }
     </style>
 </head>
 
 <body>
 
+    <header class="page-header">
+        <div class="page-header-left">
+            <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" alt="Logo">
+            <h1>Edit Profile</h1>
+        </div>
+        <a href="{% url 'staffs:staff_profile' %}" class="back-btn">← Back to Profile</a>
+    </header>
+
     <div class="app-container">
-        <!-- Sidebar Copy (Ideally this should be a base template, but for now copying structure as per request) -->
         <aside class="sidebar">
-            <div class="brand">
-                <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
-                    alt="Logo">
-                <h1>Edit Profile</h1>
-            </div>
-
             <nav class="nav-section">
-                <!-- Back Link is Crucial Here -->
-                <a href="{% url 'staffs:staff_profile' %}" class="nav-item active">
-                    <span class="nav-icon">←</span> Back to Profile
+                <div class="nav-label">Menu</div>
+                <a href="{% url 'staffs:staff_profile' %}" class="nav-item">
+                    <span class="nav-icon">👤</span> My Profile
                 </a>
-            </nav>
-
-            <nav class="nav-section">
-                <div class="nav-label">Navigation</div>
+                <a href="{% url 'staffs:staff_edit_profile' %}" class="nav-item active">
+                    <span class="nav-icon">✎</span> Edit Profile
+                </a>
+                <a href="{% url 'staffs:staff_portfolio' %}" class="nav-item">
+                    <span class="nav-icon">📄</span> Portfolio
+                </a>
                 <a href="{% url 'staffs:staff_dashboard' %}" class="nav-item">
                     <span class="nav-icon">📊</span> Dashboard
                 </a>
             </nav>
-
             <div class="profile-mini">
                 {% if staff.photo %}
                 <img src="{{ staff.photo.url }}" alt="Profile">
                 {% else %}
                 <img src="https://ui-avatars.com/api/?name={{ staff.name }}" alt="Profile">
                 {% endif %}
-                <div style="flex: 1; min-width: 0;">
-                    <div
-                        style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem;">
-                        {{ staff.name }}
-                    </div>
-                </div>
+                <span class="name">{{ staff.name }}</span>
             </div>
         </aside>
 
-        <!-- Main Content Area -->
         <main class="main-content">
-            <div class="top-bar">
-                <div class="page-title">
-                    <h2>Edit Professional Profile</h2>
-                    <p>Update your academic and professional details displayed on your profile.</p>
-                </div>
-            </div>
-
             <form method="POST">
                 {% csrf_token %}
                 <div class="form-card">
@@ -343,49 +291,82 @@
                     <div class="form-section-title">Address & Contact</div>
                     <div class="form-group">
                         <label for="address">Address for Communication</label>
-                        <textarea id="address" name="address"
-                            placeholder="Enter your full address...">{{ staff.address }}</textarea>
+                        <textarea id="address" name="address" placeholder="Enter your full address...">{{ staff.address }}</textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="mobile_number">Mobile Number</label>
+                            <input type="tel" id="mobile_number" name="mobile_number" value="{{ staff.mobile_number|default:'' }}" placeholder="10-digit mobile number">
+                        </div>
                     </div>
 
-                    <div class="form-section-title">Qualification & Specialization</div>
-                    <div class="form-group">
-                        <label for="qualification">Qualifications</label>
-                        <input type="text" id="qualification" name="qualification" value="{{ staff.qualification }}"
-                            placeholder="e.g. M.Tech, Ph.D">
-                        <span class="form-help">Your highest or most relevant degrees.</span>
+                    <div class="form-section-title">Personal Details</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="date_of_birth">Date of Birth</label>
+                            <input type="date" id="date_of_birth" name="date_of_birth" value="{{ staff.date_of_birth|date:'Y-m-d' }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">Gender</label>
+                            <select id="gender" name="gender">
+                                <option value="">— Select —</option>
+                                <option value="Male" {% if staff.gender == 'Male' %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if staff.gender == 'Female' %}selected{% endif %}>Female</option>
+                                <option value="Other" {% if staff.gender == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="blood_group">Blood Group</label>
+                            <input type="text" id="blood_group" name="blood_group" value="{{ staff.blood_group|default:'' }}" placeholder="e.g. O+, A+, B+">
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="specialization">Area of Specialization</label>
-                        <input type="text" id="specialization" name="specialization" value="{{ staff.specialization }}"
-                            placeholder="e.g. Machine Learning, Data Science">
+                    <div class="form-section-title">Qualification & Background</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="qualification">Qualifications</label>
+                            <input type="text" id="qualification" name="qualification" value="{{ staff.qualification }}" placeholder="e.g. M.Tech, Ph.D">
+                        </div>
+                        <div class="form-group">
+                            <label for="specialization">Area of Specialization</label>
+                            <input type="text" id="specialization" name="specialization" value="{{ staff.specialization }}" placeholder="e.g. Machine Learning, Data Science">
+                        </div>
                     </div>
-
-                    <div class="form-section-title">Detailed Information</div>
                     <div class="form-group">
                         <label for="academic_details">Academic Details</label>
                         <textarea id="academic_details" name="academic_details"
-                            placeholder="List your degrees, institutions, and years...">{{ staff.academic_details }}</textarea>
-                        <span class="form-help">Detailed list of your educational background.</span>
+                            placeholder="Degrees, institutions, years (one per line)...">{{ staff.academic_details }}</textarea>
                     </div>
-
                     <div class="form-group">
                         <label for="experience">Professional Experience</label>
                         <textarea id="experience" name="experience"
-                            placeholder="List your previous positions...">{{ staff.experience }}</textarea>
+                            placeholder="Previous positions (one per line)...">{{ staff.experience }}</textarea>
                     </div>
 
-                    <div class="form-section-title">Achievements</div>
+                    <div class="form-section-title">Research & Social Profile</div>
                     <div class="form-group">
-                        <label for="publications">Publications</label>
-                        <textarea id="publications" name="publications"
-                            placeholder="List key publications...">{{ staff.publications }}</textarea>
+                        <label for="research_interests">Research Interests</label>
+                        <textarea id="research_interests" name="research_interests"
+                            placeholder="e.g. Machine Learning, Network Security, IoT (Comma separated)">{{ staff.research_interests }}</textarea>
                     </div>
 
-                    <div class="form-group">
-                        <label for="awards_and_memberships">Awards / Honours / Memberships</label>
-                        <textarea id="awards_and_memberships" name="awards_and_memberships"
-                            placeholder="List any awards or professional memberships...">{{ staff.awards_and_memberships }}</textarea>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="google_scholar_link">Google Scholar</label>
+                            <input type="url" id="google_scholar_link" name="google_scholar_link" value="{{ staff.google_scholar_link|default:'' }}" placeholder="https://scholar.google.com/...">
+                        </div>
+                        <div class="form-group">
+                            <label for="linkedin_link">LinkedIn</label>
+                            <input type="url" id="linkedin_link" name="linkedin_link" value="{{ staff.linkedin_link|default:'' }}" placeholder="https://linkedin.com/in/...">
+                        </div>
+                        <div class="form-group">
+                            <label for="orcid_link">ORCID</label>
+                            <input type="url" id="orcid_link" name="orcid_link" value="{{ staff.orcid_link|default:'' }}" placeholder="https://orcid.org/...">
+                        </div>
+                        <div class="form-group">
+                            <label for="research_gate_link">ResearchGate</label>
+                            <input type="url" id="research_gate_link" name="research_gate_link" value="{{ staff.research_gate_link|default:'' }}" placeholder="https://researchgate.net/...">
+                        </div>
                     </div>
 
                     <div class="action-bar">

@@ -204,6 +204,9 @@ def register_student(request):
                 
                 if program_level == 'PHD':
                     save_related(phd_form)
+            
+            from staffs.utils import log_audit
+            log_audit(request, 'create', actor_type='system', actor_name='System', object_type='Student', object_id=student.roll_number, message=f'New student registered: {student.student_name}')
 
             return JsonResponse({'message': 'Registration successful! Redirecting...'})
         
@@ -232,6 +235,8 @@ def stdlogin(request):
             # Use the secure check_password method from your model
             if student.check_password(password_from_form):
                 request.session['student_roll_number'] = student.roll_number
+                from staffs.utils import log_audit
+                log_audit(request, 'login', actor_type='student', actor_id=student.roll_number, actor_name=student.student_name, message='Student logged in')
                 return redirect('student_dashboard')
             else:
                 error = "Invalid credentials."
@@ -426,8 +431,14 @@ def student_profile(request):
     }
     return render(request, 'student_profile.html', context)
 
+
 @student_login_required
 def student_logout(request):
+    roll_number = request.session.get('student_roll_number')
+    if roll_number:
+        from staffs.utils import log_audit
+        log_audit(request, 'logout', actor_type='student', actor_id=roll_number, message='Student logged out')
+
     request.session.flush()
     try:
         del request.session['student_roll_number']
@@ -487,6 +498,9 @@ def student_editprofile(request):
             student_docs.driving_license = request.FILES['driving_license']
         
         student_docs.save()
+        
+        from staffs.utils import log_audit
+        log_audit(request, 'update', actor_type='student', actor_id=student.roll_number, actor_name=student.student_name, object_type='Student', object_id=student.roll_number, message='Updated profile/personal details')
 
         messages.success(request, 'Your profile has been updated successfully!')
         return redirect('student_dashboard')

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publications & Accomplishments | Staff Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
+    <style>
+        :root {
+            --primary: #5a7d7c;
+            --primary-dark: #4a6b69;
+            --primary-light: #eef2f2;
+            --accent: #f59e0b;
+            --bg-body: #f9fafb;
+            --surface: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --radius: 16px;
+        }
+
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; min-height: 100vh; }
+        .app-container { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+        .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+        .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; }
+        .brand img { height: 35px; }
+        .brand h1 { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin: 0; }
+        .nav-section { display: flex; flex-direction: column; gap: 8px; margin-bottom: 30px; }
+        .nav-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 8px; padding-left: 12px; font-weight: 600; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: var(--text-muted); text-decoration: none; font-weight: 500; transition: all 0.2s; }
+        .nav-item:hover, .nav-item.active { background-color: var(--primary-light); color: var(--primary-dark); }
+        .nav-icon { font-size: 1.1rem; width: 24px; text-align: center; }
+        .profile-mini { margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--bg-body); border-radius: 12px; border: 1px solid var(--border); }
+        .profile-mini img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+
+        .main-content { padding: 32px; max-width: 1000px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        .top-bar { margin-bottom: 32px; }
+        .page-title h2 { font-size: 1.75rem; font-weight: 700; margin: 0; color: var(--text-main); }
+        .page-title p { margin: 4px 0 0 0; color: var(--text-muted); font-size: 0.95rem; }
+
+        .section-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); border: 1px solid var(--border); padding: 24px; margin-bottom: 24px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .section-title { font-size: 1.1rem; font-weight: 600; color: var(--primary-dark); margin: 0; }
+        .btn-add { display: inline-flex; align-items: center; gap: 8px; background: var(--primary); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: background 0.2s; }
+        .btn-add:hover { background: var(--primary-dark); color: white; }
+        .item-list { list-style: none; padding: 0; margin: 0; }
+        .item-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--border); gap: 16px; }
+        .item-row:last-child { border-bottom: none; }
+        .item-content { flex: 1; min-width: 0; }
+        .item-title { font-weight: 600; color: var(--text-main); margin-bottom: 4px; }
+        .item-meta { font-size: 0.9rem; color: var(--text-muted); }
+        .item-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .btn-edit, .btn-delete { padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; text-decoration: none; transition: all 0.2s; }
+        .btn-edit { background: var(--primary-light); color: var(--primary-dark); }
+        .btn-edit:hover { background: var(--primary); color: white; }
+        .btn-delete { background: #fee2e2; color: #dc2626; }
+        .btn-delete:hover { background: #dc2626; color: white; }
+        .empty-state { padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.95rem; }
+        .empty-state a { color: var(--primary); }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-main); font-size: 0.95rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; box-sizing: border-box; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .form-help { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+        .btn-save { background: var(--primary); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+
+        @media (max-width: 1024px) { .app-container { grid-template-columns: 1fr; } .sidebar { display: none; } }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="brand">
+                <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" alt="Logo">
+                <h1>Publications & Accomplishments</h1>
+            </div>
+            <nav class="nav-section">
+                <a href="{% url 'staffs:staff_profile' %}" class="nav-item active">
+                    <span class="nav-icon">←</span> Back to Profile
+                </a>
+            </nav>
+            <nav class="nav-section">
+                <div class="nav-label">Navigation</div>
+                <a href="{% url 'staffs:staff_dashboard' %}" class="nav-item">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+            </nav>
+            <div class="profile-mini">
+                {% if staff.photo %}
+                <img src="{{ staff.photo.url }}" alt="Profile">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ staff.name }}" alt="Profile">
+                {% endif %}
+                <div style="flex: 1; min-width: 0; font-weight: 600; font-size: 0.9rem;">{{ staff.name }}</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h2>Publications & Accomplishments</h2>
+                    <p>Click "Add New" to add publications, awards, memberships, or students guided.</p>
+                </div>
+            </div>
+
+            {% if messages %}
+            <ul style="list-style: none; padding: 0; margin: 0 0 20px 0;">
+                {% for message in messages %}
+                <li style="padding: 12px; border-radius: 8px; background: #d1fae5; color: #065f46; margin-bottom: 8px;">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <!-- Publications -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="section-title">Publications</h3>
+                    <a href="{% url 'staffs:portfolio_add_publication' %}" class="btn-add">➕ Add New</a>
+                </div>
+                {% if publications %}
+                <ul class="item-list">
+                    {% for p in publications %}
+                    <li class="item-row">
+                        <div class="item-content">
+                            <div class="item-title">{{ p.title }}</div>
+                            <div class="item-meta">{{ p.get_pub_type_display }}{% if p.venue_or_journal %} · {{ p.venue_or_journal }}{% endif %}{% if p.year %} · {{ p.year }}{% endif %}</div>
+                        </div>
+                        <div class="item-actions">
+                            <a href="{% url 'staffs:portfolio_edit_publication' p.pk %}" class="btn-edit">Edit</a>
+                            <a href="{% url 'staffs:portfolio_delete_publication' p.pk %}" class="btn-delete">Delete</a>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state">No publications yet. <a href="{% url 'staffs:portfolio_add_publication' %}">Add your first publication</a></div>
+                {% endif %}
+            </div>
+
+            <!-- Awards / Honours / Memberships -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="section-title">Awards / Honours / Memberships</h3>
+                    <a href="{% url 'staffs:portfolio_add_award' %}" class="btn-add">➕ Add New</a>
+                </div>
+                {% if awards %}
+                <ul class="item-list">
+                    {% for a in awards %}
+                    <li class="item-row">
+                        <div class="item-content">
+                            <div class="item-title">{{ a.title }} <span style="color: var(--text-muted); font-weight: normal;">({{ a.get_category_display }})</span></div>
+                            <div class="item-meta">{% if a.description %}{{ a.description }}{% endif %}{% if a.year %} · {{ a.year }}{% endif %}</div>
+                        </div>
+                        <div class="item-actions">
+                            <a href="{% url 'staffs:portfolio_edit_award' a.pk %}" class="btn-edit">Edit</a>
+                            <a href="{% url 'staffs:portfolio_delete_award' a.pk %}" class="btn-delete">Delete</a>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state">No entries yet. <a href="{% url 'staffs:portfolio_add_award' %}">Add award, honour, or membership</a></div>
+                {% endif %}
+            </div>
+
+            <!-- Seminars / Workshops / Conferences -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="section-title">Seminars / Workshops / Conferences</h3>
+                    <a href="{% url 'staffs:portfolio_add_seminar' %}" class="btn-add">➕ Add New</a>
+                </div>
+                {% if seminars %}
+                <ul class="item-list">
+                    {% for s in seminars %}
+                    <li class="item-row">
+                        <div class="item-content">
+                            <div class="item-title">{{ s.title }} <span style="color: var(--text-muted); font-weight: normal;">({{ s.get_event_type_display }})</span></div>
+                            <div class="item-meta">{% if s.venue_or_description %}{{ s.venue_or_description }}{% endif %}{% if s.year %} · {{ s.year }}{% endif %}</div>
+                        </div>
+                        <div class="item-actions">
+                            <a href="{% url 'staffs:portfolio_edit_seminar' s.pk %}" class="btn-edit">Edit</a>
+                            <a href="{% url 'staffs:portfolio_delete_seminar' s.pk %}" class="btn-delete">Delete</a>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state">No entries yet. <a href="{% url 'staffs:portfolio_add_seminar' %}">Add seminar, workshop, or conference</a></div>
+                {% endif %}
+            </div>
+
+            <!-- Students Guided -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 class="section-title">Students Guided (PG / PhD)</h3>
+                    <a href="{% url 'staffs:portfolio_add_student' %}" class="btn-add">➕ Add New</a>
+                </div>
+                {% if students_guided %}
+                <ul class="item-list">
+                    {% for s in students_guided %}
+                    <li class="item-row">
+                        <div class="item-content">
+                            <div class="item-title">{{ s.student_name }} · {{ s.degree_type }} · {{ s.status }}</div>
+                            <div class="item-meta">{% if s.year %}Year: {{ s.year }}{% endif %}</div>
+                        </div>
+                        <div class="item-actions">
+                            <a href="{% url 'staffs:portfolio_edit_student' s.pk %}" class="btn-edit">Edit</a>
+                            <a href="{% url 'staffs:portfolio_delete_student' s.pk %}" class="btn-delete">Delete</a>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state">No students added yet. <a href="{% url 'staffs:portfolio_add_student' %}">Add PG or PhD student guided</a></div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>
