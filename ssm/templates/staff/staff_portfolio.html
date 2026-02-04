@@ -566,8 +566,7 @@
                                             style="font-size:0.8rem; color:var(--primary);">View Cert/Paper</a>
                                         {% endif %}
                                     </td>
-                                    <td style="padding: 10px;">{{ c.date_from|default:"-" }} to {{ c.date_to|default:"-"
-                                        }}<br>{{ c.location }}</td>
+                                    <td style="padding: 10px;">{{ c.date_from|default:"-" }} to {{ c.date_to|default:"-" }}<br>{{ c.location }}</td>
                                     <td style="padding: 10px;">
                                         <a href="{% url 'staffs:portfolio_delete_entry' 'conference' c.pk %}"
                                             class="btn-delete" onclick="return confirm('Delete this entry?')">Delete</a>
