@@ -19,9 +19,11 @@ logger = logging.getLogger(__name__)
 from .models import (
     Student, PersonalInfo, BankDetails, AcademicHistory, DiplomaDetails, UGDetails, PGDetails, PhDDetails,
     ScholarshipInfo, StudentDocuments, OtherDetails, Caste, StudentMarks, StudentAttendance,
-    StudentSkill, StudentProject, LeaveRequest, StudentGPA
+    StudentSkill, StudentProject, LeaveRequest, StudentGPA, BonafideRequest
 )
 from . import ai_utils
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 # Import the caste data for the API
 from .caste_data import CASTE_DATA
 from .forms import (
@@ -1433,6 +1435,75 @@ def clear_ai_resume(request):
     return JsonResponse({'success': False, 'message': 'No AI resume data to clear.'})
 
 
+@student_login_required
+def bonafide_list(request):
+    """Lists student's bonafide requests."""
+    roll_number = request.session.get('student_roll_number')
+    student = Student.objects.get(roll_number=roll_number)
+    
+    requests = BonafideRequest.objects.filter(student=student).order_by('-created_at')
+
+    # Count for visual limit display & check
+    now = timezone.now()
+    start_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    monthly_count = BonafideRequest.objects.filter(
+        student=student,
+        created_at__gte=start_month
+    ).count()
+    limit = 2
+    
+    # Handle New Request Submission (if done from this page)
+    if request.method == 'POST':
+        reason = request.POST.get('reason')
+        if not reason:
+             messages.error(request, 'Reason is required.')
+        else:
+            if monthly_count >= limit:
+                 messages.error(request, f'You have already reached the monthly limit of {limit} requests.')
+            else:
+                BonafideRequest.objects.create(student=student, reason=reason)
+                messages.success(request, 'Bonafide Request submitted successfully to HOD!')
+                return redirect('bonafide_list')
+
+    return render(request, 'bonafide_list.html', {
+        'requests': requests, 
+        'student': student,
+        'monthly_count': monthly_count,
+        'limit': limit
+    })
+
+@student_login_required
+def download_bonafide(request, request_id):
+    """Generates PDF for approved bona fide certificate."""
+    roll_number = request.session.get('student_roll_number')
+    student = Student.objects.get(roll_number=roll_number)
+    
+    bonafide = get_object_or_404(BonafideRequest, id=request_id, student=student)
+    
+    if bonafide.status != 'Approved':
+        messages.error(request, 'Certificate is not approved yet.')
+        return redirect('bonafide_list')
+        
+    template_path = 'bonafide_certificate_pdf.html'
+    context = {
+        'bonafide': bonafide,
+        'student': student,
+        'date': timezone.now()
+    }
+    
+    response = HttpResponse(content_type='application/pdf')
+    filename = f"Bonafide_{student.roll_number}_{bonafide.id}.pdf"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    template = get_template(template_path)
+    html = template.render(context)
+    
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+       return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response
+    
+
 @require_http_methods(["GET"])
 def get_ai_resume_status(request):
     """
@@ -1483,6 +1554,34 @@ def leave_history(request):
     leaves = LeaveRequest.objects.filter(student=student).order_by('-created_at')
     
     return render(request, 'leave_list.html', {'student': student, 'leaves': leaves})
+
+@student_login_required
+def request_bonafide(request):
+    roll_number = request.session.get('student_roll_number')
+    student = Student.objects.get(roll_number=roll_number)
+
+    if request.method == 'POST':
+        reason = request.POST.get('reason')
+        if not reason:
+             return JsonResponse({'success': False, 'message': 'Reason is required.'})
+        
+        # Check limit: 1 per month
+        now = timezone.now()
+        # Create a timezone-aware datetime for the first of the month
+        start_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        existing_count = BonafideRequest.objects.filter(
+            student=student,
+            created_at__gte=start_month
+        ).count()
+        
+        if existing_count >= 2:
+             return JsonResponse({'success': False, 'message': 'You have already requested a Bonafide Certificate 2 times this month. Limit reached.'})
+
+        BonafideRequest.objects.create(student=student, reason=reason)
+        return JsonResponse({'success': True, 'message': 'Bonafide Request submitted successfully to HOD!'})
+    
+    return JsonResponse({'error': 'Invalid method'}, status=405)
 
 def upload_result(request):
     """Allows students to upload result screenshots for their current semester subjects."""
@@ -1674,6 +1773,8 @@ def delete_skill_api(request):
         return JsonResponse({'success': True})
     except Exception as e:
          return JsonResponse({'success': False, 'error': str(e)})
+
+# Force Server Reload
 
 @require_POST
 @student_login_required

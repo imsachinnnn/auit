@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bonafide Certificate</title>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 2.5cm;
+        }
+
+        body {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 16px;
+            color: #000;
+            line-height: 1.9;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .college-name {
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .college-address {
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 45px 0;
+        }
+
+        .content {
+            text-align: justify;
+        }
+
+        .content p {
+            text-indent: 50px;
+            margin-bottom: 22px;
+        }
+
+        .footer {
+            margin-top: 80px;
+            width: 100%;
+            display: table;
+        }
+
+        .footer-left,
+        .footer-right {
+            display: table-cell;
+            vertical-align: top;
+            font-size: 16px;
+        }
+
+        .footer-left {
+            text-align: left;
+            width: 50%;
+        }
+
+        .footer-right {
+            text-align: right;
+            width: 50%;
+        }
+
+        .signature-space {
+            margin-top: 70px;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="college-name">Annamalai University</div>
+        <div class="college-address">
+            Annamalai Nagar, Chidambaram – 608002<br>
+            Tamil Nadu, India
+        </div>
+    </div>
+
+    <div class="title">BONAFIDE CERTIFICATE</div>
+
+    <div class="content">
+        <p>
+            This is to certify that <span class="bold">{{ student.student_name }}</span>,
+            bearing Roll Number <span class="bold">{{ student.roll_number }}</span>,
+            is a bonafide student of Annamalai University.
+        </p>
+
+        <p>
+            He/She is currently pursuing the
+            <span class="bold">{{ student.program_level }}</span>
+            programme in the
+            <span class="bold">Department of Information Technology</span>
+            and is studying in
+            <span class="bold">Semester {{ student.current_semester }}</span>
+            during the Academic Year
+            <span class="bold">2025 – 2026</span>.
+        </p>
+
+        <p>
+            This certificate is issued at his/her request for the purpose of
+            <span class="bold">{{ bonafide.reason }}</span>.
+        </p>
+
+        <p>
+            To the best of my knowledge and belief, his/her conduct and character
+            during the period of study in this institution are satisfactory.
+        </p>
+    </div>
+
+    <div class="footer">
+        <div class="footer-left">
+            Date: {{ date|date:"d-m-Y" }}<br>
+            Place: Chidambaram
+        </div>
+
+        <div class="footer-right">
+            <div class="signature-space"></div>
+            <span class="bold">Head of the Department</span><br>
+            Department of Information Technology<br>
+            (Signature with Seal)
+        </div>
+    </div>
+
+</body>
+</html>

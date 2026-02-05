@@ -299,6 +299,10 @@
                 <a href="{% url 'student_marks' %}"><span class="emoji">📈</span> Marks</a>
                 <a href="{% url 'resume_builder' %}"><span class="emoji">🧠</span> Resume Generator - AI</a>
                 <a href="{% url 'apply_leave' %}"><span class="emoji">📝</span> Leave Application</a>
+                <!-- Bonafide Link Triggering Modal -->
+                <a href="{% url 'bonafide_list' %}" class="nav-link">
+                    <span class="icon">📜</span> Request Bonafide
+                </a>
                 <a href="{% url 'student_editprofile' %}"><span class="emoji">✏️</span> Edit Profile</a>
                 <a href="https://annamalaiuniversity.ac.in/" target="_blank" rel="noopener"><span
                         class="emoji">🌐</span> AU Main Site</a>
@@ -495,6 +499,7 @@
                 <canvas id="attendanceChart"></canvas>
             </div>
 
+
             <!-- Projects & Skills Widget -->
             <div class="chart-card" style="margin-top: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -556,8 +561,7 @@
             <select id="stdSemSelector" onchange="showStudentSemester(this.value)"
                 style="padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; color: #334155; outline: none; background: #fff;">
                 {% for record in gpa_records %}
-                <option value="std_sem_{{ record.semester }}" {% if record.semester == student.current_semester %}selected{% endif %}>Semester {{ record.semester }}
-                </option>
+                <option value="std_sem_{{ record.semester }}" {% if record.semester == student.current_semester%}selected{% endif %}>Semester {{ record.semester }}</option>
                 {% endfor %}
             </select>
 
@@ -886,6 +890,128 @@
     {% endblock %}
     </main>
     </div>
+    <!-- Toast Container -->
+    <div id="toast-container"
+        style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;">
+    </div>
+
+    <!-- Bonafide Modal -->
+    <div id="bonafideModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div
+            style="background: #fff; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; position: relative;">
+            <button onclick="closeBonafideModal()"
+                style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <h3 style="margin-top: 0; color: #333;">Request Bonafide</h3>
+            <form id="bonafideForm" onsubmit="submitBonafide(event)">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #475569;">Reason for
+                    Request:</label>
+                <textarea name="reason" rows="4"
+                    style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 10px; font-family: inherit;"
+                    placeholder="e.g. For Passport Application..." required></textarea>
+                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px; margin-top: 0;">
+                    <span style="color: #d97706;">⚠️ Note:</span> You can submit up to <strong>2 requests per
+                        month</strong>.
+                </p>
+                <button type="submit"
+                    style="width: 100%; background: #5a7d7c; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 500; cursor: pointer;">Submit
+                    Request</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            // Colors
+            const uiColors = {
+                success: { bg: '#dcfce7', border: '#86efac', text: '#166534', icon: '✅' },
+                error: { bg: '#fee2e2', border: '#fca5a5', text: '#991b1b', icon: '❌' },
+                info: { bg: '#eff6ff', border: '#bfdbfe', text: '#1e40af', icon: 'ℹ️' }
+            };
+            const theme = uiColors[type] || uiColors.info;
+
+            toast.style.cssText = `
+                background: ${theme.bg};
+                color: ${theme.text};
+                border-left: 5px solid ${theme.border};
+                padding: 12px 16px;
+                border-radius: 4px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                min-width: 250px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 0.95rem;
+                opacity: 0;
+                transform: translateX(100%);
+                transition: all 0.3s ease-out;
+            `;
+
+            toast.innerHTML = `<span>${theme.icon}</span><span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            // Animate In
+            requestAnimationFrame(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(0)';
+            });
+
+            // Auto Remove
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function openBonafideModal() {
+            document.getElementById('bonafideModal').style.display = 'flex';
+        }
+        function closeBonafideModal() {
+            document.getElementById('bonafideModal').style.display = 'none';
+        }
+
+        async function submitBonafide(e) {
+            e.preventDefault();
+            const form = document.getElementById('bonafideForm');
+            const formData = new FormData(form);
+            const btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = "Submitting...";
+
+            try {
+                const response = await fetch("{% url 'request_bonafide' %}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    closeBonafideModal();
+                    form.reset();
+                    // Slight delay to let toast show before reload
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("An error occurred. Please try again.", 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Submit Request";
+            }
+        }
+    </script>
 </body>
 
 </html>

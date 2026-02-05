@@ -66,6 +66,7 @@ urlpatterns = [
     path('my-leave/history/', views.staff_leave_history, name='staff_leave_history'),
     path('hod/leave-requests/', views.hod_leave_dashboard, name='hod_leave_dashboard'),
     path('hod/leave-update/<int:request_id>/', views.hod_update_leave_status, name='hod_update_leave_status'),
+    path('hod/bonafide-requests/', views.manage_bonafide, name='manage_bonafide'),
     path('admin-portal/', views.admin_portal_login, name='admin_portal_login'),
     path('risk-students/', views.risk_students, name='risk_students'),
     path('risk-students/export/<int:subject_id>/', views.export_risk_list, name='export_risk_list'),

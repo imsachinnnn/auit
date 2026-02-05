@@ -1,0 +1,107 @@
+{% extends 'stddash.html' %}
+{% load static %}
+
+{% block content %}
+<div
+    style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-top: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="color: #5a7d7c; margin: 0; font-size: 1.5rem;">📜 Bonafide Certificate Requests</h2>
+        <button onclick="openBonafideModal()" class="btn"
+            style="background: #5a7d7c; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">
+            + New Request
+        </button>
+    </div>
+
+    <!-- Monthly Limit Visual -->
+    <div
+        style="margin-bottom: 25px; padding: 15px; background: #fafafa; border-radius: 8px; border: 1px dashed #cbd5e1; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+            <span style="font-weight: 600; color: #475569;">Monthly Limit Reuse</span>
+            <div style="font-size: 0.85rem; color: #94a3b8;">You can make up to <strong>{{ limit }}</strong> requests
+                per month.</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="display: flex; gap: 4px;">
+                {% for i in "12"|make_list %}
+                <div
+                    style="width: 25px; height: 8px; border-radius: 4px; background: {% if forloop.counter <= monthly_count %}#f59e0b{% else %}#e2e8f0{% endif %};">
+                </div>
+                {% endfor %}
+            </div>
+            <span
+                style="font-weight: 600; color: {% if monthly_count >= limit %}#dc2626{% else %}#059669{% endif %}; font-size: 0.9rem;">
+                {{ monthly_count }} / {{ limit }} Used
+            </span>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div style="margin-bottom: 20px;">
+        {% for message in messages %}
+        <div
+            style="padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            {% if message.tags == 'success' %}background: #f0fdf4; color: #166534; border-left: 5px solid #22c55e;
+            {% elif message.tags == 'error' %}background: #fef2f2; color: #991b1b; border-left: 5px solid #ef4444;{% endif %}">
+            <span>{% if message.tags == 'success' %}🎉{% else %}⚠️{% endif %}</span>
+            <span style="font-weight: 500;">{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8fafc; color: #64748b; text-align: left;">
+                    <th style="padding: 15px; font-weight: 600; border-radius: 8px 0 0 8px;">Date</th>
+                    <th style="padding: 15px; font-weight: 600;">Reason</th>
+                    <th style="padding: 15px; font-weight: 600;">Status</th>
+                    <th style="padding: 15px; font-weight: 600; text-align: right; border-radius: 0 8px 8px 0;">Action
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 15px; color: #334155;">{{ req.created_at|date:"d M Y" }}</td>
+                    <td style="padding: 15px; color: #334155;">
+                        {{ req.reason }}
+                        {% if req.rejection_reason %}
+                        <div
+                            style="margin-top: 5px; font-size: 0.85rem; color: #ef4444; background: #fef2f2; padding: 5px 8px; border-radius: 4px; display: inline-block;">
+                            <strong>Note:</strong> {{ req.rejection_reason }}
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 15px;">
+                        <span
+                            style="padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 500; display: inline-block;
+                            {% if 'Approved' in req.status %}background: #dcfce7; color: #166534; box-shadow: 0 2px 4px rgba(22, 101, 52, 0.1);
+                            {% elif 'Rejected' in req.status %}background: #fee2e2; color: #991b1b; box-shadow: 0 2px 4px rgba(153, 27, 27, 0.1);
+                            {% else %}background: #fef9c3; color: #854d0e; box-shadow: 0 2px 4px rgba(133, 77, 14, 0.1);{% endif %}">
+                            {{ req.status }}
+                        </span>
+                    </td>
+                    <td style="padding: 15px; text-align: right;">
+                        {% if req.status == 'Approved' %}
+                        <a href="{% url 'download_bonafide' req.id %}" target="_blank" class="btn"
+                            style="background: #0ea5e9; color: white; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 4px rgba(14, 165, 233, 0.3);">
+                            📥 Download
+                        </a>
+                        {% else %}
+                        <span style="color: #cbd5e1; font-size: 0.9rem; font-style: italic;">--</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 40px; color: #94a3b8;">
+                        <p>No requests found. Click "+ New Request" to create one.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

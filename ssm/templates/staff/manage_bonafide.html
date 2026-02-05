@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Bonafide Requests | {{ staff.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
+    <style>
+        :root {
+            --primary-color: #5a7d7c;
+            --secondary-color: #4a6b69;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --pending-color: #ffc107;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+            max-width: 95%;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 20px 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 10px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-brand h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .action-btn {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Sidebar Profile */
+        .sidebar {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            position: sticky;
+            top: 30px;
+        }
+
+        .profile-img {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--bg-color);
+            margin-bottom: 20px;
+        }
+
+        .profile-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-role {
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            display: inline-block;
+            background: #eef6f6;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .profile-meta {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        /* Request Card */
+        .req-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border-left: 5px solid var(--border-color);
+        }
+
+        .req-card.status-pending {
+            border-left-color: var(--pending-color);
+        }
+
+        .req-card.status-approved {
+            border-left-color: var(--success-color);
+        }
+
+        .req-card.status-rejected {
+            border-left-color: var(--danger-color);
+        }
+
+        .req-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .student-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .req-meta {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .req-body {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .role-badge {
+            font-size: 0.8em;
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 12px;
+            color: #495057;
+            margin-left: 10px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .btn-approve {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-reject {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .back-link {
+            display: block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .bg-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .bg-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .bg-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="page-header">
+            <div class="header-brand">
+                <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" alt="Logo"
+                    style="height: 45px;">
+                <h1>Manage Bonafide Requests</h1>
+            </div>
+            <a href="{% url 'staffs:staff_logout' %}" class="action-btn"
+                style="background:var(--danger-color)">Logout</a>
+        </header>
+
+        <!-- Sidebar (Reused) -->
+        <aside class="sidebar">
+            {% if staff.photo %}
+            <img src="{{ staff.photo.url }}" alt="{{ staff.name }}" class="profile-img">
+            {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ staff.name }}&background=random&size=200"
+                alt="{{ staff.name }}" class="profile-img">
+            {% endif %}
+            <div class="profile-name">{{ staff.salutation }} {{ staff.name }}</div>
+            <div class="profile-role">{{ staff.role }}</div>
+            <br>
+            <a href="{% url 'staffs:staff_dashboard' %}" class="action-btn"
+                style="width:100%; box-sizing:border-box; display:block;">Dashboard</a>
+        </aside>
+
+        <main class="main-content">
+            <a href="{% url 'staffs:staff_dashboard' %}" class="back-link">← Back to Dashboard</a>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div
+                class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-error{% else %}alert-warning{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% for req in requests %}
+            <div
+                class="req-card status-{% if 'Pending' in req.status %}pending{% elif 'Approved' in req.status %}approved{% else %}rejected{% endif %}">
+                <div class="req-header">
+                    <div>
+                        <div class="student-name">
+                            {{ req.student.student_name }}
+                            <span class="role-badge">{{ req.student.roll_number }}</span>
+                        </div>
+                        <div class="req-meta">
+                            Semester: <strong>{{ req.student.current_semester }}</strong>
+                        </div>
+                    </div>
+                    <div class="req-meta" style="text-align: right;">
+                        Requested: {{ req.created_at|date:"d M Y" }}<br>
+                        <span
+                            class="status-badge bg-{% if 'Pending' in req.status %}pending{% elif 'Approved' in req.status %}approved{% else %}rejected{% endif %}">{{req.status }}</span>
+                    </div>
+                </div>
+
+                <div class="req-body">
+                    <strong>Reason for Request:</strong>
+                    <p style="margin: 5px 0 0 0; color: #555;">{{ req.reason }}</p>
+
+                    {% if req.rejection_reason %}
+                    <div
+                        style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; color: var(--danger-color);">
+                        <strong>Rejection Reason:</strong> {{ req.rejection_reason }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if req.status == 'Pending HOD' %}
+                <form action="{% url 'staffs:manage_bonafide' %}" method="post" class="actions">
+                    {% csrf_token %}
+                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                    <input type="text" name="rejection_reason" placeholder="Reason (if rejecting)..."
+                        style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; flex-grow: 1;">
+                    <button type="submit" name="action" value="approve" class="btn-approve">
+                        Approve Issue
+                    </button>
+                    <button type="submit" name="action" value="reject" class="btn-reject">Reject</button>
+                </form>
+                {% else %}
+                <div style="text-align: right; font-size: 0.9rem; color: #888; font-style: italic;">
+                    Action taken on {{ req.updated_at|date:"d M Y, h:i A" }}
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 50px; color: var(--text-muted);">
+                <h3>No Requests Found</h3>
+                <p>There are no bonafide certificate requests at this time.</p>
+            </div>
+            {% endfor %}
+        </main>
+    </div>
+</body>
+
+</html>

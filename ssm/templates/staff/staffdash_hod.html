@@ -189,9 +189,7 @@
         /* News Widget - Wrapper Logic Fix */
         .news-section {
             grid-column: span 8;
-            /* No visual styling here to avoid nested boxes */
-            height: 300px;
-            /* Comfortable height */
+            /* Height removed to allow grid stretch to match stats column */
             display: flex;
             flex-direction: column;
         }
@@ -496,6 +494,17 @@
                         <div class="stat-info">
                             <h3>{{ pending_leaves_count }}</h3>
                             <span>Student Requests</span>
+                        </div>
+                    </a>
+
+                    <!-- Bonafide Requests Card -->
+                    <a href="{% url 'staffs:manage_bonafide' %}" class="stat-card"
+                        style="text-decoration: none; color: inherit;">
+                        {% if pending_bonafide_count > 0 %} <div class="pulse-ring"></div> {% endif %}
+                        <div class="stat-icon" style="background: #ccfbf1; color: #0f766e;">📜</div>
+                        <div class="stat-info">
+                            <h3>{{ pending_bonafide_count }}</h3>
+                            <span>Bonafide Requests</span>
                         </div>
                     </a>
 
