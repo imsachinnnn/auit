@@ -174,7 +174,6 @@
         grid-template-columns: repeat(7, 1fr);
         gap: 10px;
         text-align: center;
-        padding: 10px 0;
     }
 
     .calendar-day {
@@ -243,10 +242,6 @@
         background: #f59e0b;
         color: white;
         box-shadow: 0 0 0 3px white inset;
-    }
-
-    .text-muted {
-        color: #6c757d;
     }
 </style>
 {% endblock %}
@@ -395,197 +390,136 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-<script>
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('Page loaded, initializing charts and calendar...');
-    
-    // --- Chart Logic ---
-    try {
-        const chartDataEl = document.getElementById('chart-data');
-        const overallStatsEl = document.getElementById('overall-stats');
+// --- Chart Logic ---
+try {
+const chartDataEl = document.getElementById('chart-data');
+const overallStatsEl = document.getElementById('overall-stats');
 
-        if (chartDataEl && overallStatsEl) {
-            const chartData = JSON.parse(chartDataEl.textContent);
-            const overallStats = JSON.parse(overallStatsEl.textContent);
+if (chartDataEl && overallStatsEl) {
+const chartData = JSON.parse(chartDataEl.textContent);
+const overallStats = JSON.parse(overallStatsEl.textContent);
 
-            console.log('Chart Data:', chartData);
-            console.log('Overall Stats:', overallStats);
+if (chartData.labels && chartData.labels.length > 0) {
+// 1. Overall Radial Gauge
+const overallCtx = document.getElementById('overallGauge');
+if (overallCtx) {
+new Chart(overallCtx.getContext('2d'), {
+type: 'doughnut',
+data: {
+labels: ['Present', 'Absent'],
+datasets: [{
+data: [overallStats.overall_percentage, 100 - overallStats.overall_percentage],
+backgroundColor: [
+overallStats.overall_percentage >= 75 ? '#2ecc71' : (overallStats.overall_percentage >= 65 ? '#f1c40f' : '#e74c3c'),
+'#ecf0f1'
+],
+borderWidth: 0,
+hoverOffset: 4
+}]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+circumference: 180,
+rotation: -90,
+cutout: '75%',
+plugins: { legend: { display: false }, tooltip: { enabled: false }, title: { display: true, text:
+overallStats.overall_percentage + '% Attendance', position: 'bottom', font: { size: 20 } } }
+}
+});
+}
 
-            if (chartData.labels && chartData.labels.length > 0) {
-                // 1. Overall Radial Gauge
-                const overallCtx = document.getElementById('overallGauge');
-                if (overallCtx) {
-                    console.log('Creating overall gauge chart...');
-                    new Chart(overallCtx.getContext('2d'), {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['Present', 'Absent'],
-                            datasets: [{
-                                data: [overallStats.overall_percentage, 100 - overallStats.overall_percentage],
-                                backgroundColor: [
-                                    overallStats.overall_percentage >= 75 ? '#2ecc71' : (overallStats.overall_percentage >= 65 ? '#f1c40f' : '#e74c3c'),
-                                    '#ecf0f1'
-                                ],
-                                borderWidth: 0,
-                                hoverOffset: 4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            circumference: 180,
-                            rotation: -90,
-                            cutout: '75%',
-                            plugins: { 
-                                legend: { display: false }, 
-                                tooltip: { enabled: false }, 
-                                title: { 
-                                    display: true, 
-                                    text: overallStats.overall_percentage + '% Attendance', 
-                                    position: 'bottom', 
-                                    font: { size: 20 } 
-                                } 
-                            }
-                        }
-                    });
-                }
+// 2. Subject Bar Chart
+const barCtx = document.getElementById('subjectBarChart');
+if (barCtx) {
+new Chart(barCtx.getContext('2d'), {
+type: 'bar',
+data: {
+labels: chartData.labels,
+datasets: [
+{ label: 'Present', data: chartData.present, backgroundColor: '#2ecc71', borderRadius: 4 },
+{ label: 'Absent', data: chartData.absent, backgroundColor: '#e74c3c', borderRadius: 4 }
+]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+plugins: { legend: { position: 'bottom' } }
+}
+});
+}
+}
+}
+} catch (e) { console.error("Chart Error:", e); }
 
-                // 2. Subject Bar Chart
-                const barCtx = document.getElementById('subjectBarChart');
-                if (barCtx) {
-                    console.log('Creating subject bar chart...');
-                    new Chart(barCtx.getContext('2d'), {
-                        type: 'bar',
-                        data: {
-                            labels: chartData.labels,
-                            datasets: [
-                                { 
-                                    label: 'Present', 
-                                    data: chartData.present, 
-                                    backgroundColor: '#2ecc71', 
-                                    borderRadius: 4 
-                                },
-                                { 
-                                    label: 'Absent', 
-                                    data: chartData.absent, 
-                                    backgroundColor: '#e74c3c', 
-                                    borderRadius: 4 
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: { 
-                                x: { stacked: true }, 
-                                y: { stacked: true, beginAtZero: true } 
-                            },
-                            plugins: { 
-                                legend: { position: 'bottom' } 
-                            }
-                        }
-                    });
-                }
-            } else {
-                console.warn('No chart data available');
-            }
-        } else {
-            console.warn('Chart data elements not found');
-        }
-    } catch (e) { 
-        console.error("Chart Error:", e); 
-    }
-
-    // --- Calendar Logic ---
-    initCalendar();
+// --- Calendar Logic ---
+initCalendar();
 });
 
 function initCalendar() {
-    let calendarData = {};
-    try {
-        const el = document.getElementById('calendar-data-json');
-        if (el) {
-            calendarData = JSON.parse(el.textContent);
-            console.log('Calendar Data:', calendarData);
-        } else {
-            console.warn('Calendar data element not found');
-        }
-    } catch (e) { 
-        console.error("Calendar Data Error:", e); 
-    }
+let calendarData = {};
+try {
+const el = document.getElementById('calendar-data-json');
+if (el) calendarData = JSON.parse(el.textContent);
+} catch (e) { console.error("Calendar Data Error:", e); }
 
-    let currentDate = new Date();
+let currentDate = new Date();
 
-    // Global scope changeMonth for button access
-    window.changeMonth = function (delta) {
-        currentDate.setMonth(currentDate.getMonth() + delta);
-        render(currentDate, calendarData);
-    };
+// Global scope changeMonth for button access
+window.changeMonth = function (delta) {
+currentDate.setMonth(currentDate.getMonth() + delta);
+render(currentDate, calendarData);
+};
 
-    // Initial Render
-    render(currentDate, calendarData);
+// Initial Render
+render(currentDate, calendarData);
 }
 
 function render(currentDate, calendarData) {
-    const grid = document.getElementById('calendarGrid');
-    const title = document.getElementById('currentMonthYear');
-    if (!grid || !title) {
-        console.error('Calendar elements not found');
-        return;
+const grid = document.getElementById('calendarGrid');
+const title = document.getElementById('currentMonthYear');
+if (!grid || !title) return;
+
+grid.innerHTML = '';
+const year = currentDate.getFullYear();
+const month = currentDate.getMonth();
+const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+"November", "December"];
+
+title.textContent = `${monthNames[month]} ${year}`;
+
+const firstDay = new Date(year, month, 1);
+const lastDay = new Date(year, month + 1, 0);
+const daysInMonth = lastDay.getDate();
+const startingDay = firstDay.getDay(); // 0=Sun
+
+// Headers
+const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+days.forEach(d => {
+const cell = document.createElement('div');
+cell.style.fontWeight = 'bold';
+cell.style.color = '#adb5bd';
+cell.textContent = d;
+grid.appendChild(cell);
+});
+
+// Empty slots
+for (let i = 0; i < startingDay; i++) { grid.appendChild(document.createElement('div')); } // Days for (let i=1; i
+    <=daysInMonth; i++) { const dayCell=document.createElement('div'); dayCell.className='calendar-day' ;
+    dayCell.textContent=i; // Format YYYY-MM-DD const dateStr=`${year}-${String(month + 1).padStart(2, '0'
+    )}-${String(i).padStart(2, '0' )}`; if (calendarData[dateStr]) { dayCell.classList.add('has-data');
+    dayCell.classList.add(`status-${calendarData[dateStr].color}`); dayCell.onclick=()=> selectDate(dateStr, dayCell,
+    calendarData);
     }
 
-    grid.innerHTML = '';
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-    title.textContent = `${monthNames[month]} ${year}`;
-
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDay = firstDay.getDay(); // 0=Sun
-
-    // Headers
-    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-    days.forEach(d => {
-        const cell = document.createElement('div');
-        cell.style.fontWeight = 'bold';
-        cell.style.color = '#adb5bd';
-        cell.textContent = d;
-        grid.appendChild(cell);
-    });
-
-    // Empty slots
-    for (let i = 0; i < startingDay; i++) {
-        grid.appendChild(document.createElement('div'));
+    grid.appendChild(dayCell);
     }
 
-    // Days
-    for (let i = 1; i <= daysInMonth; i++) {
-        const dayCell = document.createElement('div');
-        dayCell.className = 'calendar-day';
-        dayCell.textContent = i;
-
-        // Format YYYY-MM-DD
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-
-        if (calendarData[dateStr]) {
-            dayCell.classList.add('has-data');
-            dayCell.classList.add(`status-${calendarData[dateStr].color}`);
-            dayCell.onclick = () => selectDate(dateStr, dayCell, calendarData);
-        }
-
-        grid.appendChild(dayCell);
     }
 
-    console.log(`Rendered ${daysInMonth} days for ${monthNames[month]} ${year}`);
-}
-
-function selectDate(dateStr, cell, calendarData) {
+    function selectDate(dateStr, cell, calendarData) {
     document.querySelectorAll('.calendar-day').forEach(c => c.classList.remove('selected'));
     cell.classList.add('selected');
 
@@ -594,23 +528,23 @@ function selectDate(dateStr, cell, calendarData) {
     const dateTitle = document.getElementById('detailDate');
 
     if (detailsDiv) detailsDiv.style.display = 'block';
-    if (dateTitle) dateTitle.textContent = new Date(dateStr + 'T00:00:00').toDateString();
+    if (dateTitle) dateTitle.textContent = new Date(dateStr).toDateString();
     if (detailList) {
-        detailList.innerHTML = '';
-        const data = calendarData[dateStr];
-        if (data && data.details) {
-            data.details.forEach(cls => {
-                const li = document.createElement('li');
-                li.style.background = 'white';
-                li.style.padding = '8px 12px';
-                li.style.borderRadius = '6px';
-                li.style.border = '1px solid #dee2e6';
-                li.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
-                li.innerHTML = `<span style="font-weight:600;">${cls.subject}</span> <span style="float:right; font-weight:600; color:${cls.status === 'Present' ? 'var(--success)' : 'var(--danger)'}">${cls.status}</span>`;
-                detailList.appendChild(li);
-            });
-        }
+    detailList.innerHTML = '';
+    const data = calendarData[dateStr];
+    if (data && data.details) {
+    data.details.forEach(cls => {
+    const li = document.createElement('li');
+    li.style.background = 'white';
+    li.style.padding = '8px 12px';
+    li.style.borderRadius = '6px';
+    li.style.border = '1px solid #dee2e6';
+    li.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+    li.innerHTML = `<span style="font-weight:600;">${cls.subject}</span> <span
+        style="float:right; font-weight:600; color:${cls.status === 'Present' ? 'var(--success)' : 'var(--danger)'}">${cls.status}</span>`;
+    detailList.appendChild(li);
+    });
     }
-}
-</script>
-{% endblock %}
+    }
+    }
+    {% endblock %}

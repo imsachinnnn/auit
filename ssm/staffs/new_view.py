@@ -6,8 +6,8 @@ def manage_bonafide(request):
     
     try:
         staff = Staff.objects.get(staff_id=request.session['staff_id'])
-        if staff.role != 'HOD':
-            messages.error(request, "Access Denied: Only HOD can manage bonafide requests.")
+        if staff.role != 'HOD' and staff.role != 'Office Staff':
+            messages.error(request, "Access Denied: Only HOD or Office Staff can manage bonafide requests.")
             return redirect('staffs:staff_dashboard')
     except Staff.DoesNotExist:
          return redirect('staffs:stafflogin')

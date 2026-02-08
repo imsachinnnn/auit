@@ -6,14 +6,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Complete Your Profile | Student Portal</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
         type="image/png">
+
     <style>
         :root {
             --primary: #5a7d7c;
             --primary-dark: #4a6b69;
-            --accent: #e11d48;
+            --accent: #5a7d7c;
             --bg-body: #f1f5f9;
         }
 
@@ -28,6 +30,7 @@
             color: #334155;
         }
 
+        /* Card entry */
         .container {
             background: white;
             padding: 40px;
@@ -36,71 +39,84 @@
             text-align: center;
             max-width: 500px;
             width: 90%;
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         h1 {
             color: var(--primary-dark);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
-        .progress-circle {
-            position: relative;
-            width: 150px;
-            height: 150px;
+        /* Friendly setup icon */
+        .icon-box {
+            width: 110px;
+            height: 110px;
             margin: 30px auto;
             border-radius: 50%;
-
-            background: conic-gradient(var(--accent) {
-                        {
-                        profile_completion_percentage
-                    }
-                }
-
-                %, #e2e8f0 0);
+            background: #e6f0ef;
             display: flex;
             align-items: center;
             justify-content: center;
+            animation: float 3s ease-in-out infinite;
         }
 
-        .progress-circle::before {
-            content: "";
-            position: absolute;
-            width: 120px;
-            height: 120px;
-            background: white;
-            border-radius: 50%;
+        .icon-box span {
+            font-size: 3rem;
+            color: var(--primary);
         }
 
-        .percentage-text {
-            position: relative;
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--accent);
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0); }
+        }
+
+        h3 {
+            margin-bottom: 10px;
+            color: var(--primary-dark);
         }
 
         p.desc {
             color: #64748b;
             margin-bottom: 30px;
             line-height: 1.6;
+            font-size: 1.05rem;
         }
 
         .btn-complete {
             display: inline-block;
-            background: var(--accent);
+            background: var(--primary);
             color: white;
             text-decoration: none;
             padding: 15px 30px;
             border-radius: 10px;
             font-weight: 600;
             font-size: 1.1rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 6px rgba(225, 29, 72, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+            box-shadow: 0 4px 6px rgba(90, 125, 124, 0.25);
         }
 
         .btn-complete:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 15px rgba(225, 29, 72, 0.3);
-            background: #be123c;
+            box-shadow: 0 10px 15px rgba(90, 125, 124, 0.35);
+            background: var(--primary-dark);
+        }
+
+        .note {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #64748b;
         }
     </style>
 </head>
@@ -109,25 +125,32 @@
 
     <div class="container">
         <h1>Welcome, {{ student.roll_number }}</h1>
-        <p style="font-size: 1.1rem; color: #475569;">Let's get you set up!</p>
+        <p style="font-size: 1.1rem; color: #475569;">Let’s get you started</p>
 
-        <div class="progress-circle">
-            <span class="percentage-text">{{ profile_completion_percentage }}%</span>
+        <div class="icon-box">
+            <span>✓</span>
         </div>
 
-        <h3 style="margin: 0 0 10px 0;">Profile Incomplete</h3>
+        <h3>Complete Your Profile Setup</h3>
+
         <p class="desc">
-            Your profile is currently <strong>{{ profile_completion_percentage }}%</strong> complete.
-            You need to complete your profile registration and set a new password to access the dashboard.
+            This is your first time logging in.
+            Please complete your profile registration and set a password to continue using the student portal.
         </p>
 
         <a href="{% url 'student_register' %}" class="btn-complete">
-            Complete Now &rarr;
+            Start Profile Setup →
         </a>
 
-        <div style="margin-top: 20px;">
+        <p class="note">
+            This is a one-time setup.
+        </p>
+
+        <div style="margin-top: 25px;">
             <a href="{% url 'student_logout' %}"
-                style="color: #94a3b8; text-decoration: none; font-size: 0.9rem;">Logout</a>
+                style="color: #94a3b8; text-decoration: none; font-size: 0.9rem;">
+                Logout
+            </a>
         </div>
     </div>
 

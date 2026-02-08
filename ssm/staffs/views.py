@@ -56,6 +56,8 @@ def staff_dashboard(request):
         template_name = 'staff/staffdash_course.html'
     elif staff.role == 'Scholarship Officer':
         template_name = 'staff/staffdash_scholarship.html'
+    elif staff.role == 'Office Staff':
+        template_name = 'staff/staffdash_office.html'
     else:
         template_name = 'staff/staffdash_hod.html'
         
@@ -93,7 +95,7 @@ def staff_dashboard(request):
     scholarship_students = []
     selected_scholarship = request.GET.get('scholarship_type')
     
-    if staff.role == 'Scholarship Officer':
+    if staff.role == 'Scholarship Officer' or staff.role == 'Office Staff':
         scholarship_qs = ScholarshipInfo.objects.select_related('student')
         
         SCHOLARSHIP_MAPPING = {
@@ -1445,8 +1447,8 @@ def scholarship_manager(request):
     except Staff.DoesNotExist:
         return redirect('staffs:stafflogin')
         
-    if staff.role != 'Scholarship Officer':
-        messages.error(request, "Access restricted to Scholarship Officer.")
+    if staff.role != 'Scholarship Officer' and staff.role != 'Office Staff':
+        messages.error(request, "Access restricted to Scholarship Officer or Office Staff.")
         return redirect('staffs:staff_dashboard')
         
     from students.models import Student, ScholarshipInfo, PersonalInfo

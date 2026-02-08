@@ -256,6 +256,7 @@
             display: none !important;
         }
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
@@ -348,7 +349,9 @@
                     <div style="flex: 1;">
                         <h4 style="margin: 0 0 5px 0; color: #be123c;">⚠️ Complete Your Profile</h4>
                         <p style="margin: 0; font-size: 0.9rem; color: #881337;">Your profile is
-                            <strong>{{profile_completion_percentage }}%</strong> complete. Please update your details toaccess full features.</p>
+                            <strong>{{profile_completion_percentage }}%</strong> complete. Please update your details
+                            toaccess full features.
+                        </p>
                         <div
                             style="background: #fecdd3; height: 8px; border-radius: 4px; margin-top: 10px; width: 100%; max-width: 400px; overflow: hidden;">
                             <div
@@ -367,7 +370,8 @@
                 <div title="Name"><span style="margin-right: 5px;">👤</span> {{ student.student_name }}</div>
                 <div title="Semester"><span style="margin-right: 5px;">🎓</span> Sem {{ student.current_semester }}
                 </div>
-                <div title="Batch"><span style="margin-right: 5px;">📅</span> {{ student.joining_year }} -{{ student.ending_year }}</div>
+                <div title="Batch"><span style="margin-right: 5px;">📅</span> {{ student.joining_year }} -{{
+                    student.ending_year }}</div>
                 <div title="Email"><span style="margin-right: 5px;">📧</span> {{student.student_email|default:"--"}}
                 </div>
                 <div title="Mobile"><span style="margin-right: 5px;">📱</span>
@@ -563,7 +567,7 @@
             <select id="stdSemSelector" onchange="showStudentSemester(this.value)"
                 style="padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; color: #334155; outline: none; background: #fff;">
                 {% for record in gpa_records %}
-                <option value="std_sem_{{ record.semester }}" {% if  record.semester == student.current_semester%}selected{% endif %}>Semester {{ record.semester }}
+                <option value="std_sem_{{ record.semester }}" {% if record.semester == student.current_semester%}selected{% endif %}>Semester {{ record.semester }}
                 </option>
                 {% endfor %}
             </select>
@@ -827,55 +831,59 @@
 
     <script>
         // --- Attendance Chart ---
-        // Parse the data from the script tag
-        const attendancePct = JSON.parse(document.getElementById('attendance-data').textContent);
-
-        const ctxAtt = document.getElementById('attendanceChart').getContext('2d');
-        new Chart(ctxAtt, {
-            type: 'doughnut',
-            data: {
-                labels: ['Present', 'Absent'],
-                datasets: [{
-                    data: [attendancePct, 100 - attendancePct],
-                    backgroundColor: ['#10b981', '#ef4444'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                cutout: '70%',
-                plugins: {
-                    legend: { position: 'bottom' },
-                    title: { display: true, text: 'Current Semester' }
+        const attCanvas = document.getElementById('attendanceChart');
+        if (attCanvas) {
+            // Parse the data from the script tag
+            const attendancePct = JSON.parse(document.getElementById('attendance-data').textContent);
+            const ctxAtt = attCanvas.getContext('2d');
+            new Chart(ctxAtt, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Present', 'Absent'],
+                    datasets: [{
+                        data: [attendancePct, 100 - attendancePct],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: true, text: 'Current Semester' }
+                    }
                 }
-            }
-        });
+            });
+        }
 
         // --- Marks Chart (Fixed) ---
-        const ctxMarks = document.getElementById('marksChart').getContext('2d');
+        const marksCanvas = document.getElementById('marksChart');
+        if (marksCanvas) {
+            const ctxMarks = marksCanvas.getContext('2d');
+            // Parse labels and data
+            const gpaLabels = JSON.parse(document.getElementById('gpa-labels-data').textContent);
+            const gpaData = JSON.parse(document.getElementById('gpa-data-data').textContent);
 
-        // Parse labels and data
-        const gpaLabels = JSON.parse(document.getElementById('gpa-labels-data').textContent);
-        const gpaData = JSON.parse(document.getElementById('gpa-data-data').textContent);
-
-        new Chart(ctxMarks, {
-            type: 'bar',
-            data: {
-                labels: gpaLabels,
-                datasets: [{
-                    label: 'GPA',
-                    data: gpaData,
-                    backgroundColor: '#3b82f6',
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true, max: 10 }
+            new Chart(ctxMarks, {
+                type: 'bar',
+                data: {
+                    labels: gpaLabels,
+                    datasets: [{
+                        label: 'GPA',
+                        data: gpaData,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, max: 10 }
+                    }
                 }
-            }
-        });
+            });
+        }
     </script>
 
     <script>
@@ -1014,6 +1022,9 @@
                 btn.textContent = "Submit Request";
             }
         }
+    </script>
+    <script>
+        {% block extra_js %} {% endblock %}
     </script>
 </body>
 
