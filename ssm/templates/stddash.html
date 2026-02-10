@@ -370,8 +370,7 @@
                 <div title="Name"><span style="margin-right: 5px;">👤</span> {{ student.student_name }}</div>
                 <div title="Semester"><span style="margin-right: 5px;">🎓</span> Sem {{ student.current_semester }}
                 </div>
-                <div title="Batch"><span style="margin-right: 5px;">📅</span> {{ student.joining_year }} -{{
-                    student.ending_year }}</div>
+                <div title="Batch"><span style="margin-right: 5px;">📅</span> {{ student.joining_year }} -{{student.ending_year }}</div>
                 <div title="Email"><span style="margin-right: 5px;">📧</span> {{student.student_email|default:"--"}}
                 </div>
                 <div title="Mobile"><span style="margin-right: 5px;">📱</span>
@@ -456,8 +455,7 @@
                         <tr style="border-bottom: 1px solid #f1f5f9;">
                             <td style="padding: 8px 0; color: #334155;">
                                 <div style="font-weight: 500;">{{ leave.get_leave_type_display }}</div>
-                                <div style="font-size: 0.75rem; color: #64748b;">{{ leave.start_date|date:"d M"}} -
-                                    {{leave.end_date|date:"d M" }}</div>
+                                <div style="font-size: 0.75rem; color: #64748b;">{{ leave.start_date|date:"d M"}} -{{leave.end_date|date:"d M" }}</div>
                             </td>
                             <td style="padding: 8px 0; text-align: right;">
                                 <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 10px;"

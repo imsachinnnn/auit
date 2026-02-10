@@ -12,6 +12,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
   <link rel="icon" href="{% static 'imgs/annamalai.png' %}" />
+  <link rel="manifest" href="{% static 'manifest.json' %}" />
+  <meta name="theme-color" content="#5a7d7c" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register("/sw.js")
+          .then(req => console.log('Service Worker Registered'))
+          .catch(err => console.log('Service Worker Error', err));
+      });
+    }
+  </script>
 
   <style>
     :root {

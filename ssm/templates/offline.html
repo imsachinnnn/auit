@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - AU Dept of IT</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 4rem;
+            color: #5a7d7c;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            color: #212529;
+        }
+
+        p {
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background-color: #5a7d7c;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="icon">📡</div>
+    <h1>You are Offline</h1>
+    <p>Please check your internet connection to access this page.</p>
+    <a href="/" class="btn">Try Again</a>
+    <script>
+        // Check connectivity periodically
+        window.addEventListener('online', () => window.location.reload());
+    </script>
+</body>
+
+</html>
