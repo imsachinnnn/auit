@@ -24,7 +24,7 @@
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://ssms-web.onrender.com/static/manifest.json",
-  "fallbackType": "customtabs",
+  "fallbackType": "twa",
   "features": {},
   "alphaDependencies": {
     "enabled": false
