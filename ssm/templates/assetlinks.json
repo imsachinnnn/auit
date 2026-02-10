@@ -6,9 +6,7 @@
         "target": {
             "namespace": "android_app",
             "package_name": "com.au_it_dept.twa",
-            "sha256_cert_fingerprints": [
-                "REPLACE_WITH_YOUR_KEYSTORE_SHA256_FINGERPRINT"
-            ]
+            "sha256_cert_fingerprints":["24:25:54:66:6E:AA:D8:A6:0B:1A:43:5F:5E:02:5C:02:5F:13:1A:C3:22:67:FA:73:81:A7:0F:05:73:79:89:85"]
         }
     }
 ]
