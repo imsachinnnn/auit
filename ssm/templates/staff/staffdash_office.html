@@ -1,241 +1,165 @@
 {% extends 'staff/staffdash_hod.html' %}
-<!-- Reusing layout but overriding content -->
+<!-- Reusing layout but overriding sidebar and content -->
+
+{% block sidebar %}
+<aside class="sidebar">
+    <div class="brand">
+        <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png" alt="Logo">
+        <h1>Office Staff</h1>
+    </div>
+
+    <nav class="nav-section">
+        <div class="nav-label">Menu</div>
+        <a href="{% url 'staffs:staff_profile' %}" class="nav-item">
+            <span class="nav-icon">👤</span> My Profile
+        </a>
+        <a href="{% url 'staffs:office_manage_bonafide' %}" class="nav-item">
+            <span class="nav-icon">📜</span> Bonafide Requests
+        </a>
+        <a href="{% url 'staffs:scholarship_manager' %}" class="nav-item">
+            <span class="nav-icon">🎓</span> Scholarship Manager
+        </a>
+    </nav>
+
+    <div class="profile-mini">
+        {% if staff.photo %}
+        <img src="{{ staff.photo.url }}" alt="Profile">
+        {% else %}
+        <img src="https://ui-avatars.com/api/?name={{ staff.name }}" alt="Profile">
+        {% endif %}
+        <div style="flex: 1; min-width: 0;">
+            <div
+                style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem;">
+                {{ staff.name }}
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Office Staff</div>
+        </div>
+        <a href="{% url 'staffs:staff_logout' %}" title="Logout"
+            style="color: #ef4444; font-size: 1.1rem; text-decoration: none;">⏻</a>
+    </div>
+</aside>
+{% endblock %}
+
+{% block title %}Office Staff Dashboard | {{ staff.name }}{% endblock %}
 
 {% block content %}
-<div class="header-welcome">
-    <div>
-        <h1>Welcome, {{ staff.name }}</h1>
-        <p class="text-muted">Office Staff Dashboard</p>
+<div class="top-bar">
+    <div class="greeting" style="display: flex; align-items: center;">
+        <button class="menu-toggle-btn" onclick="toggleSidebar()">☰</button>
+        <div>
+            <h2>Hello, {{ staff.name }} 👋</h2>
+            <p>Welcome back to your dashboard.</p>
+        </div>
     </div>
-    <div class="date-display">
-        {{ now|date:"l, F j, Y" }}
+    <!-- Combined Clock & Date Badge -->
+    <div class="clock-badge">
+        <span>{% now "l, d F Y" %}</span>
+        <span style="opacity: 0.3">|</span>
+        <span id="digital-clock" style="font-family: monospace; font-weight: 600;">00:00:00</span>
     </div>
 </div>
 
-<!-- Stats / Quick Asset Grid -->
-<div class="stats-grid">
-    <!-- Bonafide Logic -->
-    <a href="{% url 'staffs:manage_bonafide' %}" class="stat-card" style="text-decoration: none; color: inherit;">
-        <div class="icon-box" style="background: #e0f2fe; color: #0284c7;">
-            <i class="fas fa-certificate"></i>
+<div class="dashboard-grid">
+    <!-- Activity Section (Left Column) replacing News -->
+    <div class="news-section">
+        <div class="section-header" style="margin-bottom: 20px;">
+            <h3>Recent Bonafide Activity</h3>
+            <a href="{% url 'staffs:office_manage_bonafide' %}"
+                style="font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 600;">View All</a>
         </div>
-        <div>
-            <div class="stat-value">{{ pending_bonafide_count }}</div>
-            <div class="stat-label">Pending Bonafide Requests</div>
-        </div>
-    </a>
 
-    <!-- Scholarship Logic -->
-    <a href="{% url 'staffs:scholarship_manager' %}" class="stat-card" style="text-decoration: none; color: inherit;">
-        <div class="icon-box" style="background: #f0fdf4; color: #16a34a;">
-            <i class="fas fa-graduation-cap"></i>
+        <div
+            style="background: white; border-radius: 12px; padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <th style="text-align: left; padding: 10px; color: var(--text-muted); font-size: 0.8rem;">
+                            Student</th>
+                        <th style="text-align: left; padding: 10px; color: var(--text-muted); font-size: 0.8rem;">Reason
+                        </th>
+                        <th style="text-align: left; padding: 10px; color: var(--text-muted); font-size: 0.8rem;">Status
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in recent_bonafide_requests %}
+                    <tr style="border-bottom: 1px solid var(--bg-body);">
+                        <td style="padding: 12px 10px;">
+                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">{{ req.student.student_name }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ req.student.roll_number }}</div>
+                        </td>
+                        <td style="padding: 12px 10px; font-size: 0.85rem; color: var(--text-secondary);">{{ req.reason|truncatechars:25 }}</td>
+                        <td style="padding: 12px 10px;">
+                            <span style="padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; 
+                            {% if req.status == 'Approved' %}background: #dcfce7; color: #166534;
+                            {% elif req.status == 'Rejected' %}background: #fee2e2; color: #991b1b;
+                            {% else %}background: #e0f2fe; color: #075985;{% endif %}">
+                                {{ req.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3"
+                            style="padding: 20px; text-align: center; color: var(--text-muted); font-style: italic;">No
+                            recent activity</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        <div>
-            <div class="stat-value">Manage</div>
-            <div class="stat-label">Scholarships</div>
-        </div>
-    </a>
+    </div>
 
-    <!-- Student List -->
-    <a href="{% url 'staffs:student_list' %}" class="stat-card" style="text-decoration: none; color: inherit;">
-        <div class="icon-box" style="background: #fdf4ff; color: #d946ef;">
-            <i class="fas fa-users"></i>
-        </div>
-        <div>
-            <div class="stat-value">{{ student_count }}</div>
-            <div class="stat-label">Total Students</div>
-        </div>
-    </a>
-
-    <!-- Passed Out/ Alumni -->
-    <a href="{% url 'staffs:passed_out_batches' %}" class="stat-card" style="text-decoration: none; color: inherit;">
-        <div class="icon-box" style="background: #fff7ed; color: #ea580c;">
-            <i class="fas fa-user-graduate"></i>
-        </div>
-        <div>
-            <div class="stat-value">Alumni</div>
-            <div class="stat-label">Passed Out Batches</div>
-        </div>
-    </a>
-</div>
-
-<div class="row-layout">
-    <div class="section-card" style="flex: 2;">
-        <h3><i class="fas fa-bullhorn"></i> Recent Announcements</h3>
-
-        {% if news_list %}
-        <div class="news-feed">
-            {% for news in news_list %}
-            <div class="news-item">
-                <div class="news-date">{{ news.date|date:"M d" }}</div>
-                <div class="news-content">
-                    <div class="news-text">{{ news.content }}</div>
-                    {% if news.link %}
-                    <a href="{{ news.link }}" target="_blank" class="news-link">View Link <i
-                            class="fas fa-external-link-alt"></i></a>
-                    {% endif %}
-                    <div class="news-meta">Target: {{ news.target }}</div>
-                </div>
+    <!-- Stats Column (Right Column) -->
+    <div class="stats-column">
+        <!-- Total Students -->
+        <a href="#" class="stat-card" style="text-decoration: none; color: inherit; cursor: default;">
+            <div class="stat-icon" style="background: #e0e7ff; color: #4338ca;">👨‍🎓</div>
+            <div class="stat-info">
+                <h3>{{ student_count }}</h3>
+                <span>Total Students</span>
             </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <p class="text-muted">No active announcements.</p>
-        {% endif %}
-    </div>
+        </a>
 
-    <!-- Quick Links -->
-    <div class="section-card" style="flex: 1;">
-        <h3><i class="fas fa-link"></i> Quick Actions</h3>
-        <div class="quick-links">
-            <a href="{% url 'staffs:staff_profile' %}" class="quick-link-item">
-                <i class="fas fa-user-circle"></i> My Profile
-            </a>
-            <a href="{% url 'staffs:staff_list' %}" class="quick-link-item">
-                <i class="fas fa-address-book"></i> Staff Directory
-            </a>
-            <a href="{% url 'staffs:generate_student' %}" class="quick-link-item">
-                <i class="fas fa-user-plus"></i> Generate Student
-            </a>
-        </div>
+        <!-- Bonafide Requests -->
+        <a href="{% url 'staffs:office_manage_bonafide' %}" class="stat-card"
+            style="text-decoration: none; color: inherit;">
+            <div class="stat-icon" style="background: #e0f2fe; color: #0284c7;">📜</div>
+            <div class="stat-info">
+                <h3>{{ pending_bonafide_count }}</h3>
+                <span>Bonafide Requests</span>
+            </div>
+        </a>
+
+        <!-- Scholarship Manager -->
+        <a href="{% url 'staffs:scholarship_manager' %}" class="stat-card"
+            style="text-decoration: none; color: inherit;">
+            <div class="stat-icon" style="background: #f0fdf4; color: #16a34a;">🎓</div>
+            <div class="stat-info">
+                <h3>Manage</h3>
+                <span>Scholarships</span>
+            </div>
+        </a>
     </div>
 </div>
 
-<style>
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-
-    .stat-card {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        transition: transform 0.2s, box-shadow 0.2s;
-        border: 1px solid #f1f5f9;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-    }
-
-    .icon-box {
-        width: 50px;
-        height: 50px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.4rem;
-    }
-
-    .stat-value {
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: #1e293b;
-        line-height: 1.2;
-    }
-
-    .stat-label {
-        color: #64748b;
-        font-size: 0.9rem;
-    }
-
-    .row-layout {
-        display: flex;
-        gap: 25px;
-        flex-wrap: wrap;
-    }
-
-    .section-card {
-        background: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-        border: 1px solid #f1f5f9;
-        height: 100%;
-    }
-
-    .section-card h3 {
-        margin-top: 0;
-        color: #334155;
-        font-size: 1.2rem;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #f1f5f9;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .news-feed {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        max-height: 300px;
-        overflow-y: auto;
-    }
-
-    .news-item {
-        display: flex;
-        gap: 15px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .news-date {
-        font-weight: 700;
-        color: #3b82f6;
-        min-width: 50px;
-        text-align: center;
-        line-height: 1.2;
-    }
-
-    .news-text {
-        color: #334155;
-        margin-bottom: 5px;
-    }
-
-    .news-meta {
-        font-size: 0.8rem;
-        color: #94a3b8;
-    }
-
-    .quick-links {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .quick-link-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 15px;
-        background: #f8fafc;
-        border-radius: 8px;
-        text-decoration: none;
-        color: #475569;
-        font-weight: 500;
-        transition: all 0.2s;
-    }
-
-    .quick-link-item:hover {
-        background: #eff6ff;
-        color: #2563eb;
-        transform: translateX(5px);
-    }
-
-    .quick-link-item i {
-        width: 20px;
-        text-align: center;
-    }
-</style>
+<!-- Quick Actions Grid -->
+<section class="actions-section">
+    <div class="section-header">
+        <h3>Quick Management</h3>
+    </div>
+    <div class="actions-grid">
+        <a href="{% url 'staffs:staff_profile' %}" class="action-tile">
+            <div class="action-tile-icon">👤</div>
+            <h4>My Profile</h4>
+            <p>View personal details.</p>
+        </a>
+        <!-- Bonafide Quick Action Removed -->
+        <a href="{% url 'staffs:scholarship_manager' %}" class="action-tile">
+            <div class="action-tile-icon">💰</div>
+            <h4>Scholarships</h4>
+            <p>Manage applications.</p>
+        </a>
+    </div>
+</section>
 {% endblock %}

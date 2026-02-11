@@ -300,13 +300,17 @@ class ResultScreenshot(models.Model):
 
 class BonafideRequest(models.Model):
     STATUS_CHOICES = [
-        ('Pending HOD', 'Pending HOD'),
-        ('Approved', 'Approved'),
+        ('Pending Office Approval', 'Pending Office Approval'), # Renamed from Pending HOD
+        ('Approved by HOD', 'Approved by HOD'), # Legacy
+        ('Waiting for HOD Sign', 'Waiting for HOD Sign'),
+        ('Signed', 'Signed'),
+        ('Ready for Collection', 'Ready for Collection'), # Legacy
+        ('Collected', 'Collected'),
         ('Rejected', 'Rejected')
     ]
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='bonafide_requests')
     reason = models.TextField()
-    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='Pending HOD')
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='Pending Office Approval')
     rejection_reason = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

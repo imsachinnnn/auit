@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.onrender.ssms_web.twa.app-mergeReleaseResources-23:/values-hu/values-hu.xml",
+            "outputFile": "com.au_it_dept.twa.app-mergeReleaseResources-23:/values-hu/values-hu.xml",
             "map": [
                 {
                     "source": "C:\\Users\\sachi\\.gradle\\caches\\8.11.1\\transforms\\183ebbc8ed821348f80a6d36d20b75e3\\transformed\\appcompat-1.7.0\\res\\values-hu\\values-hu.xml",

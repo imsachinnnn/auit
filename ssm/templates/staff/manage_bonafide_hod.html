@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOD Approval | Bonafide Requests</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
+    <style>
+        :root {
+            --primary-color: #5a7d7c;
+            --secondary-color: #4a6b69;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --pending-color: #ffc107;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .req-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--pending-color);
+        }
+
+        .req-card.status-approved {
+            border-left-color: var(--success-color);
+        }
+
+        .req-card.status-rejected {
+            border-left-color: var(--danger-color);
+        }
+
+        .req-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .student-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .req-meta {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            color: white;
+            transition: 0.2s;
+        }
+
+        .btn-approve {
+            background: var(--success-color);
+        }
+
+        .btn-reject {
+            background: var(--danger-color);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #777;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            margin-bottom: -7px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>HOD Approval Queue</h1>
+                <p>Manage Bonafide Certificate Requests</p>
+            </div>
+            <a href="{% url 'staffs:staff_dashboard' %}" class="back-btn">← Back to Dashboard</a>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab('pending')">Pending Approval</button>
+            <button class="tab-btn" onclick="openTab('history')">History</button>
+        </div>
+
+        <div id="pending" class="tab-content active">
+            {% for req in pending_hod %}
+            <div class="req-card">
+                <div class="req-header">
+                    <div>
+                        <div class="student-name">{{ req.student.student_name }}</div>
+                        <div class="req-meta">{{ req.student.roll_number }} | Sem: {{ req.student.current_semester }}
+                        </div>
+                    </div>
+                    <div class="req-meta">{{ req.created_at|date:"d M Y" }}</div>
+                </div>
+                <div><strong>Reason:</strong> {{ req.reason }}</div>
+                <form action="{% url 'staffs:hod_manage_bonafide' %}" method="post" class="actions">
+                    {% csrf_token %}
+                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                    <input type="text" name="rejection_reason" placeholder="Reason if rejecting..."
+                        style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; flex-grow: 1;">
+                    <button type="submit" name="action" value="approve" class="btn btn-approve">Approve</button>
+                    <button type="submit" name="action" value="reject" class="btn btn-reject">Reject</button>
+                </form>
+            </div>
+            {% empty %}
+            <p style="text-align: center; color: #777;">No pending requests.</p>
+            {% endfor %}
+        </div>
+
+        <div id="history" class="tab-content">
+            {% for req in history %}
+            <div class="req-card {% if req.status == 'Rejected' %}status-rejected{% else %}status-approved{% endif %}">
+                <div class="req-header">
+                    <div>
+                        <div class="student-name">{{ req.student.student_name }}</div>
+                        <div class="req-meta">{{ req.student.roll_number }}</div>
+                    </div>
+                    <div class="req-meta">{{ req.updated_at|date:"d M Y" }} <br> <strong>{{ req.status }}</strong></div>
+                </div>
+                <div>Reason: {{ req.reason }}</div>
+                {% if req.rejection_reason %}
+                <div style="color:red; margin-top:5px;">Note: {{ req.rejection_reason }}</div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p style="text-align: center; color: #777;">No history available.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function openTab(id) {
+            document.querySelectorAll('.tab-content').forEach(d => d.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+
+</html>

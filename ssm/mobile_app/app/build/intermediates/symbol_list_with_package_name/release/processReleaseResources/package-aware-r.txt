@@ -1,4 +1,4 @@
-com.onrender.ssms_web.twa
+com.au_it_dept.twa
 anim abc_fade_in
 anim abc_fade_out
 anim abc_grow_fade_in_from_bottom
@@ -641,7 +641,6 @@ drawable ic_call_decline
 drawable ic_call_decline_low
 drawable ic_notification_icon
 drawable ic_site_settings
-drawable launch_screen
 drawable notification_action_background
 drawable notification_bg
 drawable notification_bg_low

@@ -1,111 +1,141 @@
-from students.models import Student, StudentAttendance, StudentMarks
+import os
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from django.conf import settings
+from django.utils import timezone
 
-def get_risk_metrics(subject):
+def draw_bonafide_content(p, request):
     """
-    Calculates risk metrics for a subject.
-    Returns a list of dictionaries for students at risk.
-    Risk Criteria:
-    - Attendance < 75%
-    - Internal Marks < 40 (if entered)
+    Helper function to draw the content of a single bonafide certificate on a canvas.
     """
-    # Get students for this semester
-    students = Student.objects.filter(current_semester=subject.semester).order_by('roll_number')
+    width, height = A4
     
-    # Pre-fetch attendance and marks to avoid N+1
-    attendance_qs = StudentAttendance.objects.filter(subject=subject)
+    # --- BORDERS ---
+    # Outer Border (Thick)
+    p.setStrokeColor(colors.darkblue)
+    p.setLineWidth(3)
+    p.rect(0.4*inch, 0.4*inch, width-0.8*inch, height-0.8*inch)
     
-    # Calculate total working days for this subject
-    # This might be slow if huge data, but accurate
-    working_dates = attendance_qs.values_list('date', flat=True).distinct()
-    total_dates = len(working_dates)
+    # Inner Border (Thin, Gold/Orange accent if color allowed, otherwise black)
+    p.setStrokeColor(colors.black) 
+    p.setLineWidth(1)
+    p.rect(0.6*inch, 0.6*inch, width-1.2*inch, height-1.2*inch)
     
-    # Marks
-    marks_qs = StudentMarks.objects.filter(subject=subject)
-    marks_map = {m.student_id: m for m in marks_qs}
+    # --- HEADER ---
+    # Logo Placeholder (Text for now)
+    p.setFont("Helvetica-Bold", 10)
+    # p.drawImage("path/to/logo.png", 1*inch, height - 1.5*inch, width=1*inch, height=1*inch) # If logo existed
     
-    # Optimization: Fetch all attendance counts for this subject in one query if possible
-    # But simple matching is safer for now to ensure correctness with existing logic
+    p.setFillColor(colors.darkblue)
+    p.setFont("Helvetica-Bold", 26)
+    p.drawCentredString(width/2, height - 1.8*inch, "ANNAMALAI UNIVERSITY")
     
-    risk_students = []
+    p.setFillColor(colors.black)
+    p.setFont("Helvetica", 12)
+    p.drawCentredString(width/2, height - 2.1*inch, "(Accredited with 'A' Grade by NAAC)")
     
-    for student in students:
-        # 1. Attendance
-        # Filter for this specific student from the pre-fetched QS (this still hits DB if not evaluating carefully)
-        # Better: Aggregation
-        # For now, let's stick to the working logic but optimize if needed. 
-        # Actually, iterating filter inside loop is N queries.
-        # Let's optimize: Fetch all present/absent counts for the subject grouped by student.
-        pass
+    p.setFont("Helvetica-Bold", 18)
+    p.drawCentredString(width/2, height - 3*inch, "BONAFIDE CERTIFICATE")
+    
+    # --- DATE ---
+    p.setFont("Helvetica", 11)
+    date_str = timezone.now().strftime("%d-%m-%Y")
+    p.drawRightString(width - 1.5*inch, height - 3.8*inch, f"Date: {date_str}")
+    
+    # --- CONTENT BODY ---
+    p.setFont("Times-Roman", 14) # Serif font looks more official
+    text_y = height - 5*inch
+    line_height = 30 # More spacing
+    
+    # Justified-like text simulation
+    p.drawCentredString(width/2, text_y, "This is to certify that")
+    text_y -= line_height
+    
+    p.setFont("Times-Bold", 16)
+    p.drawCentredString(width/2, text_y, f"Mr./Ms. {request.student.student_name.upper()}")
+    text_y -= line_height
+    
+    p.setFont("Times-Roman", 14)
+    p.drawCentredString(width/2, text_y, f"(Roll Number: {request.student.roll_number})")
+    text_y -= line_height * 1.5
+    
+    p.drawCentredString(width/2, text_y, f"is a bonafide student of Semester {request.student.current_semester}")
+    text_y -= line_height
+    
+    p.drawCentredString(width/2, text_y, "in the Department of Information Technology")
+    text_y -= line_height
+    
+    p.drawCentredString(width/2, text_y, "during the academic year 2025-2026.")
+    text_y -= line_height * 2
+    
+    # --- PURPOSE ---
+    # p.setFont("Times-Bold", 12)
+    # p.drawString(1.5*inch, text_y, "Purpose:")
+    # p.setFont("Times-Roman", 12)
+    # p.drawString(2.3*inch, text_y, request.reason)
+    
+    # --- FOOTER / SIGNATURES ---
+    bottom_margin = 2*inch
+    
+    # Seal Box
+    p.setLineWidth(1)
+    p.rect(1.5*inch, bottom_margin, 1.5*inch, 1.5*inch)
+    p.setFont("Helvetica-Oblique", 8)
+    p.drawCentredString(2.25*inch, bottom_margin + 0.75*inch, "Department Seal")
+    
+    # HOD Signature
+    p.setFont("Helvetica-Bold", 12)
+    p.drawRightString(width - 1.5*inch, bottom_margin + 0.5*inch, "Head of Department")
+    p.setFont("Helvetica", 10)
+    p.drawRightString(width - 1.5*inch, bottom_margin + 0.2*inch, "(Signature & Seal)")
 
-    # Optimized Approach
-    from django.db.models import Count, Q
-    
-    # Get attendance stats per student for this subject
-    att_stats = attendance_qs.values('student').annotate(
-        present_count=Count('id', filter=Q(status='Present')),
-        total_classes=Count('id') 
-        # Note: total_classes here is records for that student. 
-        # If a student wasn't marked for a day (late joiner), their total might be less.
-        # Strict attendance usually checks against 'total_dates' (global classes conducted).
-    )
-    att_map = {stat['student']: stat['present_count'] for stat in att_stats}
+def generate_bonafide_pdf(buffer, request_obj):
+    """
+    Generates a single Bonafide Certificate PDF.
+    """
+    p = canvas.Canvas(buffer, pagesize=A4)
+    draw_bonafide_content(p, request_obj)
+    p.showPage()
+    p.save()
 
-    for student in students:
-        # 1. Attendance Calculation
-        present = att_map.get(student.roll_number, 0)
-        # Use global total_dates for strict attendance (classes conducted vs attended)
-        # If total_dates is 0, avoid division by zero
-        percentage = (present / total_dates * 100) if total_dates > 0 else 0.0
-        
-        # 2. Marks
-        marks = marks_map.get(student.roll_number)
-        internal = marks.internal_marks if marks else None
-        test1 = marks.test1_marks if marks else None
-        test2 = marks.test2_marks if marks else None
-        
-        risk_factors = []
-        if total_dates > 0 and percentage < 75:
-            risk_factors.append(f"Low Attendance ({round(percentage, 1)}%)")
-        
-        if internal is not None and internal < 40:
-             risk_factors.append(f"Low Internal ({internal})")
+def generate_bulk_bonafide_pdf(buffer, request_objs):
+    """
+    Generates a PDF containing multiple Bonafide Certificates (one per page).
+    """
+    p = canvas.Canvas(buffer, pagesize=A4)
+    for req in request_objs:
+        draw_bonafide_content(p, req)
+        p.showPage() # New page for next certificate
+    p.save()
 
-        if test1 is not None and test1 < 20:
-             risk_factors.append(f"Low Mid Term 1 ({test1})")
-
-        if test2 is not None and test2 < 20:
-             risk_factors.append(f"Low Mid Term 2 ({test2})")
-        
-        if risk_factors:
-            risk_students.append({
-                'name': student.student_name,
-                'roll_number': student.roll_number,
-                'current_semester': student.current_semester,
-                'attendance_percentage': round(percentage, 1),
-                'internal_marks': internal if internal is not None else '-',
-                'test1_marks': test1 if test1 is not None else '-',
-                'test2_marks': test2 if test2 is not None else '-',
-                'risk_factors': risk_factors
-            })
-            
-    return risk_students
-
-
-def log_audit(request, action, actor_type='system', actor_id='', actor_name='', object_type='', object_id='', message='', extra_data=None):
-    """Record an audit log entry. Call from views (e.g. login, edit) to populate Audits / Logs in admin."""
+def log_audit(request, action, actor_type, actor_id, actor_name=None, object_type=None, object_id=None, message=None):
+    """
+    Logs an audit trail entry.
+    """
     from .models import AuditLog
-    x_forwarded = request.META.get('HTTP_X_FORWARDED_FOR') if request else None
-    ip = x_forwarded.split(',')[0].strip() if x_forwarded else (request.META.get('REMOTE_ADDR') if request else None)
-    user_agent = (request.META.get('HTTP_USER_AGENT') or '')[:500] if request else ''
+
+    # Get Client IP
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip_address = x_forwarded_for.split(',')[0]
+    else:
+        ip_address = request.META.get('REMOTE_ADDR')
+
+    # Get User Agent
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+
     AuditLog.objects.create(
         action=action,
         actor_type=actor_type,
         actor_id=actor_id or '',
         actor_name=actor_name or '',
-        ip_address=ip,
-        user_agent=user_agent,
         object_type=object_type or '',
         object_id=object_id or '',
+        ip_address=ip_address,
+        user_agent=user_agent,
         message=message or '',
-        extra_data=extra_data,
+        timestamp=timezone.now()
     )

@@ -11,7 +11,6 @@ color navigationDividerColor
 color navigationDividerColorDark
 color shortcut_background
 drawable ic_notification_icon
-drawable launch_screen
 drawable shortcut_legacy_background
 drawable splash
 integer splashScreenFadeOutDuration

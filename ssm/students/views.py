@@ -1472,17 +1472,16 @@ def bonafide_list(request):
     limit = 2
     
     # Handle New Request Submission (if done from this page)
+    # Handle New Request Submission (if done from this page)
     if request.method == 'POST':
         reason = request.POST.get('reason')
         if not reason:
              messages.error(request, 'Reason is required.')
         else:
-            if monthly_count >= limit:
-                 messages.error(request, f'You have already reached the monthly limit of {limit} requests.')
-            else:
-                BonafideRequest.objects.create(student=student, reason=reason)
-                messages.success(request, 'Bonafide Request submitted successfully to HOD!')
-                return redirect('bonafide_list')
+            # Unlimited requests
+            BonafideRequest.objects.create(student=student, reason=reason)
+            messages.success(request, 'Bonafide Request submitted successfully to Office!')
+            return redirect('bonafide_list')
 
     return render(request, 'bonafide_list.html', {
         'requests': requests, 
@@ -1499,8 +1498,8 @@ def download_bonafide(request, request_id):
     
     bonafide = get_object_or_404(BonafideRequest, id=request_id, student=student)
     
-    if bonafide.status != 'Approved':
-        messages.error(request, 'Certificate is not approved yet.')
+    if bonafide.status not in ['Signed', 'Collected', 'Ready for Collection']:
+        messages.error(request, 'Certificate is not ready for download yet.')
         return redirect('bonafide_list')
         
     template_path = 'bonafide_certificate_pdf.html'
@@ -1582,25 +1581,16 @@ def request_bonafide(request):
     if request.method == 'POST':
         reason = request.POST.get('reason')
         if not reason:
-             return JsonResponse({'success': False, 'message': 'Reason is required.'})
+             messages.error(request, 'Reason is required.')
+             return redirect('bonafide_list')
         
-        # Check limit: 1 per month
-        now = timezone.now()
-        # Create a timezone-aware datetime for the first of the month
-        start_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        # Limit check removed as per new requirements
         
-        existing_count = BonafideRequest.objects.filter(
-            student=student,
-            created_at__gte=start_month
-        ).count()
-        
-        if existing_count >= 2:
-             return JsonResponse({'success': False, 'message': 'You have already requested a Bonafide Certificate 2 times this month. Limit reached.'})
-
-        BonafideRequest.objects.create(student=student, reason=reason)
-        return JsonResponse({'success': True, 'message': 'Bonafide Request submitted successfully to HOD!'})
+        BonafideRequest.objects.create(student=student, reason=reason, status='Pending Office Approval')
+        messages.success(request, 'Bonafide Request submitted successfully to Office!')
+        return redirect('bonafide_list')
     
-    return JsonResponse({'error': 'Invalid method'}, status=405)
+    return redirect('bonafide_list')
 
 def upload_result(request):
     """Allows students to upload result screenshots for their current semester subjects."""

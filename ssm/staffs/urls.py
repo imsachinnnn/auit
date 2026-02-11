@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import bonafide_views  # New separate module
 # from students.views import prevhome  # importing student view
 
 
@@ -66,7 +67,11 @@ urlpatterns = [
     path('my-leave/history/', views.staff_leave_history, name='staff_leave_history'),
     path('hod/leave-requests/', views.hod_leave_dashboard, name='hod_leave_dashboard'),
     path('hod/leave-update/<int:request_id>/', views.hod_update_leave_status, name='hod_update_leave_status'),
-    path('hod/bonafide-requests/', views.manage_bonafide, name='manage_bonafide'),
+    
+    # NEW BONAFIDE SYSTEM (Replaces old views)
+    path('hod/bonafide-fix/', bonafide_views.hod_bonafide_list, name='hod_manage_bonafide'),
+    path('hod/bonafide/print/<int:request_id>/', bonafide_views.generate_bonafide_request_pdf, name='generate_bonafide_request_pdf'),
+    path('office/bonafide-requests/', bonafide_views.office_bonafide_list, name='office_manage_bonafide'),
     path('admin-portal/', views.admin_portal_login, name='admin_portal_login'),
     path('risk-students/', views.risk_students, name='risk_students'),
     path('risk-students/export/<int:subject_id>/', views.export_risk_list, name='export_risk_list'),

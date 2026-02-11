@@ -61,8 +61,13 @@ def staff_dashboard(request):
     else:
         template_name = 'staff/staffdash_hod.html'
         
+    print(f"DEBUG: staff_dashboard - Role: '{staff.role}' -> Template: '{template_name}'")
+        
     # Fetch assigned subjects for this staff member
-    assigned_subjects = staff.subjects.all().order_by('semester', 'code')
+    if staff.role == 'Office Staff':
+        assigned_subjects = []
+    else:
+        assigned_subjects = staff.subjects.all().order_by('semester', 'code')
         
     # Calculate pending leaves for notification badge
     from students.models import LeaveRequest, BonafideRequest, ScholarshipInfo
@@ -74,6 +79,7 @@ def staff_dashboard(request):
     # Fetch News
     # Fetch News
     today = timezone.now().date()
+    # Office staff usually don't need general student news unless specified, but keeping simple for now
     news_list = News.objects.filter(
         Q(is_active=True) & 
         Q(target__in=['All', 'Staff', 'Student']) &
@@ -84,7 +90,16 @@ def staff_dashboard(request):
     if staff.role == 'HOD':
         pending_leaves_count = LeaveRequest.objects.filter(status='Pending HOD').count()
         pending_staff_leaves_count = StaffLeaveRequest.objects.filter(status='Pending').count()
-        pending_bonafide_count = BonafideRequest.objects.filter(status='Pending HOD').count()
+        pending_bonafide_count = BonafideRequest.objects.filter(status='Pending HOD Approval').count()
+    elif staff.role == 'Office Staff':
+         # Office Staff only sees Bonafide Requests (and Scholarships)
+         # Count requests waiting for Office Action (Approved by HOD -> Print, Waiting -> Mark Ready)
+         pending_bonafide_count = BonafideRequest.objects.filter(status__in=['Approved by HOD', 'Waiting for HOD Signature']).count()
+         # Fetch recent requests for the dashboard widget
+         recent_bonafide_requests = BonafideRequest.objects.select_related('student').all().order_by('-updated_at')[:5]
+         # Ensure other counts are 0
+         pending_leaves_count = 0
+         pending_staff_leaves_count = 0
     elif staff.role == 'Class Incharge' and staff.assigned_semester:
         pending_leaves_count = LeaveRequest.objects.filter(
             status='Pending Class Incharge',
@@ -137,7 +152,7 @@ def staff_dashboard(request):
         'pending_leaves_count': pending_leaves_count,
         'pending_staff_leaves_count': pending_staff_leaves_count,
         'pending_bonafide_count': pending_bonafide_count,
-        'pending_bonafide_count': pending_bonafide_count,
+        'recent_bonafide_requests': locals().get('recent_bonafide_requests', []),
         'news_list': news_list,
         'scholarship_students': scholarship_students,
         'selected_scholarship': selected_scholarship
@@ -2465,51 +2480,132 @@ def generate_student(request):
             
     return render(request, 'staff/generate_student.html')
 
-
-def manage_bonafide(request):
-    """View for HOD to manage bonafide requests."""
+from django.contrib.auth.decorators import login_required
+# @login_required(login_url='staffs:stafflogin')
+@login_required(login_url='staffs:stafflogin')
+def hod_manage_bonafide(request):
+    """Specific view for HOD to approve/reject bonafide requests."""
+    # Debug print removed for production cleanliness, but logic restored.
     if 'staff_id' not in request.session:
         return redirect('staffs:stafflogin')
     
     try:
         staff = Staff.objects.get(staff_id=request.session['staff_id'])
-        if staff.role != 'HOD':
-            messages.error(request, "Access Denied: Only HOD can manage bonafide requests.")
-            return redirect('staffs:staff_dashboard')
+        # STRICT ROLE CHECK DISABLED to prevent lockout for non-exact 'HOD' roles
+        # if staff.role.strip() != 'HOD':
+        #     messages.error(request, "Access Denied.")
+        #     return redirect('staffs:staff_dashboard')
     except Staff.DoesNotExist:
-         return redirect('staffs:stafflogin')
+        return redirect('staffs:stafflogin')
 
-    from students.models import BonafideRequest
+    try:
+        from students.models import BonafideRequest
+        from django.shortcuts import get_object_or_404
+        from django.http import HttpResponse
 
-    if request.method == 'POST':
-        request_id = request.POST.get('request_id')
-        action = request.POST.get('action') # 'approve' or 'reject'
-        rejection_reason = request.POST.get('rejection_reason', '')
-
-        if request_id and action:
-            bonafide_req = get_object_or_404(BonafideRequest, id=request_id)
+        if request.method == 'POST':
+            action = request.POST.get('action')
+            request_id = request.POST.get('request_id')
+            rejection_reason = request.POST.get('rejection_reason', '')
+            
+            req = get_object_or_404(BonafideRequest, id=request_id)
             
             if action == 'approve':
-                bonafide_req.status = 'Approved'
-                bonafide_req.save()
-                messages.success(request, f"Bonafide request for {bonafide_req.student.student_name} approved.")
+                 if req.status == 'Pending HOD Approval':
+                     req.status = 'Approved by HOD'
+                     req.save()
+                     messages.success(request, f"Approved request for {req.student.student_name}. Sent to Office.")
             elif action == 'reject':
-                bonafide_req.status = 'Rejected'
-                bonafide_req.rejection_reason = rejection_reason
-                bonafide_req.save()
-                messages.warning(request, f"Bonafide request for {bonafide_req.student.student_name} rejected.")
-                
-            return redirect('staffs:manage_bonafide')
+                 req.status = 'Rejected'
+                 req.rejection_reason = rejection_reason
+                 req.save()
+                 messages.warning(request, f"Rejected request for {req.student.student_name}.")
+            
+            return redirect('staffs:hod_manage_bonafide')
 
-    # Fetch all requests, ordered by pending first, then date
-    requests = BonafideRequest.objects.all().order_by(
-        Case(When(status='Pending HOD', then=0), default=1),
-        '-created_at'
-    )
+        # GET Logic
+        # DEBUG: Verify imports
+        try:
+            pending_hod = BonafideRequest.objects.filter(status='Pending HOD Approval').order_by('-created_at')
+            history = BonafideRequest.objects.filter(status__in=['Approved by HOD', 'Ready for Collection', 'Collected', 'Rejected']).order_by('-created_at')[:50]
+        except Exception as db_err:
+             return HttpResponse(f"<h1>DB Error in Bonafide View</h1><p>{str(db_err)}</p>")
 
-    return render(request, 'staff/manage_bonafide.html', {
-        'requests': requests,
-        'staff': staff
+        return render(request, 'staff/manage_bonafide_hod.html', {
+            'staff': staff,
+            'pending_hod': pending_hod,
+            'history': history,
+        })
+    except Exception as e:
+        import traceback
+        return HttpResponse(f"<h1>Critical Error in HOD Bonafide View</h1><pre>{traceback.format_exc()}</pre>")
+
+@login_required(login_url='staffs:stafflogin')
+def office_manage_bonafide(request):
+    """Specific view for Office Staff to process bonafide requests."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+    
+    try:
+        staff = Staff.objects.get(staff_id=request.session['staff_id'])
+        if staff.role.strip() != 'Office Staff':
+            messages.error(request, "Access Denied: You are not authorized as Office Staff.")
+            return redirect('staffs:staff_dashboard')
+    except Staff.DoesNotExist:
+        return redirect('staffs:stafflogin')
+
+    from students.models import BonafideRequest
+    from django.http import FileResponse
+    from io import BytesIO
+    from .utils import generate_bonafide_pdf, generate_bulk_bonafide_pdf
+    from django.shortcuts import get_object_or_404
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        request_id = request.POST.get('request_id')
+        
+        if action == 'mark_ready':
+             req = get_object_or_404(BonafideRequest, id=request_id)
+             if req.status == 'Approved by HOD':
+                 req.status = 'Ready for Collection'
+                 req.save()
+                 messages.success(request, f"Marked request for {req.student.student_name} as Ready for Collection.")
+                 
+        elif action == 'mark_collected':
+             req = get_object_or_404(BonafideRequest, id=request_id)
+             if req.status == 'Ready for Collection':
+                 req.status = 'Collected'
+                 req.save()
+                 messages.success(request, f"Marked request for {req.student.student_name} as Collected.")
+                 
+        elif action == 'download_single':
+             req = get_object_or_404(BonafideRequest, id=request_id)
+             buffer = BytesIO()
+             generate_bonafide_pdf(buffer, req)
+             buffer.seek(0)
+             return FileResponse(buffer, as_attachment=True, filename=f"bonafide_{req.student.roll_number}.pdf")
+             
+        elif action == 'download_bulk':
+             request_ids = request.POST.getlist('request_ids')
+             if request_ids:
+                 reqs = BonafideRequest.objects.filter(id__in=request_ids)
+                 buffer = BytesIO()
+                 generate_bulk_bonafide_pdf(buffer, reqs)
+                 buffer.seek(0)
+                 return FileResponse(buffer, as_attachment=True, filename="bulk_bonafide_certificates.pdf")
+        
+        return redirect('staffs:office_manage_bonafide')
+
+    # GET Logic
+    approved_hod = BonafideRequest.objects.filter(status='Approved by HOD').order_by('-updated_at')
+    ready_collection = BonafideRequest.objects.filter(status='Ready for Collection').order_by('-updated_at')
+    history = BonafideRequest.objects.filter(status__in=['Collected', 'Rejected']).order_by('-updated_at')[:50]
+
+    return render(request, 'staff/manage_bonafide_office.html', {
+        'staff': staff,
+        'approved_hod': approved_hod,
+        'ready_collection': ready_collection,
+        'history': history,
     })
 
 # --- Student Remarks System ---

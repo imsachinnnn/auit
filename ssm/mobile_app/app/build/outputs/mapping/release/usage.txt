@@ -7668,6 +7668,15 @@ androidx.viewpager.widget.ViewPager$SavedState
 androidx.viewpager.widget.ViewPager$SimpleOnPageChangeListener
 androidx.viewpager.widget.ViewPager$ViewPositionComparator
 androidx.viewpager.widget.ViewPager
+com.au_it_dept.twa.R$bool
+com.au_it_dept.twa.R$color
+com.au_it_dept.twa.R$drawable
+com.au_it_dept.twa.R$integer
+com.au_it_dept.twa.R$mipmap
+com.au_it_dept.twa.R$raw
+com.au_it_dept.twa.R$string
+com.au_it_dept.twa.R$xml
+com.au_it_dept.twa.R
 com.google.androidbrowserhelper.BuildConfig
 com.google.androidbrowserhelper.R$drawable:
     private void <init>()
@@ -10277,15 +10286,6 @@ com.google.j2objc.annotations.WeakOuter
 com.google.thirdparty.publicsuffix.PublicSuffixPatterns
 com.google.thirdparty.publicsuffix.PublicSuffixType
 com.google.thirdparty.publicsuffix.TrieParser
-com.onrender.ssms_web.twa.R$bool
-com.onrender.ssms_web.twa.R$color
-com.onrender.ssms_web.twa.R$drawable
-com.onrender.ssms_web.twa.R$integer
-com.onrender.ssms_web.twa.R$mipmap
-com.onrender.ssms_web.twa.R$raw
-com.onrender.ssms_web.twa.R$string
-com.onrender.ssms_web.twa.R$xml
-com.onrender.ssms_web.twa.R
 kotlin.ArrayIntrinsicsKt
 kotlin.BuilderInference
 kotlin.CharCodeJVMKt

@@ -2,13 +2,13 @@
 -keep class androidx.core.content.FileProvider { <init>(); }
 -keep class androidx.profileinstaller.ProfileInstallReceiver { <init>(); }
 -keep class androidx.startup.InitializationProvider { <init>(); }
+-keep class com.au_it_dept.twa.Application { <init>(); }
+-keep class com.au_it_dept.twa.DelegationService { <init>(); }
+-keep class com.au_it_dept.twa.LauncherActivity { <init>(); }
 -keep class com.google.androidbrowserhelper.trusted.FocusActivity { <init>(); }
 -keep class com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity { <init>(); }
 -keep class com.google.androidbrowserhelper.trusted.NotificationPermissionRequestActivity { <init>(); }
 -keep class com.google.androidbrowserhelper.trusted.WebViewFallbackActivity { <init>(); }
--keep class com.onrender.ssms_web.twa.Application { <init>(); }
--keep class com.onrender.ssms_web.twa.DelegationService { <init>(); }
--keep class com.onrender.ssms_web.twa.LauncherActivity { <init>(); }
 -keep class android.widget.Space { <init>(android.content.Context, android.util.AttributeSet); }
 
 -keep class androidx.appcompat.app.AlertController$RecycleListView { <init>(android.content.Context, android.util.AttributeSet); }

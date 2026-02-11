@@ -327,7 +327,7 @@
             <header class="page-header no-print">
                 <div class="title-group">
                     <button class="menu-toggle-btn no-print" style="display: none;" onclick="toggleSidebar()">☰</button>
-                    <h1>Student Dashboard</h1>
+                    {% block header_title %}<h1>Student Dashboard</h1>{% endblock %}
                 </div>
                 <!-- Top Right Actions -->
                 <div class="header-actions">
@@ -370,7 +370,8 @@
                 <div title="Name"><span style="margin-right: 5px;">👤</span> {{ student.student_name }}</div>
                 <div title="Semester"><span style="margin-right: 5px;">🎓</span> Sem {{ student.current_semester }}
                 </div>
-                <div title="Batch"><span style="margin-right: 5px;">📅</span> {{ student.joining_year }} -{{student.ending_year }}</div>
+                <div title="Batch"><span style="margin-right: 5px;">📅</span> {{ student.joining_year }}
+                    -{{student.ending_year }}</div>
                 <div title="Email"><span style="margin-right: 5px;">📧</span> {{student.student_email|default:"--"}}
                 </div>
                 <div title="Mobile"><span style="margin-right: 5px;">📱</span>
@@ -455,7 +456,8 @@
                         <tr style="border-bottom: 1px solid #f1f5f9;">
                             <td style="padding: 8px 0; color: #334155;">
                                 <div style="font-weight: 500;">{{ leave.get_leave_type_display }}</div>
-                                <div style="font-size: 0.75rem; color: #64748b;">{{ leave.start_date|date:"d M"}} -{{leave.end_date|date:"d M" }}</div>
+                                <div style="font-size: 0.75rem; color: #64748b;">{{ leave.start_date|date:"d M"}}
+                                    -{{leave.end_date|date:"d M" }}</div>
                             </td>
                             <td style="padding: 8px 0; text-align: right;">
                                 <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 10px;"
@@ -912,16 +914,14 @@
             <button onclick="closeBonafideModal()"
                 style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
             <h3 style="margin-top: 0; color: #333;">Request Bonafide</h3>
-            <form id="bonafideForm" onsubmit="submitBonafide(event)">
+            <form method="post" action="{% url 'request_bonafide' %}">
+                {% csrf_token %}
                 <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #475569;">Reason for
                     Request:</label>
                 <textarea name="reason" rows="4"
                     style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 10px; font-family: inherit;"
                     placeholder="e.g. For Passport Application..." required></textarea>
-                <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px; margin-top: 0;">
-                    <span style="color: #d97706;">⚠️ Note:</span> You can submit up to <strong>2 requests per
-                        month</strong>.
-                </p>
+
                 <button type="submit"
                     style="width: 100%; background: #5a7d7c; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 500; cursor: pointer;">Submit
                     Request</button>
@@ -983,42 +983,6 @@
         }
         function closeBonafideModal() {
             document.getElementById('bonafideModal').style.display = 'none';
-        }
-
-        async function submitBonafide(e) {
-            e.preventDefault();
-            const form = document.getElementById('bonafideForm');
-            const formData = new FormData(form);
-            const btn = form.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.textContent = "Submitting...";
-
-            try {
-                const response = await fetch("{% url 'request_bonafide' %}", {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    }
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    showToast(data.message, 'success');
-                    closeBonafideModal();
-                    form.reset();
-                    // Slight delay to let toast show before reload
-                    setTimeout(() => window.location.reload(), 1500);
-                } else {
-                    showToast(data.message, 'error');
-                }
-            } catch (err) {
-                console.error(err);
-                showToast("An error occurred. Please try again.", 'error');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Submit Request";
-            }
         }
     </script>
     <script>

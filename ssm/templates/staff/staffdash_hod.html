@@ -5,13 +5,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HOD Dashboard | {{ staff.name }}</title>
+    <title>{% block title %}HOD Dashboard | {{ staff.name }}{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
         type="image/png">
     <link rel="stylesheet" href="{% static 'css/staff_dashboard.css' %}">
     <style>
         /* Specific overrides can go here */
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
     </style>
 </head>
 
@@ -19,6 +36,8 @@
 
     <div class="app-container">
         <!-- Sidebar Navigation -->
+        <!-- Sidebar Navigation -->
+        {% block sidebar %}
         <aside class="sidebar">
             <div class="brand">
                 <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
@@ -84,15 +103,17 @@
                     style="color: #ef4444; font-size: 1.1rem; text-decoration: none;">⏻</a>
             </div>
         </aside>
+        {% endblock %}
 
         <!-- Main Content Area -->
         <main class="main-content">
+            {% block content %}
             <div class="top-bar">
                 <div class="greeting" style="display: flex; align-items: center;">
                     <button class="menu-toggle-btn" onclick="toggleSidebar()">☰</button>
                     <div>
                         <h2>Hello, {{ staff.name }} 👋</h2>
-                        <p>Welcome back to your dashboard.</p>
+                        <p>Welcome back. (Role: {{ staff.role }})</p>
                     </div>
                 </div>
                 <!-- Combined Clock & Date Badge -->
@@ -102,6 +123,16 @@
                     <span id="digital-clock" style="font-family: monospace; font-weight: 600;">00:00:00</span>
                 </div>
             </div>
+
+            <!-- Messages Block -->
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-warning{% endif %}"
+                style="padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
 
             <!-- Top Grid: News & Stats -->
             <div class="dashboard-grid">
@@ -136,15 +167,7 @@
                     </a>
 
                     <!-- Bonafide Requests Card -->
-                    <a href="{% url 'staffs:manage_bonafide' %}" class="stat-card"
-                        style="text-decoration: none; color: inherit;">
-                        {% if pending_bonafide_count > 0 %} <div class="pulse-ring"></div> {% endif %}
-                        <div class="stat-icon" style="background: #ccfbf1; color: #0f766e;">📜</div>
-                        <div class="stat-info">
-                            <h3>{{ pending_bonafide_count }}</h3>
-                            <span>Bonafide Requests</span>
-                        </div>
-                    </a>
+                    <!-- Bonafide Requests Card Removed (Office Only) -->
 
                     <!-- Total Students -->
                     <a href="{% url 'staffs:student_list' %}" class="stat-card"
@@ -216,6 +239,7 @@
                 </div>
             </section>
             {% endif %}
+            {% endblock %}
 
         </main>
     </div>

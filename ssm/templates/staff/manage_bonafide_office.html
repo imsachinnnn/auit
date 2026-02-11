@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Staff | Bonafide Processing</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="icon" href="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+        type="image/png">
+    <style>
+        :root {
+            --primary-color: #5a7d7c;
+            --secondary-color: #4a6b69;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --ready-color: #17a2b8;
+            --collected-color: #6c757d;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .req-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .req-card.status-ready {
+            border-left-color: var(--ready-color);
+        }
+
+        .req-card.status-collected {
+            border-left-color: var(--collected-color);
+        }
+
+        .req-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .student-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .req-meta {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            color: white;
+            transition: 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-download {
+            background: var(--primary-color);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+        }
+
+        .btn-ready {
+            background: var(--ready-color);
+        }
+
+        .btn-collected {
+            background: var(--collected-color);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #777;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            margin-bottom: -7px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Office Processing Queue</h1>
+                <p>Print and Issue Bonafide Certificates</p>
+            </div>
+            <a href="{% url 'staffs:staff_dashboard' %}" class="back-btn">← Back to Dashboard</a>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab('processing')">Processing Queue</button>
+            <button class="tab-btn" onclick="openTab('collection')">Ready for Collection</button>
+            <button class="tab-btn" onclick="openTab('history')">History</button>
+        </div>
+
+        <div id="processing" class="tab-content active">
+            <form action="{% url 'staffs:office_manage_bonafide' %}" method="post">
+                {% csrf_token %}
+                <div style="text-align: right; margin-bottom: 10px;">
+                    <button type="submit" name="action" value="download_bulk" class="btn btn-download">Download Selected
+                        (Batch)</button>
+                </div>
+                {% for req in approved_hod %}
+                <div class="req-card">
+                    <div class="req-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" name="request_ids" value="{{ req.id }}"
+                                style="transform: scale(1.3);">
+                            <div>
+                                <div class="student-name">{{ req.student.student_name }}</div>
+                                <div class="req-meta">{{ req.student.roll_number }}</div>
+                            </div>
+                        </div>
+                        <div class="req-meta">Approved: {{ req.updated_at|date:"d M Y" }}</div>
+                    </div>
+                    <div>Reason: {{ req.reason }}</div>
+                    <div class="actions">
+                        <button type="submit" name="action" value="download_single" class="btn btn-download"
+                            onclick="this.form.request_id.value='{{ req.id }}'; this.form.submit(); return false;">Download
+                            PDF</button>
+                        <button type="submit" name="action" value="mark_ready" class="btn btn-success"
+                            onclick="this.form.request_id.value='{{ req.id }}';">Mark Signed & Ready</button>
+                    </div>
+                </div>
+                {% empty %}
+                <p style="text-align: center; color: #777;">No requests waiting for processing.</p>
+                {% endfor %}
+                <input type="hidden" name="request_id" value="">
+            </form>
+        </div>
+
+        <div id="collection" class="tab-content">
+            {% for req in ready_collection %}
+            <div class="req-card status-ready">
+                <div class="req-header">
+                    <div>
+                        <div class="student-name">{{ req.student.student_name }}</div>
+                        <div class="req-meta">{{ req.student.roll_number }}</div>
+                    </div>
+                    <div class="req-meta">Ready since: {{ req.updated_at|date:"d M Y" }}</div>
+                </div>
+                <form action="{% url 'staffs:office_manage_bonafide' %}" method="post" class="actions">
+                    {% csrf_token %}
+                    <input type="hidden" name="request_id" value="{{ req.id }}">
+                    <button type="submit" name="action" value="mark_collected" class="btn btn-collected">Mark as
+                        Collected</button>
+                </form>
+            </div>
+            {% empty %}
+            <p style="text-align: center; color: #777;">No certificates waiting for pickup.</p>
+            {% endfor %}
+        </div>
+
+        <div id="history" class="tab-content">
+            {% for req in history %}
+            <div class="req-card status-collected">
+                <div class="req-header">
+                    <div>
+                        <div class="student-name">{{ req.student.student_name }}</div>
+                        <div class="req-meta">{{ req.student.roll_number }}</div>
+                    </div>
+                    <div class="req-meta">{{ req.updated_at|date:"d M Y" }} <br> <strong>{{ req.status }}</strong></div>
+                </div>
+                <div>Reason: {{ req.reason }}</div>
+            </div>
+            {% empty %}
+            <p style="text-align: center; color: #777;">No history available.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function openTab(id) {
+            document.querySelectorAll('.tab-content').forEach(d => d.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+
+</html>

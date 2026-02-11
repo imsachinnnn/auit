@@ -22,9 +22,9 @@
      the abbreviated format.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.onrender.ssms_web.twa"
-    android:versionCode="1"
-    android:versionName="1" >
+    package="com.au_it_dept.twa"
+    android:versionCode="2"
+    android:versionName="2" >
 
     <uses-sdk
         android:minSdkVersion="21"
@@ -43,13 +43,13 @@
     </queries>
 
     <permission
-        android:name="com.onrender.ssms_web.twa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        android:name="com.au_it_dept.twa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.onrender.ssms_web.twa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+    <uses-permission android:name="com.au_it_dept.twa.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
 
     <application
-        android:name="com.onrender.ssms_web.twa.Application"
+        android:name="com.au_it_dept.twa.Application"
         android:allowBackup="true"
         android:appComponentFactory="androidx.core.app.CoreComponentFactory"
         android:extractNativeLibs="true"
@@ -84,7 +84,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.onrender.ssms_web.twa.LauncherActivity"
+            android:name="com.au_it_dept.twa.LauncherActivity"
             android:alwaysRetainTaskState="true"
             android:exported="true"
             android:label="@string/launcherName" >
@@ -164,7 +164,7 @@
         </provider>
 
         <service
-            android:name="com.onrender.ssms_web.twa.DelegationService"
+            android:name="com.au_it_dept.twa.DelegationService"
             android:enabled="@bool/enableNotification"
             android:exported="@bool/enableNotification" >
             <meta-data
@@ -182,7 +182,7 @@
 
         <provider
             android:name="androidx.startup.InitializationProvider"
-            android:authorities="com.onrender.ssms_web.twa.androidx-startup"
+            android:authorities="com.au_it_dept.twa.androidx-startup"
             android:exported="false" >
             <meta-data
                 android:name="androidx.emoji2.text.EmojiCompatInitializer"

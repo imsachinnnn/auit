@@ -4,7 +4,7 @@
     "type": "BUNDLE",
     "kind": "RegularFile"
   },
-  "applicationId": "com.onrender.ssms_web.twa",
+  "applicationId": "com.au_it_dept.twa",
   "variantName": "release",
   "elements": [
     {

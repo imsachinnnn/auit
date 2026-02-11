@@ -23,6 +23,7 @@
             --danger-color: #dc3545;
             --success-color: #28a745;
             --pending-color: #ffc107;
+            --info-color: #17a2b8;
         }
 
         body {
@@ -122,12 +123,6 @@
             border-radius: 20px;
         }
 
-        .profile-meta {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
         /* Request Card */
         .req-card {
             background: var(--card-bg);
@@ -143,11 +138,20 @@
         }
 
         .req-card.status-approved {
+            border-left-color: var(--info-color);
+        }
+
+        /* Approved by HOD -> Info/Blue */
+        .req-card.status-ready {
             border-left-color: var(--success-color);
         }
 
         .req-card.status-rejected {
             border-left-color: var(--danger-color);
+        }
+
+        .req-card.status-collected {
+            border-left-color: var(--secondary-color);
         }
 
         .req-header {
@@ -211,6 +215,16 @@
             font-weight: 500;
         }
 
+        .btn-info {
+            background: var(--info-color);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
         .back-link {
             display: block;
             margin-bottom: 20px;
@@ -255,6 +269,11 @@
         }
 
         .bg-approved {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .bg-ready {
             background: #d4edda;
             color: #155724;
         }
@@ -262,6 +281,65 @@
         .bg-rejected {
             background: #f8d7da;
             color: #721c24;
+        }
+
+        .bg-collected {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        /* Tabs CSS */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 1px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #7f8c8d;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.2s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+            font-style: italic;
+            background: white;
+            border-radius: 8px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @media (max-width: 900px) {
@@ -291,7 +369,7 @@
                 style="background:var(--danger-color)">Logout</a>
         </header>
 
-        <!-- Sidebar (Reused) -->
+        <!-- Sidebar -->
         <aside class="sidebar">
             {% if staff.photo %}
             <img src="{{ staff.photo.url }}" alt="{{ staff.name }}" class="profile-img">
@@ -318,63 +396,213 @@
             {% endfor %}
             {% endif %}
 
-            {% for req in requests %}
-            <div
-                class="req-card status-{% if 'Pending' in req.status %}pending{% elif 'Approved' in req.status %}approved{% else %}rejected{% endif %}">
-                <div class="req-header">
-                    <div>
-                        <div class="student-name">
-                            {{ req.student.student_name }}
-                            <span class="role-badge">{{ req.student.roll_number }}</span>
+            <!-- TABS NAVIGATION & CONTENT BASED ON ROLE -->
+
+            <!-- HOD VIEW -->
+            {% if staff.role == 'HOD' %}
+            <div class="tabs">
+                <button class="tab-btn active" id="btn-hod-pending" onclick="openTab('hod-pending')">Approval
+                    Queue</button>
+                <button class="tab-btn" id="btn-hod-history" onclick="openTab('hod-history')">History</button>
+            </div>
+
+            <!-- Tab 1: Approval Queue -->
+            <div id="hod-pending" class="tab-content active">
+                {% for req in pending_hod %}
+                <div class="req-card status-pending">
+                    <div class="req-header">
+                        <div>
+                            <div class="student-name">
+                                {{ req.student.student_name }}
+                                <span class="role-badge">{{ req.student.roll_number }}</span>
+                            </div>
+                            <div class="req-meta">Semester: <strong>{{ req.student.current_semester }}</strong></div>
                         </div>
-                        <div class="req-meta">
-                            Semester: <strong>{{ req.student.current_semester }}</strong>
+                        <div class="req-meta" style="text-align: right;">
+                            Requested: {{ req.created_at|date:"d M Y" }}<br>
+                            <span class="status-badge bg-pending">Pending Approval</span>
                         </div>
                     </div>
-                    <div class="req-meta" style="text-align: right;">
-                        Requested: {{ req.created_at|date:"d M Y" }}<br>
-                        <span
-                            class="status-badge bg-{% if 'Pending' in req.status %}pending{% elif 'Approved' in req.status %}approved{% else %}rejected{% endif %}">{{req.status }}</span>
+                    <div class="req-body">
+                        <strong>Reason:</strong> {{ req.reason }}
                     </div>
+                    <form action="{% url 'staffs:manage_bonafide' %}" method="post" class="actions">
+                        {% csrf_token %}
+                        <input type="hidden" name="request_id" value="{{ req.id }}">
+                        <input type="text" name="rejection_reason" placeholder="Reason (if rejecting)..."
+                            style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; flex-grow: 1;">
+                        <button type="submit" name="action" value="approve_hod" class="btn-approve">Approve & Send to
+                            Office</button>
+                        <button type="submit" name="action" value="reject" class="btn-reject">Reject</button>
+                    </form>
                 </div>
+                {% empty %}
+                <div class="empty-state">No pending requests requiring approval.</div>
+                {% endfor %}
+            </div>
 
-                <div class="req-body">
-                    <strong>Reason for Request:</strong>
-                    <p style="margin: 5px 0 0 0; color: #555;">{{ req.reason }}</p>
-
-                    {% if req.rejection_reason %}
-                    <div
-                        style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; color: var(--danger-color);">
-                        <strong>Rejection Reason:</strong> {{ req.rejection_reason }}
+            <!-- Tab 2: History -->
+            <div id="hod-history" class="tab-content">
+                {% for req in history %}
+                <div
+                    class="req-card {% if req.status == 'Rejected' %}status-rejected{% else %}status-approved{% endif %}">
+                    <div class="req-header">
+                        <div>
+                            <div class="student-name">{{ req.student.student_name }}</div>
+                            <div class="req-meta">{{ req.student.roll_number }}</div>
+                        </div>
+                        <div class="req-meta" style="text-align: right;">
+                            {{ req.updated_at|date:"d M Y" }}<br>
+                            <span
+                                class="status-badge {% if req.status == 'Rejected' %}bg-rejected{% else %}bg-approved{% endif %}">{{
+                                req.status }}</span>
+                        </div>
                     </div>
+                    <div class="req-meta">Reason: {{ req.reason }}</div>
+                    {% if req.rejection_reason %}
+                    <div class="req-meta" style="color:var(--danger-color); margin-top:5px;">Rejection Note: {{
+                        req.rejection_reason }}</div>
                     {% endif %}
                 </div>
+                {% empty %}
+                <div class="empty-state">No history available.</div>
+                {% endfor %}
+            </div>
 
-                {% if req.status == 'Pending HOD' %}
-                <form action="{% url 'staffs:manage_bonafide' %}" method="post" class="actions">
+            <!-- OFFICE STAFF VIEW -->
+            {% elif staff.role == 'Office Staff' %}
+            <div class="tabs">
+                <button class="tab-btn active" id="btn-office-processing"
+                    onclick="openTab('office-processing')">Processing Queue</button>
+                <button class="tab-btn" id="btn-office-collection" onclick="openTab('office-collection')">Collection
+                    Queue</button>
+                <button class="tab-btn" id="btn-office-history" onclick="openTab('office-history')">History</button>
+            </div>
+
+            <!-- Tab 1: Processing Queue (Approved by HOD -> Needs Print/Sign) -->
+            <div id="office-processing" class="tab-content active">
+                <form action="{% url 'staffs:manage_bonafide' %}" method="post">
                     {% csrf_token %}
-                    <input type="hidden" name="request_id" value="{{ req.id }}">
-                    <input type="text" name="rejection_reason" placeholder="Reason (if rejecting)..."
-                        style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; flex-grow: 1;">
-                    <button type="submit" name="action" value="approve" class="btn-approve">
-                        Approve Issue
-                    </button>
-                    <button type="submit" name="action" value="reject" class="btn-reject">Reject</button>
+                    <div class="bulk-actions" style="margin-bottom: 20px; text-align: right;">
+                        <button type="submit" name="action" value="download_bulk" class="action-btn">Download Selected
+                            (Batch)</button>
+                    </div>
+
+                    {% for req in approved_hod %}
+                    <div class="req-card status-approved">
+                        <div class="req-header">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" name="request_ids" value="{{ req.id }}"
+                                    style="transform: scale(1.5);">
+                                <div>
+                                    <div class="student-name">{{ req.student.student_name }}</div>
+                                    <div class="req-meta">{{ req.student.roll_number }}</div>
+                                </div>
+                            </div>
+                            <div class="req-meta" style="text-align: right;">
+                                HOD Approved: {{ req.updated_at|date:"d M Y" }}<br>
+                                <span class="status-badge bg-approved">Ready for Process</span>
+                            </div>
+                        </div>
+                        <div class="req-body"><strong>Reason:</strong> {{ req.reason }}</div>
+                        <div class="actions">
+                            <!-- Step 1: Download PDF -->
+                            <button type="submit" name="action" value="download_single" class="action-btn"
+                                formnovalidate
+                                onclick="this.form.request_id.value='{{ req.id }}'; this.form.submit(); return false;">
+                                Download PDF
+                            </button>
+                            <!-- Step 2: Mark as Ready (After Signing) -->
+                            <button type="submit" name="action" value="mark_ready" class="btn-success"
+                                style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;"
+                                formnovalidate onclick="this.form.request_id.value='{{ req.id }}';">
+                                Mark Signed & Ready
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">No approved requests waiting for processing.</div>
+                    {% endfor %}
+                    <!-- Hidden input for single actions -->
+                    <input type="hidden" name="request_id" value="">
                 </form>
-                {% else %}
-                <div style="text-align: right; font-size: 0.9rem; color: #888; font-style: italic;">
-                    Action taken on {{ req.updated_at|date:"d M Y, h:i A" }}
+            </div>
+
+            <!-- Tab 2: Collection Queue -->
+            <div id="office-collection" class="tab-content">
+                {% for req in ready_collection %}
+                <div class="req-card status-ready">
+                    <div class="req-header">
+                        <div>
+                            <div class="student-name">{{ req.student.student_name }}</div>
+                            <div class="req-meta">{{ req.student.roll_number }}</div>
+                        </div>
+                        <div class="req-meta" style="text-align: right;">
+                            Processed: {{ req.updated_at|date:"d M Y" }}<br>
+                            <span class="status-badge bg-ready">Ready for Collection</span>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <form action="{% url 'staffs:manage_bonafide' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="request_id" value="{{ req.id }}">
+                            <button type="submit" name="action" value="mark_collected" class="btn-info"
+                                style="background:var(--secondary-color);">
+                                Mark as Collected
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                {% endif %}
+                {% empty %}
+                <div class="empty-state">No certificates waiting for collection.</div>
+                {% endfor %}
             </div>
-            {% empty %}
-            <div style="text-align: center; padding: 50px; color: var(--text-muted);">
-                <h3>No Requests Found</h3>
-                <p>There are no bonafide certificate requests at this time.</p>
+
+            <!-- Tab 3: History -->
+            <div id="office-history" class="tab-content">
+                {% for req in history %}
+                <div
+                    class="req-card {% if req.status == 'Collected' %}status-collected{% else %}status-rejected{% endif %}">
+                    <div class="req-header">
+                        <div>
+                            <div class="student-name">{{ req.student.student_name }}</div>
+                            <div class="req-meta">{{ req.student.roll_number }}</div>
+                        </div>
+                        <div class="req-meta" style="text-align: right;">
+                            {{ req.updated_at|date:"d M Y" }}<br>
+                            <span
+                                class="status-badge {% if req.status == 'Collected' %}bg-collected{% else %}bg-rejected{% endif %}">{{
+                                req.status }}</span>
+                        </div>
+                    </div>
+                    {% if req.rejection_reason %}
+                    <div class="req-meta">Reason: {{ req.rejection_reason }}</div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="empty-state">No history available.</div>
+                {% endfor %}
             </div>
-            {% endfor %}
+            {% endif %}
+
         </main>
     </div>
+
+    <script>
+        function openTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            // Deactivate all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+            // Activate specific tab and button
+            const tabContent = document.getElementById(tabName);
+            if (tabContent) tabContent.classList.add('active');
+
+            const btn = document.querySelector(`button[onclick="openTab('${tabName}')"]`);
+            if (btn) btn.classList.add('active');
+        }
+    </script>
 </body>
 
 </html>
