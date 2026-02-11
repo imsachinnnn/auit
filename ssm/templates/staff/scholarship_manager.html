@@ -66,23 +66,38 @@
             background: var(--primary);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-apply:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
         .btn-reset {
-            background: transparent;
-            color: var(--text-muted);
+            background: white;
+            color: var(--text-main);
             border: 1px solid #e2e8f0;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
             font-weight: 500;
+            font-size: 0.95rem;
             margin-top: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-reset:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
         }
 
         .btn-export {
@@ -186,9 +201,13 @@
             <div class="top-bar">
                 <div class="greeting">
                     <button class="menu-toggle-btn" onclick="toggleSidebar()">☰</button>
-                    <div>
-                        <h2>Scholarship Manager</h2>
-                        <p>Advanced filtering and student management</p>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <a href="{% url 'staffs:staff_dashboard' %}"
+                            style="color: var(--text-main); text-decoration: none; font-size: 1.5rem; line-height: 1;">&larr;</a>
+                        <div>
+                            <h2>Scholarship Manager</h2>
+                            <p>Advanced filtering and student management</p>
+                        </div>
                     </div>
                 </div>
                 <div class="clock-badge">
@@ -213,10 +232,8 @@
                                 <option value="First Graduate" {% if filters.scholarship_type == 'First Graduate' %}selected{% endif %}>First Graduate</option>
                                 <option value="BC/MBC" {% if filters.scholarship_type == 'BC/MBC' %}selected{% endif %}>BC/MBC</option>
                                 <option value="Postmatric" {% if filters.scholarship_type == 'Postmatric' %}selected{%endif %}>Postmatric</option>
-                                <option value="PM" {% if filters.scholarship_type == 'PM' %}selected{% endif %}>PM
-                                </option>
-                                <option value="Govt" {% if filters.scholarship_type == 'Govt' %}selected{% endif %}>Govt
-                                </option>
+                                <option value="PM" {% if filters.scholarship_type == 'PM' %}selected{% endif %}>PM</option>
+                                <option value="Govt" {% if filters.scholarship_type == 'Govt' %}selected{% endif %}>Govt</option>
                                 <option value="Pudhumai Penn" {% if filters.scholarship_type == 'Pudhumai Penn' %}selected{% endif %}>Pudhumai Penn</option>
                                 <option value="Tamizh Puthalvan" {% if filters.scholarship_type == 'Tamizh Puthalvan' %}selected{% endif %}>Tamizh Puthalvan</option>
                                 <option value="Private" {% if filters.scholarship_type == 'Private' %}selected{% endif %}>Private</option>

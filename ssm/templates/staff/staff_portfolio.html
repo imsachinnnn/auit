@@ -227,6 +227,7 @@
             display: flex;
             gap: 8px;
             flex-shrink: 0;
+            align-items: center;
         }
 
         .btn-edit,
@@ -236,11 +237,15 @@
             font-size: 0.85rem;
             text-decoration: none;
             transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
         }
 
         .btn-edit {
             background: var(--primary-light);
             color: var(--primary-dark);
+            border: 1px solid var(--primary);
         }
 
         .btn-edit:hover {
@@ -251,6 +256,7 @@
         .btn-delete {
             background: #fee2e2;
             color: #dc2626;
+            border: 1px solid #fca5a5;
         }
 
         .btn-delete:hover {
@@ -828,8 +834,13 @@
                                         {% endif %}
                                     </td>
                                     <td style="padding: 16px;">
-                                        <a href="{% url 'staffs:portfolio_delete_entry' 'conference' c.pk %}"
-                                            class="btn-delete" onclick="return confirm('Delete this entry?')">Delete</a>
+                                        <div class="item-actions">
+                                            <a href="{% url 'staffs:portfolio_edit_conference' c.pk %}"
+                                                class="btn-edit">Edit</a>
+                                            <a href="{% url 'staffs:portfolio_delete_entry' 'conference' c.pk %}"
+                                                class="btn-delete"
+                                                onclick="return confirm('Delete this entry?')">Delete</a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -874,6 +885,7 @@
                                 <span></span>
                                 {% endif %}
 
+                                <a href="{% url 'staffs:portfolio_edit_conference' c.pk %}" class="btn-edit">Edit</a>
                                 <a href="{% url 'staffs:portfolio_delete_entry' 'conference' c.pk %}" class="btn-delete"
                                     onclick="return confirm('Delete this entry?')">Delete</a>
                             </div>
@@ -925,6 +937,8 @@
                                     <td style="padding: 10px;">Vol: {{ j.volume_number }}<br>Iss: {{ j.issue_number }}
                                     </td>
                                     <td style="padding: 10px;">
+                                        <a href="{% url 'staffs:portfolio_edit_journal' j.pk %}"
+                                            class="btn-edit">Edit</a>
                                         <a href="{% url 'staffs:portfolio_delete_entry' 'journal' j.pk %}"
                                             class="btn-delete" onclick="return confirm('Delete this entry?')">Delete</a>
                                     </td>
@@ -962,6 +976,7 @@
                             </div>
                             {% endif %}
                             <div class="mobile-card-actions">
+                                <a href="{% url 'staffs:portfolio_edit_journal' j.pk %}" class="btn-edit">Edit</a>
                                 <a href="{% url 'staffs:portfolio_delete_entry' 'journal' j.pk %}" class="btn-delete"
                                     onclick="return confirm('Delete this entry?')">Delete</a>
                             </div>
@@ -1010,6 +1025,7 @@
                                     <td style="padding: 10px;">{{ b.publisher_name }}<br><span
                                             style="font-size:0.8rem;">ISBN: {{ b.isbn_issn_number }}</span></td>
                                     <td style="padding: 10px;">
+                                        <a href="{% url 'staffs:portfolio_edit_book' b.pk %}" class="btn-edit">Edit</a>
                                         <a href="{% url 'staffs:portfolio_delete_entry' 'book' b.pk %}"
                                             class="btn-delete" onclick="return confirm('Delete this entry?')">Delete</a>
                                     </td>
@@ -1045,6 +1061,7 @@
                             </div>
                             {% endif %}
                             <div class="mobile-card-actions">
+                                <a href="{% url 'staffs:portfolio_edit_book' b.pk %}" class="btn-edit">Edit</a>
                                 <a href="{% url 'staffs:portfolio_delete_entry' 'book' b.pk %}" class="btn-delete"
                                     onclick="return confirm('Delete this entry?')">Delete</a>
                             </div>

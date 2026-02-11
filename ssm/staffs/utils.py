@@ -6,6 +6,7 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 from django.conf import settings
 from django.utils import timezone
+from django.core.mail import send_mail
 
 def draw_bonafide_content(p, request):
     """
@@ -139,3 +140,71 @@ def log_audit(request, action, actor_type, actor_id, actor_name=None, object_typ
         message=message or '',
         timestamp=timezone.now()
     )
+
+
+def send_parent_notification_email(student, remark_types, staff_name):
+    """
+    Send email notification to parent about student discipline remarks.
+    
+    Args:
+        student: Student object
+        remark_types: List of remark type display names
+        staff_name: Name of staff who recorded the remarks
+    
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    try:
+        # Get parent email from student's personal info
+        parent_email = None
+        if hasattr(student, 'personalinfo') and student.personalinfo:
+            parent_email = student.personalinfo.parent_email
+        
+        if not parent_email:
+            print(f"No parent email found for student {student.roll_number}")
+            return False
+        
+        # Prepare email content
+        subject = f"Student Discipline Notification - {student.student_name}"
+        
+        violations_list = "\n".join([f"  • {remark}" for remark in remark_types])
+        
+        message = f"""Dear Parent/Guardian,
+
+This is to inform you that the following disciplinary remarks have been recorded for your ward:
+
+Student Name: {student.student_name}
+Roll Number: {student.roll_number}
+Program: {student.program_level} - Semester {student.current_semester}
+
+Violations Recorded:
+{violations_list}
+
+Date: {timezone.now().strftime('%d-%m-%Y')}
+Recorded by: {staff_name}
+
+We request your cooperation in addressing these concerns with your ward. Please feel free to contact the college office if you have any questions.
+
+Regards,
+Annamalai University
+Faculty of Engineering and Technology
+
+---
+This is an automated notification. Please do not reply to this email.
+"""
+        
+        # Send email
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[parent_email],
+            fail_silently=False,
+        )
+        
+        print(f"Email sent successfully to {parent_email}")
+        return True
+        
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return False

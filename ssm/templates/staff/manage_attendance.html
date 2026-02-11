@@ -421,7 +421,7 @@
                 margin: 3px 0 0 !important;
             }
 
-            .header > div:last-child {
+            .header>div:last-child {
                 display: flex;
                 gap: 8px;
                 flex-wrap: wrap;
@@ -500,7 +500,7 @@
             }
 
             /* Action Buttons Mobile */
-            .form-section > form > div:first-of-type {
+            .form-section>form>div:first-of-type {
                 flex-direction: column !important;
                 gap: 8px !important;
             }
@@ -544,7 +544,7 @@
             }
 
             /* Stats Mobile */
-            .form-section > form > div:nth-last-child(2) {
+            .form-section>form>div:nth-last-child(2) {
                 font-size: 0.85rem !important;
                 padding: 10px;
                 background: #f8fafc;
@@ -553,7 +553,7 @@
             }
 
             /* Extra Class Section Mobile */
-            .form-section > form > div:last-child > div {
+            .form-section>form>div:last-child>div {
                 flex-direction: column !important;
                 align-items: stretch !important;
                 gap: 12px !important;
@@ -566,7 +566,7 @@
                 padding: 10px !important;
             }
 
-            #time_input_container > div {
+            #time_input_container>div {
                 width: 100%;
                 justify-content: space-between;
             }
@@ -778,8 +778,8 @@
                     <!-- STUDENT GRID -->
                     <div class="student-grid">
                         {% for student in students %}
-                        {% with status=attendance_map|get_item:student.roll_number|default:'Present' %}
-                        <div class="student-card {% if status == 'Present' %}present{% else %}absent{% endif %}"
+                        {% with status=attendance_map|get_item:student.roll_number|default:'' %}
+                        <div class="student-card {% if status == 'Present' %}present{% elif status == 'Absent' %}absent{% endif %}"
                             id="card_{{ student.roll_number }}" onclick="toggleAttendance('{{ student.roll_number }}')">
 
                             <div class="card-info">
@@ -796,7 +796,8 @@
                                 style="display:none;">
 
                             <div class="status-indicator">
-                                <span class="st-text">{% if status == 'Present' %}Present{% else %}Absent{% endif %}</span>
+                                <span class="st-text">{% if status == 'Present' %}Present{% elif status == 'Absent'
+                                    %}Absent{% else %}-{% endif %}</span>
                             </div>
                         </div>
                         {% endwith %}

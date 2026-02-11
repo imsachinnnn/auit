@@ -18,6 +18,10 @@ def stafflogin(request):
         try:
             staff = Staff.objects.get(staff_id=staff_id)
             if staff.check_password(password):
+                # Clear any existing student session to prevent dual login
+                if 'student_roll_number' in request.session:
+                    del request.session['student_roll_number']
+                
                 request.session['staff_id'] = staff.staff_id
                 from .utils import log_audit
                 log_audit(request, 'login', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, message='Staff logged in')
@@ -1891,6 +1895,116 @@ def portfolio_delete_entry(request, model_name, pk):
     return redirect('staffs:staff_portfolio')
 
 
+def portfolio_edit_conference(request, pk):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    
+    from .models import ConferenceParticipation
+    item = get_object_or_404(ConferenceParticipation, pk=pk, staff=staff)
+    
+    if request.method == 'POST':
+        item.participation_type = request.POST.get('participation_type', 'Presented')
+        item.national_international = request.POST.get('national_international', 'National')
+        item.author_name = request.POST.get('author_name', '').strip()
+        item.year_of_publication = request.POST.get('year_of_publication', '').strip()
+        item.title_of_paper = request.POST.get('title_of_paper', '').strip()
+        item.title_of_proceedings = request.POST.get('title_of_proceedings', '').strip()
+        item.date_from = request.POST.get('date_from') or None
+        item.date_to = request.POST.get('date_to') or None
+        item.location = request.POST.get('location', '').strip()
+        item.page_numbers_from = request.POST.get('page_numbers_from', '').strip()
+        item.page_numbers_to = request.POST.get('page_numbers_to', '').strip()
+        item.place_of_publication = request.POST.get('place_of_publication', '').strip()
+        item.publisher_proceedings = request.POST.get('publisher_proceedings', '').strip()
+        
+        if 'supporting_document' in request.FILES:
+            item.supporting_document = request.FILES['supporting_document']
+        
+        item.save()
+        from .utils import log_audit
+        log_audit(request, 'update', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, 
+                  object_type='Conference', object_id=str(item.pk), message='Updated conference entry')
+        messages.success(request, "Conference entry updated successfully.")
+        return redirect('staffs:staff_portfolio')
+    
+    return render(request, 'staff/portfolio_form.html', {
+        'staff': staff, 'form_type': 'conference', 'item': item, 'title': 'Edit Conference Participation',
+    })
+
+
+def portfolio_edit_journal(request, pk):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    
+    from .models import JournalPublication
+    item = get_object_or_404(JournalPublication, pk=pk, staff=staff)
+    
+    if request.method == 'POST':
+        item.national_international = request.POST.get('national_international', 'National')
+        item.published_month = request.POST.get('published_month', '').strip()
+        item.published_year = request.POST.get('published_year', '').strip()
+        item.author_name = request.POST.get('author_name', '').strip()
+        item.title_of_paper = request.POST.get('title_of_paper', '').strip()
+        item.journal_name = request.POST.get('journal_name', '').strip()
+        item.volume_number = request.POST.get('volume_number', '').strip()
+        item.issue_number = request.POST.get('issue_number', '').strip()
+        item.year_of_publication_doi = request.POST.get('year_of_publication_doi', '').strip()
+        item.page_numbers_from = request.POST.get('page_numbers_from', '').strip()
+        item.page_numbers_to = request.POST.get('page_numbers_to', '').strip()
+        
+        if 'supporting_document' in request.FILES:
+            item.supporting_document = request.FILES['supporting_document']
+        
+        item.save()
+        from .utils import log_audit
+        log_audit(request, 'update', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, 
+                  object_type='Journal', object_id=str(item.pk), message='Updated journal publication')
+        messages.success(request, "Journal publication updated successfully.")
+        return redirect('staffs:staff_portfolio')
+    
+    return render(request, 'staff/portfolio_form.html', {
+        'staff': staff, 'form_type': 'journal', 'item': item, 'title': 'Edit Journal Publication',
+    })
+
+
+def portfolio_edit_book(request, pk):
+    staff = _get_staff_for_portfolio(request)
+    if not staff:
+        return redirect('staffs:stafflogin')
+    
+    from .models import BookPublication
+    item = get_object_or_404(BookPublication, pk=pk, staff=staff)
+    
+    if request.method == 'POST':
+        item.type = request.POST.get('type', 'Book')
+        item.author_name = request.POST.get('author_name', '').strip()
+        item.title_of_book = request.POST.get('title_of_book', '').strip()
+        item.publisher_name = request.POST.get('publisher_name', '').strip()
+        item.publisher_address = request.POST.get('publisher_address', '').strip()
+        item.isbn_issn_number = request.POST.get('isbn_issn_number', '').strip()
+        item.page_numbers_from = request.POST.get('page_numbers_from', '').strip()
+        item.page_numbers_to = request.POST.get('page_numbers_to', '').strip()
+        item.month_of_publication = request.POST.get('month_of_publication', '').strip()
+        item.year_of_publication = request.POST.get('year_of_publication', '').strip()
+        item.url_address = request.POST.get('url_address') or None
+        
+        if 'supporting_document' in request.FILES:
+            item.supporting_document = request.FILES['supporting_document']
+        
+        item.save()
+        from .utils import log_audit
+        log_audit(request, 'update', actor_type='staff', actor_id=staff.staff_id, actor_name=staff.name, 
+                  object_type='Book', object_id=str(item.pk), message='Updated book/article entry')
+        messages.success(request, "Book/Article entry updated successfully.")
+        return redirect('staffs:staff_portfolio')
+    
+    return render(request, 'staff/portfolio_form.html', {
+        'staff': staff, 'form_type': 'book', 'item': item, 'title': 'Edit Book / Popular Article',
+    })
+
+
 
 def portfolio_edit_seminar(request, pk):
     staff = _get_staff_for_portfolio(request)
@@ -2634,33 +2748,69 @@ def remark_student_list(request):
     return render(request, 'staff/remark_student_list.html', {'staff': staff, 'students': students})
 
 def remark_history(request, roll_number):
-    """View and add remarks for a specific student."""
+    """View and add remarks for a specific student with violation types and parent email notification."""
     if 'staff_id' not in request.session:
         return redirect('staffs:stafflogin')
 
     staff = get_object_or_404(Staff, staff_id=request.session['staff_id'])
     student = get_object_or_404(Student, roll_number=roll_number)
     
-    # Import locally to avoid top-level potential circular if models changed recently
     from students.models import StudentRemark
+    from staffs.utils import send_parent_notification_email
 
     if request.method == 'POST':
-        remark_text = request.POST.get('remark')
-        if remark_text:
-            StudentRemark.objects.create(
-                student=student,
-                staff=staff,
-                remark=remark_text
-            )
-            messages.success(request, 'Remark added successfully.')
+        # Get selected violation types from checkboxes
+        selected_violations = []
+        for choice_value, choice_label in StudentRemark.REMARK_TYPE_CHOICES:
+            if request.POST.get(choice_value):
+                selected_violations.append((choice_value, choice_label))
+        
+        description = request.POST.get('description', '').strip()
+        send_email = request.POST.get('send_email') == 'on'
+        
+        if selected_violations:
+            # Create a remark for each selected violation
+            created_remarks = []
+            for violation_value, violation_label in selected_violations:
+                remark = StudentRemark.objects.create(
+                    student=student,
+                    staff=staff,
+                    remark_type=violation_value,
+                    description=description if description else None
+                )
+                created_remarks.append(remark)
+            
+            # Send email notification if requested
+            if send_email:
+                violation_labels = [label for _, label in selected_violations]
+                email_sent = send_parent_notification_email(student, violation_labels, staff.name)
+                
+                if email_sent:
+                    # Update notification status for all created remarks
+                    from django.utils import timezone
+                    for remark in created_remarks:
+                        remark.parent_notified = True
+                        remark.notification_sent_at = timezone.now()
+                        remark.save()
+                    messages.success(request, f'{len(selected_violations)} remark(s) added and parent notified via email.')
+                else:
+                    messages.warning(request, f'{len(selected_violations)} remark(s) added, but email notification failed (parent email may be missing).')
+            else:
+                messages.success(request, f'{len(selected_violations)} remark(s) added successfully.')
+            
             return redirect('staffs:remark_history', roll_number=roll_number)
         else:
-            messages.error(request, 'Remark cannot be empty.')
+            messages.error(request, 'Please select at least one violation type.')
 
+    # Get all remarks for this student
     remarks = student.remarks.all().select_related('staff').order_by('-created_at')
+    
+    # Get violation type choices for the form
+    violation_choices = StudentRemark.REMARK_TYPE_CHOICES
 
     return render(request, 'staff/remark_history.html', {
         'staff': staff,
         'student': student,
-        'remarks': remarks
+        'remarks': remarks,
+        'violation_choices': violation_choices
     })

@@ -35,8 +35,11 @@ urlpatterns = [
 
     # New Portfolio Sections
     path('profile/portfolio/conference/add/', views.portfolio_add_conference, name='portfolio_add_conference'),
+    path('profile/portfolio/conference/<int:pk>/edit/', views.portfolio_edit_conference, name='portfolio_edit_conference'),
     path('profile/portfolio/journal/add/', views.portfolio_add_journal, name='portfolio_add_journal'),
+    path('profile/portfolio/journal/<int:pk>/edit/', views.portfolio_edit_journal, name='portfolio_edit_journal'),
     path('profile/portfolio/book/add/', views.portfolio_add_book, name='portfolio_add_book'),
+    path('profile/portfolio/book/<int:pk>/edit/', views.portfolio_edit_book, name='portfolio_edit_book'),
     path('profile/portfolio/delete/<str:model_name>/<int:pk>/', views.portfolio_delete_entry, name='portfolio_delete_entry'),
 
     # The URL will be /staff/logout/

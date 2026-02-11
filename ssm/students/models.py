@@ -5,15 +5,35 @@ import datetime
 
 # ... existing imports ...
 
-# Add at the bottom or appropriate place
+# Student Discipline/Remark Model
 class StudentRemark(models.Model):
+    REMARK_TYPE_CHOICES = [
+        ('LOW_ATTENDANCE', 'Low Attendance'),
+        ('CLASSROOM_DISTURBANCE', 'Classroom Disturbance'),
+        ('MOBILE_USAGE', 'Mobile Usage'),
+        ('DISRESPECTFUL_BEHAVIOR', 'Disrespectful Behavior'),
+        ('DRESS_CODE_VIOLATION', 'Dress Code Violation'),
+        ('BRACELET_VIOLATION', 'Bracelet Violation'),
+        ('EARRING_VIOLATION', 'Earring Violation'),
+        ('HABITUAL_LATECOMER', 'Habitual Latecomer'),
+        ('NEGATIVE_ATTITUDE', 'Negative Attitude'),
+        ('INDISCIPLINE', 'Indiscipline'),
+    ]
+    
     student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='remarks')
     staff = models.ForeignKey('staffs.Staff', on_delete=models.SET_NULL, null=True, related_name='given_remarks')
-    remark = models.TextField()
+    remark_type = models.CharField(max_length=50, choices=REMARK_TYPE_CHOICES)
+    description = models.TextField(blank=True, null=True, help_text="Additional notes or details")
     created_at = models.DateTimeField(auto_now_add=True)
+    parent_notified = models.BooleanField(default=False)
+    notification_sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"Remark for {self.student.student_name} by {self.staff.name if self.staff else 'Unknown'}"
+        return f"{self.get_remark_type_display()} - {self.student.student_name} ({self.created_at.strftime('%Y-%m-%d')})"
+
 
 
 

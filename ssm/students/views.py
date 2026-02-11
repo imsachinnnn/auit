@@ -55,6 +55,14 @@ def student_login_required(view_func):
 from staffs.models import News
 
 def prevhome(request): 
+    # Redirect logged-in students directly to dashboard
+    if 'student_roll_number' in request.session:
+        return redirect('student_dashboard')
+    
+    # Redirect logged-in staff directly to dashboard
+    if 'staff_id' in request.session:
+        return redirect('staffs:staff_dashboard')
+    
     # Fetch public news for the home page
     today = timezone.now().date()
     news_list = News.objects.filter(
@@ -267,6 +275,10 @@ def stdlogin(request):
             student = Student.objects.get(roll_number=roll_number)
             # Use the secure check_password method from your model
             if student.check_password(password_from_form):
+                # Clear any existing staff session to prevent dual login
+                if 'staff_id' in request.session:
+                    del request.session['staff_id']
+                
                 request.session['student_roll_number'] = student.roll_number
                 from staffs.utils import log_audit
                 
@@ -598,6 +610,7 @@ def student_editprofile(request):
         personal_info.student_mobile = request.POST.get('student_mobile')
         personal_info.father_mobile = request.POST.get('father_mobile')
         personal_info.mother_mobile = request.POST.get('mother_mobile')
+        personal_info.parent_email = request.POST.get('parent_email')
         personal_info.present_address = request.POST.get('present_address')
         personal_info.permanent_address = request.POST.get('permanent_address')
         personal_info.save()

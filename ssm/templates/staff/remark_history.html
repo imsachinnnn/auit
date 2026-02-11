@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Remark History | {{ student.student_name }}</title>
+    <title>Student Remarks | {{ student.student_name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/staff_dashboard.css' %}">
     <style>
@@ -15,7 +15,111 @@
             margin: 0 auto;
         }
 
-        /* Timeline specific styles that fit within the theme */
+        /* Form Styles */
+        .remark-form-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .violation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .violation-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .violation-checkbox:hover {
+            background: #f1f5f9;
+            border-color: var(--primary-light);
+        }
+
+        .violation-checkbox input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .violation-checkbox input[type="checkbox"]:checked+label {
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .violation-checkbox label {
+            cursor: pointer;
+            margin: 0;
+            flex: 1;
+            font-size: 0.95rem;
+        }
+
+        textarea.form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+
+        textarea.form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .email-checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #fef3c7;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 2px solid #fbbf24;
+        }
+
+        .email-checkbox-wrapper input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .email-checkbox-wrapper label {
+            margin: 0;
+            font-weight: 500;
+            color: #92400e;
+        }
+
+        .btn-submit {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Timeline Styles */
         .timeline-section {
             background: white;
             border-radius: 12px;
@@ -83,49 +187,31 @@
             font-size: 0.85rem;
         }
 
-        .remark-body {
+        .remark-type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #fee2e2;
+            color: #dc2626;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .remark-description {
             color: #475569;
             line-height: 1.5;
             white-space: pre-wrap;
+            margin-top: 8px;
         }
 
-        /* Form Styles */
-        .remark-form-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
-            border-left: 4px solid var(--primary);
-        }
-
-        textarea.form-control {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            resize: vertical;
-            font-family: inherit;
-            margin-bottom: 10px;
-        }
-
-        textarea.form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .btn-submit {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .btn-submit:hover {
-            background-color: var(--primary-dark);
+        .email-status {
+            font-size: 0.8rem;
+            color: #16a34a;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
     </style>
 </head>
@@ -133,7 +219,7 @@
 <body>
 
     <div class="app-container">
-        <!-- Sidebar (Copied for consistency) -->
+        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="brand">
                 <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
@@ -197,7 +283,8 @@
                 <div class="greeting">
                     <h2>{{ student.student_name }}</h2>
                     <p style="font-size: 1rem; color: var(--text-muted); margin-top: 4px;">
-                        Roll No: {{ student.roll_number }}
+                        Roll No: {{ student.roll_number }} | {{ student.program_level }} - Semester {{
+                        student.current_semester }}
                     </p>
                 </div>
                 <div style="text-align: right;">
@@ -208,16 +295,46 @@
 
             <div class="container-fluid">
 
+                <!-- Messages -->
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' or message.tags == 'warning' %}alert-danger{% else %}alert-info{% endif %}"
+                    style="padding: 15px; margin-bottom: 20px; border-radius: 8px; background: {% if message.tags == 'success' %}#d1fae5{% elif message.tags == 'error' or message.tags == 'warning' %}#fee2e2{% else %}#dbeafe{% endif %}; color: {% if message.tags == 'success' %}#065f46{% elif message.tags == 'error' or message.tags == 'warning' %}#991b1b{% else %}#1e40af{% endif %};">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+
                 <!-- Add Remark Form -->
                 <div class="remark-form-card">
-                    <h3 style="margin-top: 0; font-size: 1.1rem; color: #1e293b; margin-bottom: 15px;">Add New Remark
-                    </h3>
+                    <h3 style="margin-top: 0; font-size: 1.2rem; color: #1e293b; margin-bottom: 15px;">Record
+                        Disciplinary Violations</h3>
                     <form method="POST">
                         {% csrf_token %}
-                        <textarea name="remark" class="form-control" rows="3" placeholder="Enter your remarks here..."
-                            required></textarea>
+
+                        <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #334155;">Select
+                            Violation Types:</label>
+                        <div class="violation-grid">
+                            {% for value, label in violation_choices %}
+                            <div class="violation-checkbox">
+                                <input type="checkbox" name="{{ value }}" id="{{ value }}">
+                                <label for="{{ value }}">{{ label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #334155;">Additional
+                            Notes (Optional):</label>
+                        <textarea name="description" class="form-control" rows="3"
+                            placeholder="Add any additional details or context..."></textarea>
+
+                        <div class="email-checkbox-wrapper">
+                            <input type="checkbox" name="send_email" id="send_email" checked>
+                            <label for="send_email">📧 Send email notification to parent</label>
+                        </div>
+
                         <div style="text-align: right;">
-                            <button type="submit" class="btn-submit">Post Remark</button>
+                            <button type="submit" class="btn-submit">Submit Remarks & Notify Parent</button>
                         </div>
                     </form>
                 </div>
@@ -226,7 +343,7 @@
                 <div class="timeline-section">
                     <h3
                         style="margin-top: 0; font-size: 1.1rem; color: #1e293b; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9;">
-                        History</h3>
+                        Remark History ({{ remarks.count }})</h3>
 
                     {% for remark in remarks %}
                     <div class="timeline-item">
@@ -237,7 +354,15 @@
                                 <span class="author">{{ remark.staff.name }}</span>
                                 <span class="date">{{ remark.created_at|date:"M d, Y • h:i A" }}</span>
                             </div>
-                            <div class="remark-body">{{ remark.remark }}</div>
+                            <span class="remark-type-badge">{{ remark.get_remark_type_display }}</span>
+                            {% if remark.description %}
+                            <div class="remark-description">{{ remark.description }}</div>
+                            {% endif %}
+                            {% if remark.parent_notified %}
+                            <div class="email-status">
+                                ✅ Parent notified on {{ remark.notification_sent_at|date:"M d, Y • h:i A" }}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     {% empty %}
