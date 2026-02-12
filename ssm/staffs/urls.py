@@ -91,6 +91,11 @@ urlpatterns = [
     path('password-reset/confirm/', views.staff_password_reset_confirm, name='password_reset_confirm'),
     
     # Student Remarks
+    # Student Remarks
     path('remarks/', views.remark_student_list, name='remark_student_list'),
     path('remarks/<str:roll_number>/', views.remark_history, name='remark_history'),
+
+    # Attendance Deficit
+    path('attendance-deficit/', views.attendance_deficit_list, name='attendance_deficit_list'),
+    path('attendance-deficit/send/', views.send_deficit_email, name='send_deficit_email'),
 ]

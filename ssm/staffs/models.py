@@ -353,3 +353,19 @@ class BookPublication(models.Model):
     def __str__(self):
         return f"{self.title_of_book} ({self.type})"
 
+
+class MailLog(models.Model):
+    """Tracks email notifications sent to parents/students."""
+    student = models.ForeignKey('students.Student', on_delete=models.CASCADE, related_name='mail_logs')
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, blank=True)
+    remark_type = models.CharField(max_length=100, default='Attendance Deficit')
+    month = models.CharField(max_length=20)
+    year = models.CharField(max_length=4)
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f"Mail to {self.student.student_name} ({self.remark_type}) - {self.sent_at}"
+

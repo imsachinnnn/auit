@@ -1,0 +1,486 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Low Attendance Alert | Class Incharge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/staff_dashboard.css' %}">
+    <style>
+        /* Minimal specific overrides consistent with theme */
+        .page-title-area {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .action-btn {
+            background-color: #fee2e2;
+            color: #ef4444;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .action-btn:hover {
+            background-color: #fca5a5;
+            color: #7f1d1d;
+        }
+
+        .action-btn:disabled {
+            background-color: #f1f5f9;
+            color: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .count-badge {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge-danger {
+            background-color: #fee2e2;
+            color: #ef4444;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .filter-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: #475569;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+
+        /* Summary Card */
+        .summary-box {
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .summary-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .summary-label {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <img src="https://res.cloudinary.com/deocom5lr/image/upload/v1754117176/annamalai_kuoh1j.png"
+                    alt="Logo">
+                <h1>Class<br>Incharge</h1>
+            </div>
+
+            <nav class="nav-section">
+                <div class="nav-label">Menu</div>
+                <a href="{% url 'staffs:staff_profile' %}" class="nav-item">
+                    <span class="nav-icon">👤</span> My Profile
+                </a>
+                <a href="{% url 'staffs:staff_portfolio' %}" class="nav-item">
+                    <span class="nav-icon">📄</span> Publications & Accomplishments
+                </a>
+                <a href="{% url 'staffs:risk_students' %}" class="nav-item">
+                    <span class="nav-icon">⚠️</span> Risk Students
+                </a>
+                <a href="{% url 'staffs:student_list' %}" class="nav-item">
+                    <span class="nav-icon">👨‍🎓</span> My Students
+                </a>
+                <a href="{% url 'staffs:remark_student_list' %}" class="nav-item">
+                    <span class="nav-icon">💬</span> Student Remarks
+                </a>
+                <a href="{% url 'staffs:timetable' %}" class="nav-item">
+                    <span class="nav-icon">🗓️</span> My Timetable
+                </a>
+                <a href="{% url 'staffs:view_leave_requests' %}" class="nav-item">
+                    <span class="nav-icon">📝</span> Review Leaves
+                </a>
+                <a href="{% url 'staffs:exam_schedule' %}" class="nav-item">
+                    <span class="nav-icon">📅</span> Exam Duties
+                </a>
+                <a href="{% url 'staffs:staff_apply_leave' %}" class="nav-item">
+                    <span class="nav-icon">✈️</span> Apply Leave
+                </a>
+            </nav>
+
+            <div class="profile-mini">
+                {% if staff.photo %}
+                <img src="{{ staff.photo.url }}" alt="Profile">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ staff.name }}" alt="Profile">
+                {% endif %}
+                <div style="flex: 1; min-width: 0;">
+                    <div
+                        style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem;">
+                        {{ staff.name }}
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Class Incharge</div>
+                </div>
+                <a href="{% url 'staffs:staff_logout' %}" title="Logout"
+                    style="color: #ef4444; font-size: 1.1rem; text-decoration: none;">⏻</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="greeting">
+                    <h2>Low Attendance Alert</h2>
+                    <p style="font-size: 1rem; color: var(--text-muted); margin-top: 4px;">
+                        Manage students with < 70% attendance </p>
+                </div>
+                <div>
+                    <a href="{% url 'staffs:staff_dashboard' %}"
+                        style="text-decoration: none; color: var(--primary); font-weight: 600;">← Back to Dashboard</a>
+                </div>
+            </div>
+
+            <!-- Summary & Filter -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="summary-box" style="margin-bottom: 0;">
+                    <div class="summary-item">
+                        <span class="summary-value">{{ month_name }}</span>
+                        <span class="summary-label">Selected Month</span>
+                    </div>
+                    <div style="width: 1px; height: 30px; background: #e2e8f0;"></div>
+                    <div class="summary-item">
+                        <span class="summary-value">{{ working_days }}</span>
+                        <span class="summary-label">Working Days</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <a href="?month_offset=0" class="filter-btn {% if month_offset == 0 %}active{% endif %}"
+                        style="{% if month_offset == 0 %}background-color: var(--primary); color: white; border-color: var(--primary);{% endif %}">Current
+                        Month</a>
+                    <a href="?month_offset=1" class="filter-btn {% if month_offset == 1 %}active{% endif %}"
+                        style="{% if month_offset == 1 %}background-color: var(--primary); color: white; border-color: var(--primary);{% endif %}">Last
+                        Month</a>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Roll Number</th>
+                            <th>Student Name</th>
+                            <th>Parent Email</th>
+                            <th>Attendance (Hours)</th>
+                            <th>Percentage</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in deficit_students %}
+                        <tr>
+                            <td style="font-family: monospace; color: #334155;">{{ student.roll }}</td>
+                            <td style="font-weight: 500;">
+                                <a href="{% url 'staffs:student_detail' student.roll %}"
+                                    style="color: inherit; text-decoration: none;">{{ student.name }}</a>
+                            </td>
+                            <td>
+                                {% if student.parent_email %}
+                                <span style="color: #64748b; font-size: 0.9rem;">{{ student.parent_email }}</span>
+                                {% else %}
+                                <span
+                                    style="color: #ef4444; font-size: 0.8rem; background: #fee2e2; padding: 2px 6px; border-radius: 4px;">Missing</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span style="font-weight: 600;">{{ student.present }}</span> <span
+                                    style="color: #94a3b8;">/ {{ student.total }} hrs</span>
+                            </td>
+                            <td>
+                                <span class="status-badge-danger">{{ student.percentage }}%</span>
+                            </td>
+                            <td style="text-align: right;">
+                                {% if student.mail_sent %}
+                                <span
+                                    style="background: #dcfce7; color: #166534; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
+                                    ✅ Sent
+                                </span>
+                                {% elif student.parent_email %}
+                                <form action="{% url 'staffs:send_deficit_email' %}" method="POST"
+                                    style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="student_roll" value="{{ student.roll }}">
+                                    <input type="hidden" name="month_offset" value="{{ month_offset }}">
+                                    <button type="button" class="action-btn"
+                                        onclick="openConfirmModal(this.form, '{{ student.name }}')">
+                                        📩 Send Alert
+                                    </button>
+                                </form>
+                                {% else %}
+                                <button class="action-btn" disabled>
+                                    🚫 No Email
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 50px 20px;">
+                                <div style="font-size: 3rem; margin-bottom: 10px;">🎉</div>
+                                <h3 style="color: #334155; font-size: 1.2rem; margin-bottom: 5px;">All Clear!</h3>
+                                <p style="color: #94a3b8;">No students found with less than 70% attendance for {{
+                                    month_name }}.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 20px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+                Note: Percentage is calculated based on total <strong>Hours</strong> (Theory=1hr, Lab=3hrs) conducted
+                for the semester in the selected month.
+            </div>
+
+            <!-- Custom Confirmation Modal -->
+            <div id="confirmModal" class="modal-overlay" style="display: none;">
+                <div class="modal-box">
+                    <div class="modal-icon">⚠️</div>
+                    <h3>Confirm Action</h3>
+                    <p>Are you sure you want to send an attendance alert email to the parent of <strong
+                            id="modal-student-name">Student</strong>?</p>
+                    <div class="modal-actions">
+                        <button class="modal-btn cancel" onclick="closeConfirmModal()">Cancel</button>
+                        <button class="modal-btn confirm" onclick="confirmSend()">Yes, Send Alert</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <style>
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .modal-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            display: inline-block;
+            background: #fff5f5;
+            width: 70px;
+            height: 70px;
+            line-height: 70px;
+            border-radius: 50%;
+            border: 1px solid #fee2e2;
+        }
+
+        .modal-box h3 {
+            margin: 0 0 10px 0;
+            color: #1e293b;
+            font-size: 1.25rem;
+        }
+
+        .modal-box p {
+            color: #64748b;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .modal-btn:active {
+            transform: scale(0.98);
+        }
+
+        .modal-btn.cancel {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .modal-btn.cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .modal-btn.confirm {
+            background: #ef4444;
+            color: white;
+        }
+
+        .modal-btn.confirm:hover {
+            background: #dc2626;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+
+    <script>
+        let formToSubmit = null;
+
+        function openConfirmModal(form, studentName) {
+            formToSubmit = form;
+            document.getElementById('modal-student-name').textContent = studentName;
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+            formToSubmit = null;
+        }
+
+        function confirmSend() {
+            if (formToSubmit) {
+                // Change button text to indicate loading
+                const confirmBtn = document.querySelector('.modal-btn.confirm');
+                confirmBtn.textContent = 'Sending...';
+                confirmBtn.disabled = true;
+                formToSubmit.submit();
+            }
+        }
+
+        // Close modal if clicked outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('confirmModal');
+            if (event.target == modal) {
+                closeConfirmModal();
+            }
+        }
+    </script>
+
+
+</body>
+
+</html>

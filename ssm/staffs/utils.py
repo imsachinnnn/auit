@@ -154,6 +154,13 @@ def send_parent_notification_email(student, remark_types, staff_name):
     Returns:
         bool: True if email sent successfully, False otherwise
     """
+    import logging
+    from django.template.loader import render_to_string
+    from django.utils.html import strip_tags
+    from django.core.mail import EmailMultiAlternatives
+
+    logger = logging.getLogger(__name__)
+
     try:
         # Get parent email from student's personal info
         parent_email = None
@@ -161,50 +168,93 @@ def send_parent_notification_email(student, remark_types, staff_name):
             parent_email = student.personalinfo.parent_email
         
         if not parent_email:
-            print(f"No parent email found for student {student.roll_number}")
+            logger.warning(f"No parent email found for student {student.roll_number}")
             return False
         
         # Prepare email content
         subject = f"Student Discipline Notification - {student.student_name}"
         
-        violations_list = "\n".join([f"  • {remark}" for remark in remark_types])
+        # Context for the template
+        context = {
+            'student_name': student.student_name,
+            'roll_number': student.roll_number,
+            'program': student.program_level,
+            'semester': student.current_semester,
+            'remark_types': remark_types,
+            'date': timezone.now().strftime('%d-%m-%Y'),
+            'staff_name': staff_name,
+        }
+
+        # Render HTML content
+        html_content = render_to_string('emails/student_remark_notification.html', context)
+        # Create plain text alternative
+        text_content = strip_tags(html_content)
         
-        message = f"""Dear Parent/Guardian,
-
-This is to inform you that the following disciplinary remarks have been recorded for your ward:
-
-Student Name: {student.student_name}
-Roll Number: {student.roll_number}
-Program: {student.program_level} - Semester {student.current_semester}
-
-Violations Recorded:
-{violations_list}
-
-Date: {timezone.now().strftime('%d-%m-%Y')}
-Recorded by: {staff_name}
-
-We request your cooperation in addressing these concerns with your ward. Please feel free to contact the college office if you have any questions.
-
-Regards,
-Annamalai University
-Faculty of Engineering and Technology
-
----
-This is an automated notification. Please do not reply to this email.
-"""
-        
-        # Send email
-        send_mail(
+        # Create Email object
+        email = EmailMultiAlternatives(
             subject=subject,
-            message=message,
+            body=text_content,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[parent_email],
-            fail_silently=False,
+            to=[parent_email]
         )
+        email.attach_alternative(html_content, "text/html")
         
-        print(f"Email sent successfully to {parent_email}")
+        # Send
+        email.send(fail_silently=False)
+        
+        logger.info(f"Email sent successfully to {parent_email}")
         return True
         
     except Exception as e:
-        print(f"Error sending email: {e}")
+        logger.error(f"Error sending email: {e}")
+        return False
+
+def send_attendance_deficit_email(student, month_name, percentage, total_hours, attended_hours, staff_name):
+    """
+    Send low attendance alert email.
+    """
+    import logging
+    from django.template.loader import render_to_string
+    from django.utils.html import strip_tags
+    from django.core.mail import EmailMultiAlternatives
+
+    logger = logging.getLogger(__name__)
+
+    try:
+        parent_email = None
+        if hasattr(student, 'personalinfo') and student.personalinfo:
+            parent_email = student.personalinfo.parent_email
+        
+        if not parent_email:
+            return False
+
+        subject = f"Low Attendance Alert - {student.student_name} - {month_name}"
+        
+        context = {
+            'student_name': student.student_name,
+            'roll_number': student.roll_number,
+            'program': student.program_level,
+            'semester': student.current_semester,
+            'month_name': month_name,
+            'percentage': percentage,
+            'total_hours': total_hours,
+            'attended_hours': attended_hours,
+            'staff_name': staff_name,
+        }
+
+        html_content = render_to_string('emails/attendance_deficit_notification.html', context)
+        text_content = strip_tags(html_content)
+
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[parent_email]
+        )
+        email.attach_alternative(html_content, "text/html")
+        email.send(fail_silently=False)
+        return True
+
+    except Exception as e:
+        logger.error(f"Error sending attendance email: {e}")
         return False

@@ -2814,3 +2814,178 @@ def remark_history(request, roll_number):
         'remarks': remarks,
         'violation_choices': violation_choices
     })
+
+def attendance_deficit_list(request):
+    """View to list students with < 70% attendance for Class Incharge."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+        
+    staff = get_object_or_404(Staff, staff_id=request.session['staff_id'])
+    
+    # Access Control: Class Incharge Only
+    if staff.role != 'Class Incharge' or not staff.assigned_semester:
+        messages.error(request, "Access Restricted to Class Incharge.")
+        return redirect('staffs:staff_dashboard')
+        
+    import datetime
+    import calendar
+    from .models import Subject, Timetable
+    from students.models import StudentAttendance, Student
+    
+    # --- Month Selection ---
+    today = datetime.date.today()
+    month_offset = int(request.GET.get('month_offset', 0))
+    
+    # Calculate target month
+    # Logic: Go back 'month_offset' months
+    target_date = today
+    for _ in range(month_offset):
+        target_date = target_date.replace(day=1) - datetime.timedelta(days=1)
+        
+    target_month = target_date.month
+    target_year = target_date.year
+    month_name = calendar.month_name[target_month]
+    
+    # --- Logic ---
+    # 1. Get Students in Assigned Semester
+    students = Student.objects.filter(current_semester=staff.assigned_semester).select_related('personalinfo')
+    
+    # 2. Get Subjects for this Semester
+    subjects = Subject.objects.filter(semester=staff.assigned_semester)
+    
+    # 3. Calculate Attendance
+    # We need: Total Working Days (Unique dates with ANY attendance for ANY subject in this sem)
+    # AND Student Presence (Count of unique dates student was present)
+    # NOTE: This approximates "days" rather than "periods". If strict period count needed, logic changes.
+    # Assuming "Daily Attendance":
+    
+    # Get all dates where attendance was taken for this semester's subjects in this month
+    working_dates_qs = StudentAttendance.objects.filter(
+        subject__semester=staff.assigned_semester,
+        date__year=target_year,
+        date__month=target_month
+    ).values_list('date', flat=True).distinct()
+    
+    working_days_count = working_dates_qs.count()
+    
+    deficit_students = []
+    
+    if working_days_count > 0:
+        for student in students:
+            # Count days present (distinct dates where status='Present' for any subject)
+            # A student is "Present" for the day if they attended at least one class? 
+            # OR better: Check percentage based on per-subject or aggregate?
+            # Requirement: "monthly attendance deficit students below 70%" -> Usually global aggregate.
+            
+            # Let's use: (Total Periods Attended / Total Periods Conducted) * 100
+            
+            # Total Periods Conducted for this class (sum of all subject sessions)
+            total_sessions = StudentAttendance.objects.filter(
+                subject__semester=staff.assigned_semester,
+                date__year=target_year,
+                date__month=target_month,
+                student=student # Filter by student to match exact records created for them
+            ).count()
+            
+            # Total Present
+            attended_sessions = StudentAttendance.objects.filter(
+                subject__semester=staff.assigned_semester,
+                date__year=target_year,
+                date__month=target_month,
+                student=student,
+                status='Present'
+            ).count()
+            
+            percentage = 0
+            if total_sessions > 0:
+                percentage = int((attended_sessions / total_sessions) * 100)
+                
+            if percentage < 70:
+                parent_email = None
+                if hasattr(student, 'personalinfo'):
+                    parent_email = student.personalinfo.parent_email
+                    
+                deficit_students.append({
+                    'roll': student.roll_number,
+                    'name': student.student_name,
+                    'present': attended_sessions,
+                    'total': total_sessions,
+                    'percentage': percentage,
+                    'parent_email': parent_email
+                })
+    
+    return render(request, 'staff/attendance_deficit_list.html', {
+        'staff': staff,
+        'deficit_students': deficit_students,
+        'month_name': f"{month_name} {target_year}",
+        'working_days': working_days_count, # Just for reference
+        'month_offset': month_offset
+    })
+
+def send_deficit_email(request):
+    """Action to send the deficit email."""
+    if 'staff_id' not in request.session:
+        return redirect('staffs:stafflogin')
+        
+    if request.method == 'POST':
+        student_roll = request.POST.get('student_roll')
+        month_offset = request.POST.get('month_offset')
+        
+        staff = get_object_or_404(Staff, staff_id=request.session['staff_id'])
+        student = get_object_or_404(Student, roll_number=student_roll)
+        
+        # Re-calculate to get data for email (Hours based)
+        import datetime
+        import calendar
+        from students.models import StudentAttendance
+        from .models import MailLog
+        
+        today = datetime.date.today()
+        offset = int(month_offset) if month_offset else 0
+        target_date = today
+        for _ in range(offset):
+            target_date = target_date.replace(day=1) - datetime.timedelta(days=1)
+            
+        target_month = target_date.month
+        target_year = target_date.year
+        month_name = f"{calendar.month_name[target_month]} {target_year}"
+        
+        attendance_records = StudentAttendance.objects.filter(
+            subject__semester=staff.assigned_semester,
+            date__year=target_year,
+            date__month=target_month,
+            student=student
+        ).select_related('subject')
+        
+        total_hours = 0
+        attended_hours = 0
+        for record in attendance_records:
+            hours = 3 if record.subject.subject_type == 'Lab' else 1
+            total_hours += hours
+            if record.status == 'Present':
+                attended_hours += hours
+        
+        percentage = 0
+        if total_hours > 0:
+            percentage = int((attended_hours / total_hours) * 100)
+            
+        # Send Email
+        from .utils import send_attendance_deficit_email
+        if send_attendance_deficit_email(student, month_name, percentage, total_hours, attended_hours, staff.name):
+            # Log the email
+            MailLog.objects.create(
+                student=student,
+                staff=staff,
+                remark_type='Attendance Deficit',
+                month=month_name,
+                year=str(target_year)
+            )
+            messages.success(request, f"Alert sent to {student.student_name}'s parent.")
+        else:
+            messages.error(request, "Failed to send email. Check if parent email exists.")
+            
+        from django.urls import reverse
+        return redirect(f"{reverse('staffs:attendance_deficit_list')}?month_offset={offset}")
+        
+    from django.urls import reverse
+    return redirect('staffs:attendance_deficit_list')
