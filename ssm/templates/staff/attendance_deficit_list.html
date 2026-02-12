@@ -216,6 +216,44 @@
                 </div>
             </div>
 
+            <!-- Toast Notifications -->
+            {% if messages %}
+            <div id="toast-container" style="position: fixed; top: 80px; right: 20px; z-index: 9999;">
+                {% for message in messages %}
+                <div class="toast-message {% if message.tags %}toast-{{ message.tags }}{% endif %}"
+                    style="background: {% if message.tags == 'success' %}#10b981{% elif message.tags == 'error' %}#ef4444{% else %}#3b82f6{% endif %}; color: white; padding: 16px 24px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px; min-width: 300px; animation: slideIn 0.3s ease-out;">
+                    <span style="font-size: 1.2rem;">{% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}❌{% else %}ℹ️{% endif %}</span>
+                    <span style="flex: 1; font-weight: 500;">{{ message }}</span>
+                    <button onclick="this.parentElement.remove()"
+                        style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; padding: 0; opacity: 0.8;">×</button>
+                </div>
+                {% endfor %}
+            </div>
+            <style>
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(400px);
+                        opacity: 0;
+                    }
+
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+            </style>
+            <script>
+                // Auto-dismiss toasts after 5 seconds
+                setTimeout(() => {
+                    const toasts = document.querySelectorAll('.toast-message');
+                    toasts.forEach(toast => {
+                        toast.style.animation = 'slideOut 0.3s ease-in';
+                        setTimeout(() => toast.remove(), 300);
+                    });
+                }, 5000);
+            </script>
+            {% endif %}
+
             <!-- Summary & Filter -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <div class="summary-box" style="margin-bottom: 0;">

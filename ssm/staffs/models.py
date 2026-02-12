@@ -1,5 +1,13 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
+from ssm.validators import validate_file_size
+from ssm.upload_paths import (
+    staff_photo_path, staff_award_document_path, staff_seminar_document_path,
+    staff_student_guided_document_path, staff_leave_document_path,
+    staff_conference_document_path, staff_journal_document_path,
+    staff_book_document_path
+)
+
 
 class Staff(models.Model):
     # Basic Info
@@ -7,7 +15,12 @@ class Staff(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=128) # Stores the hashed password
-    photo = models.ImageField(upload_to='staff_photos/', blank=True, null=True)
+    photo = models.ImageField(
+        upload_to=staff_photo_path,
+        blank=True,
+        null=True,
+        validators=[validate_file_size]
+    )
 
     # Professional Details
     salutation = models.CharField(max_length=10, choices=[('Dr.', 'Dr.'), ('Prof.', 'Prof.'), ('Mr.', 'Mr.'), ('Ms.', 'Ms.')])
@@ -99,7 +112,13 @@ class StaffAwardHonour(models.Model):
     ]
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='Award')
     awarded_by = models.CharField(max_length=200, blank=True)
-    supporting_document = models.FileField(upload_to='staff/award_docs/', blank=True, null=True, help_text="Upload Certificate/Letter")
+    supporting_document = models.FileField(
+        upload_to=staff_award_document_path,
+        blank=True,
+        null=True,
+        help_text="Upload Certificate/Letter",
+        validators=[validate_file_size]
+    )
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -123,7 +142,13 @@ class StaffSeminar(models.Model):
     date_from = models.DateField(null=True, blank=True)
     date_to = models.DateField(null=True, blank=True)
     year = models.CharField(max_length=20, blank=True)
-    supporting_document = models.FileField(upload_to='staff/seminar_docs/', blank=True, null=True, help_text="Upload Certificate")
+    supporting_document = models.FileField(
+        upload_to=staff_seminar_document_path,
+        blank=True,
+        null=True,
+        help_text="Upload Certificate",
+        validators=[validate_file_size]
+    )
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -140,7 +165,13 @@ class StaffStudentGuided(models.Model):
     degree_type = models.CharField(max_length=10, choices=[('PG', 'PG'), ('PhD', 'PhD')])
     status = models.CharField(max_length=20, choices=[('Ongoing', 'Ongoing'), ('Completed', 'Completed')], default='Ongoing')
     year = models.CharField(max_length=20, blank=True)
-    supporting_document = models.FileField(upload_to='staff/student_docs/', blank=True, null=True, help_text="Memo/Provisional Certificate for PG/PhD, Allocation Order for New Students")
+    supporting_document = models.FileField(
+        upload_to=staff_student_guided_document_path,
+        blank=True,
+        null=True,
+        help_text="Memo/Provisional Certificate for PG/PhD, Allocation Order for New Students",
+        validators=[validate_file_size]
+    )
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -222,7 +253,13 @@ class StaffLeaveRequest(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     reason = models.TextField()
-    document = models.FileField(upload_to='leave_docs/', blank=True, null=True, help_text="Required for Medical Leave and On Other Duty")
+    document = models.FileField(
+        upload_to=staff_leave_document_path,
+        blank=True,
+        null=True,
+        help_text="Required for Medical Leave and On Other Duty",
+        validators=[validate_file_size]
+    )
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     rejection_reason = models.TextField(blank=True, null=True)
@@ -309,7 +346,13 @@ class ConferenceParticipation(models.Model):
     page_numbers_to = models.CharField(max_length=50, blank=True)
     place_of_publication = models.CharField(max_length=255, blank=True)
     publisher_proceedings = models.CharField(max_length=500, blank=True)
-    supporting_document = models.FileField(upload_to='staff/conference_docs/', blank=True, null=True, help_text="Upload Certificate/Paper")
+    supporting_document = models.FileField(
+        upload_to=staff_conference_document_path,
+        blank=True,
+        null=True,
+        help_text="Upload Certificate/Paper",
+        validators=[validate_file_size]
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -328,7 +371,13 @@ class JournalPublication(models.Model):
     year_of_publication_doi = models.CharField(max_length=255, blank=True)
     page_numbers_from = models.CharField(max_length=50, blank=True)
     page_numbers_to = models.CharField(max_length=50, blank=True)
-    supporting_document = models.FileField(upload_to='staff/journal_docs/', blank=True, null=True, help_text="Upload Paper Copy")
+    supporting_document = models.FileField(
+        upload_to=staff_journal_document_path,
+        blank=True,
+        null=True,
+        help_text="Upload Paper Copy",
+        validators=[validate_file_size]
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -347,7 +396,13 @@ class BookPublication(models.Model):
     month_of_publication = models.CharField(max_length=20, blank=True)
     year_of_publication = models.CharField(max_length=20, blank=True)
     url_address = models.URLField(blank=True, null=True)
-    supporting_document = models.FileField(upload_to='staff/book_docs/', blank=True, null=True, help_text="Upload Cover Page/Proof")
+    supporting_document = models.FileField(
+        upload_to=staff_book_document_path,
+        blank=True,
+        null=True,
+        help_text="Upload Cover Page/Proof",
+        validators=[validate_file_size]
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

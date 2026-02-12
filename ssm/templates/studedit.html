@@ -494,7 +494,8 @@
                 <h2 class="card-title">Document Uploads</h2>
                 <div class="document-grid">
                     <div class="document-upload-item">
-                        <label for="student_photo">Student Photo</label>
+                        <label for="student_photo">Student Photo <span style="font-size:0.8em; color:#6c757d;">(Max:
+                                100KB)</span></label>
                         <input type="file" id="student_photo" name="student_photo" accept="image/*">
                         {% if studentdocuments.student_photo %}
                         <div class="current-file">Current: <a href="{{ studentdocuments.student_photo.url }}"
@@ -505,7 +506,8 @@
                     </div>
 
                     <div class="document-upload-item">
-                        <label for="aadhaar_card">Aadhaar Card</label>
+                        <label for="aadhaar_card">Aadhaar Card <span style="font-size:0.8em; color:#6c757d;">(Max:
+                                100KB)</span></label>
                         <input type="file" id="aadhaar_card" name="aadhaar_card" accept="image/*,application/pdf">
                         {% if studentdocuments.aadhaar_card %}
                         <div class="current-file">Current: <a href="{{ studentdocuments.aadhaar_card.url }}"
@@ -516,7 +518,8 @@
                     </div>
 
                     <div class="document-upload-item">
-                        <label for="community_certificate">Community Certificate</label>
+                        <label for="community_certificate">Community Certificate <span
+                                style="font-size:0.8em; color:#6c757d;">(Max: 100KB)</span></label>
                         <input type="file" id="community_certificate" name="community_certificate"
                             accept="image/*,application/pdf">
                         {% if studentdocuments.community_certificate %}
@@ -528,7 +531,8 @@
                     </div>
 
                     <div class="document-upload-item">
-                        <label for="sslc_marksheet">SSLC Marksheet</label>
+                        <label for="sslc_marksheet">SSLC Marksheet <span style="font-size:0.8em; color:#6c757d;">(Max:
+                                100KB)</span></label>
                         <input type="file" id="sslc_marksheet" name="sslc_marksheet" accept="image/*,application/pdf">
                         {% if studentdocuments.sslc_marksheet %}
                         <div class="current-file">Current: <a href="{{ studentdocuments.sslc_marksheet.url }}"
@@ -539,7 +543,8 @@
                     </div>
 
                     <div class="document-upload-item">
-                        <label for="hsc_marksheet">HSC Marksheet</label>
+                        <label for="hsc_marksheet">HSC Marksheet <span style="font-size:0.8em; color:#6c757d;">(Max:
+                                100KB)</span></label>
                         <input type="file" id="hsc_marksheet" name="hsc_marksheet" accept="image/*,application/pdf">
                         {% if studentdocuments.hsc_marksheet %}
                         <div class="current-file">Current: <a href="{{ studentdocuments.hsc_marksheet.url }}"
@@ -550,7 +555,8 @@
                     </div>
 
                     <div class="document-upload-item">
-                        <label for="income_certificate">Income Certificate</label>
+                        <label for="income_certificate">Income Certificate <span
+                                style="font-size:0.8em; color:#6c757d;">(Max: 100KB)</span></label>
                         <input type="file" id="income_certificate" name="income_certificate"
                             accept="image/*,application/pdf">
                         {% if studentdocuments.income_certificate %}
@@ -562,7 +568,8 @@
                     </div>
 
                     <div class="document-upload-item">
-                        <label for="bank_passbook">Bank Passbook</label>
+                        <label for="bank_passbook">Bank Passbook <span style="font-size:0.8em; color:#6c757d;">(Max:
+                                100KB)</span></label>
                         <input type="file" id="bank_passbook" name="bank_passbook" accept="image/*,application/pdf">
                         {% if studentdocuments.bank_passbook %}
                         <div class="current-file">Current: <a href="{{ studentdocuments.bank_passbook.url }}"
@@ -573,7 +580,8 @@
                     </div>
 
                     <div class="document-upload-item">
-                        <label for="driving_license">Driving License (Optional)</label>
+                        <label for="driving_license">Driving License (Optional) <span
+                                style="font-size:0.8em; color:#6c757d;">(Max: 100KB)</span></label>
                         <input type="file" id="driving_license" name="driving_license" accept="image/*,application/pdf">
                         {% if studentdocuments.driving_license %}
                         <div class="current-file">Current: <a href="{{ studentdocuments.driving_license.url }}"
@@ -591,6 +599,7 @@
             </div>
         </form>
     </div>
+    <script src="{% static 'js/file-upload-validation.js' %}"></script>
     <script>
         function getCookie(name) {
             let cookieValue = null;

@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'students',
     'staffs',
     "anymail",
+    'storages',  # For R2 storage backend
 ]
 
 MIDDLEWARE = [
@@ -70,17 +71,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ssm.wsgi.application'
 
-# --- DATABASE ---
-# DATABASES = {
-#    "default": {
-#        "ENGINE": "django.db.backends.postgresql",
-#        "NAME": "ssm",
-#        "USER": "postgres",
-#       "PASSWORD": "dbms",
-#        "HOST": "localhost",
-#        "PORT": "5432",
-#    }
-# }
+
+DATABASES = {
+   "default": {
+       "ENGINE": "django.db.backends.postgresql",
+       "NAME": "ssm",
+       "USER": "postgres",
+      "PASSWORD": "dbms",
+       "HOST": "localhost",
+       "PORT": "5432",
+   }
+}
 
 # DATABASES = {
 #      'default': {
@@ -97,13 +98,13 @@ WSGI_APPLICATION = 'ssm.wsgi.application'
 # CRITICAL FOR RENDER:
 # If Render provides a 'DATABASE_URL' (like for a Managed Postgres DB),
 # this line overrides the MySQL settings above automatically.
-DATABASES = {
-    "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL"),
-        conn_max_age=600,
-        ssl_require=True,
-    )
-}
+# DATABASES = {
+#     "default": dj_database_url.config(
+#         default=os.environ.get("DATABASE_URL"),
+#         conn_max_age=600,
+#         ssl_require=True,
+#     )
+# }
 
 # --- PASSWORD VALIDATION ---
 AUTH_PASSWORD_VALIDATORS = [
@@ -162,6 +163,52 @@ if not DEBUG:
 # --- MEDIA FILES (for user-uploaded content) ---
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# ==========================================
+# CLOUDFLARE R2 STORAGE CONFIGURATION
+# ==========================================
+
+# R2 Storage Settings
+AWS_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('R2_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('R2_BUCKET_NAME')
+AWS_S3_ENDPOINT_URL = os.getenv('R2_ENDPOINT_URL')
+AWS_S3_REGION_NAME = 'auto'  # R2 uses 'auto' for region
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None  # R2 doesn't use ACLs
+AWS_QUERYSTRING_AUTH = False  # Don't add auth params to URLs
+
+# Sanitize the Public URL - extract domain only (no protocol)
+raw_public_url = os.getenv('R2_PUBLIC_URL')
+if raw_public_url:
+    raw_public_url = raw_public_url.strip().strip("'").strip('"')
+    # Use urlparse to properly extract the domain
+    from urllib.parse import urlparse
+    parsed = urlparse(raw_public_url)
+    # If it has a scheme (http/https), use just the netloc (domain)
+    if parsed.scheme:
+        raw_public_url = parsed.netloc
+    # Otherwise, remove any leading // if present
+    elif raw_public_url.startswith('//'):
+        raw_public_url = raw_public_url[2:]
+AWS_S3_CUSTOM_DOMAIN = raw_public_url
+print(f"DEBUG: AWS_S3_CUSTOM_DOMAIN set to: '{AWS_S3_CUSTOM_DOMAIN}'")
+
+# Use R2 for default file storage
+# STORAGES Configuration (Django 4.2+)
+STORAGES = {
+    "default": {
+        "BACKEND": "ssm.storage_backends.R2Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+if not DEBUG:
+    STORAGES["staticfiles"]["BACKEND"] = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 
 # --- DEFAULT SETTINGS ---
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

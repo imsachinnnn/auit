@@ -2,6 +2,14 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.hashers import make_password, check_password
 import datetime
+from ssm.validators import validate_file_size
+from ssm.upload_paths import (
+    student_photo_path, student_id_card_path, community_certificate_path,
+    aadhaar_card_path, first_graduate_certificate_path, sslc_marksheet_path,
+    hsc_marksheet_path, income_certificate_path, bank_passbook_path,
+    driving_license_path, student_leave_document_path, result_screenshot_path
+)
+
 
 # ... existing imports ...
 
@@ -189,16 +197,66 @@ class ScholarshipInfo(models.Model):
 
 class StudentDocuments(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, primary_key=True)
-    student_photo = models.ImageField(upload_to='photos/', blank=True, null=True)
-    student_id_card = models.FileField(upload_to='docs/', blank=True, null=True)
-    community_certificate = models.FileField(upload_to='docs/', blank=True, null=True)
-    aadhaar_card = models.FileField(upload_to='docs/', blank=True, null=True)
-    first_graduate_certificate = models.FileField(upload_to='docs/', blank=True, null=True)
-    sslc_marksheet = models.FileField(upload_to='docs/', blank=True, null=True)
-    hsc_marksheet = models.FileField(upload_to='docs/', blank=True, null=True)
-    income_certificate = models.FileField(upload_to='docs/', blank=True, null=True)
-    bank_passbook = models.FileField(upload_to='docs/', blank=True, null=True)
-    driving_license = models.FileField(upload_to='docs/', blank=True, null=True)
+    student_photo = models.ImageField(
+        upload_to=student_photo_path,
+        blank=True,
+        null=True,
+        validators=[validate_file_size]
+    )
+    student_id_card = models.FileField(
+        upload_to=student_id_card_path,
+        blank=True,
+        null=True,
+        validators=[validate_file_size]
+    )
+    community_certificate = models.FileField(
+        upload_to=community_certificate_path,
+        blank=True,
+        null=True,
+        validators=[validate_file_size]
+    )
+    aadhaar_card = models.FileField(
+        upload_to=aadhaar_card_path,
+        blank=True,
+        null=True,
+        validators=[validate_file_size]
+    )
+    first_graduate_certificate = models.FileField(
+        upload_to=first_graduate_certificate_path,
+        blank=True,
+        null=True,
+        validators=[validate_file_size]
+    )
+    sslc_marksheet = models.FileField(
+        upload_to=sslc_marksheet_path,
+        blank=True,
+        null=True,
+        validators=[validate_file_size]
+    )
+    hsc_marksheet = models.FileField(
+        upload_to=hsc_marksheet_path,
+        blank=True,
+        null=True,
+        validators=[validate_file_size]
+    )
+    income_certificate = models.FileField(
+        upload_to=income_certificate_path,
+        blank=True,
+        null=True,
+        validators=[validate_file_size]
+    )
+    bank_passbook = models.FileField(
+        upload_to=bank_passbook_path,
+        blank=True,
+        null=True,
+        validators=[validate_file_size]
+    )
+    driving_license = models.FileField(
+        upload_to=driving_license_path,
+        blank=True,
+        null=True,
+        validators=[validate_file_size]
+    )
     
 class OtherDetails(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, primary_key=True)
@@ -276,7 +334,12 @@ class LeaveRequest(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     reason = models.TextField()
-    document = models.FileField(upload_to='student_leave_docs/', blank=True, null=True, help_text="Required for Medical and OD")
+    document = models.FileField(
+        upload_to=student_leave_document_path,
+        blank=True,
+        null=True,
+        help_text="Required for Medical and OD"
+    )
     
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='Pending Class Incharge')
     rejection_reason = models.TextField(blank=True, null=True)
@@ -309,7 +372,7 @@ class StudentGPA(models.Model):
 class ResultScreenshot(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='result_screenshots')
     subject = models.ForeignKey('staffs.Subject', on_delete=models.CASCADE, related_name='result_screenshots')
-    screenshot = models.ImageField(upload_to='result_screenshots/')
+    screenshot = models.ImageField(upload_to=result_screenshot_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

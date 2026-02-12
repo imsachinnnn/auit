@@ -189,7 +189,7 @@ def staff_register(request):
         if form.is_valid():
             new_staff = form.save()
             from .utils import log_audit
-            log_audit(request, 'create', actor_type='system', actor_name='System', object_type='Staff', object_id=new_staff.staff_id, message=f'New staff registered: {new_staff.name}')
+            log_audit(request, 'create', actor_type='system', actor_id='system', actor_name='System', object_type='Staff', object_id=new_staff.staff_id, message=f'New staff registered: {new_staff.name}')
             messages.success(request, f"Staff member {new_staff.name} has been registered successfully.")
             return redirect('staffs:stafflogin')
         else:

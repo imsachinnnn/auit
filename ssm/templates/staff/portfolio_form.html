@@ -131,14 +131,14 @@
             <div class="form-group">
                 <label for="pub_type">Type</label>
                 <select id="pub_type" name="pub_type">
-                    <option value="Journal" {% if item and item.pub_type == 'Journal' %}selected{% endif %}>Journal
+                    <option value="Journal" {% if item and item.pub_type=='Journal' %}selected{% endif %}>Journal
                     </option>
-                    <option value="Conference" {% if item and item.pub_type == 'Conference' %}selected{% endif %}>
+                    <option value="Conference" {% if item and item.pub_type=='Conference' %}selected{% endif %}>
                         Conference</option>
-                    <option value="Book" {% if item and item.pub_type == 'Book' %}selected{% endif %}>Book</option>
-                    <option value="Book Chapter" {% if item and item.pub_type == 'Book Chapter' %}selected{% endif %}>Book
+                    <option value="Book" {% if item and item.pub_type=='Book' %}selected{% endif %}>Book</option>
+                    <option value="Book Chapter" {% if item and item.pub_type=='Book Chapter' %}selected{% endif %}>Book
                         Chapter</option>
-                    <option value="Other" {% if item and item.pub_type == 'Other' %}selected{% endif %}>Other</option>
+                    <option value="Other" {% if item and item.pub_type=='Other' %}selected{% endif %}>Other</option>
                 </select>
             </div>
             <div class="form-group">
@@ -168,10 +168,10 @@
             <div class="form-group">
                 <label for="category">Category</label>
                 <select id="category" name="category">
-                    <option value="Award" {% if item and item.category == 'Award' or not item %}selected{% endif %}>Award
+                    <option value="Award" {% if item and item.category=='Award' or not item %}selected{% endif %}>Award
                     </option>
-                    <option value="Honour" {% if item and item.category == 'Honour' %}selected{% endif %}>Honour</option>
-                    <option value="Membership" {% if item and item.category == 'Membership' %}selected{% endif %}>
+                    <option value="Honour" {% if item and item.category=='Honour' %}selected{% endif %}>Honour</option>
+                    <option value="Membership" {% if item and item.category=='Membership' %}selected{% endif %}>
                         Membership</option>
                 </select>
             </div>
@@ -186,7 +186,8 @@
                     placeholder="e.g. 2024">
             </div>
             <div class="form-group">
-                <label for="supporting_document">Certificate/Letter</label>
+                <label for="supporting_document">Certificate/Letter <span style="font-size:0.8em; color:#6c757d;">(Max:
+                        100KB)</span></label>
                 {% if item.supporting_document %}
                 <div style="font-size: 0.9rem; margin-bottom: 8px;">
                     Currently: <a href="{{ item.supporting_document.url }}" target="_blank">View File</a>
@@ -205,11 +206,11 @@
             <div class="form-group">
                 <label for="event_type">Type</label>
                 <select id="event_type" name="event_type">
-                    <option value="Seminar" {% if item and item.event_type == 'Seminar' or not item %}selected{% endif %}>
+                    <option value="Seminar" {% if item and item.event_type=='Seminar' or not item %}selected{% endif %}>
                         Seminar</option>
-                    <option value="Workshop" {% if item and item.event_type == 'Workshop' %}selected{% endif %}>Workshop
+                    <option value="Workshop" {% if item and item.event_type=='Workshop' %}selected{% endif %}>Workshop
                     </option>
-                    <option value="Conference" {% if item and item.event_type == 'Conference' %}selected{% endif %}>
+                    <option value="Conference" {% if item and item.event_type=='Conference' %}selected{% endif %}>
                         Conference</option>
                 </select>
             </div>
@@ -235,7 +236,8 @@
                     placeholder="e.g. 2024">
             </div>
             <div class="form-group">
-                <label for="supporting_document">Certificate</label>
+                <label for="supporting_document">Certificate <span style="font-size:0.8em; color:#6c757d;">(Max:
+                        100KB)</span></label>
                 {% if item.supporting_document %}
                 <div style="font-size: 0.9rem; margin-bottom: 8px;">
                     Currently: <a href="{{ item.supporting_document.url }}" target="_blank">View File</a>
@@ -254,17 +256,17 @@
             <div class="form-group">
                 <label for="degree_type">Degree Type</label>
                 <select id="degree_type" name="degree_type">
-                    <option value="PG" {% if item and item.degree_type == 'PG' or not item %}selected{% endif %}>PG
+                    <option value="PG" {% if item and item.degree_type=='PG' or not item %}selected{% endif %}>PG
                         (M.Tech, M.Sc, etc.)</option>
-                    <option value="PhD" {% if item and item.degree_type == 'PhD' %}selected{% endif %}>PhD</option>
+                    <option value="PhD" {% if item and item.degree_type=='PhD' %}selected{% endif %}>PhD</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="status">Status</label>
                 <select id="status" name="status">
-                    <option value="Ongoing" {% if item and item.status == 'Ongoing' or not item %}selected{% endif %}>
+                    <option value="Ongoing" {% if item and item.status=='Ongoing' or not item %}selected{% endif %}>
                         Ongoing</option>
-                    <option value="Completed" {% if item and item.status == 'Completed' %}selected{% endif %}>Completed
+                    <option value="Completed" {% if item and item.status=='Completed' %}selected{% endif %}>Completed
                     </option>
                 </select>
             </div>
@@ -274,7 +276,8 @@
                     placeholder="e.g. 2024 or 2020-2024">
             </div>
             <div class="form-group">
-                <label for="supporting_document">Full Memo / Provisional / Allocation (PDF) *</label>
+                <label for="supporting_document">Full Memo / Provisional / Allocation (PDF) * <span
+                        style="font-size:0.8em; color:#6c757d;">(Max: 100KB)</span></label>
                 <input type="file" id="supporting_document" name="supporting_document" accept=".pdf,.jpg,.jpeg,.png">
                 <p class="form-help">PG/PhD: Memo or Provisional Certificate. New Students: Allocation Order.</p>
                 {% if item and item.supporting_document %}
@@ -458,6 +461,7 @@
             </div>
         </form>
     </div>
+    <script src="{% static 'js/file-upload-validation.js' %}"></script>
 </body>
 
 </html>
