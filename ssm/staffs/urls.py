@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 from . import bonafide_views  # New separate module
 # from students.views import prevhome  # importing student view
@@ -98,4 +98,7 @@ urlpatterns = [
     # Attendance Deficit
     path('attendance-deficit/', views.attendance_deficit_list, name='attendance_deficit_list'),
     path('attendance-deficit/send/', views.send_deficit_email, name='send_deficit_email'),
+    
+    # Web Push
+    path('webpush/', include('webpush.urls')),
 ]

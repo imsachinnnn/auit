@@ -145,12 +145,13 @@
                             style="display: inline-block; background: #34495e; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 0.9rem; margin-right: 5px;">
                             🖨️ Print Certificate
                         </a>
-                        {% csrf_token %}
-                        <input type="hidden" name="request_id" value="{{ req.id }}">
-                        <button type="submit" name="action" value="mark_signed"
-                            style="background: #9b59b6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">
-                            ✍️ Mark Signed
-                        </button>
+                        <form method="post" action="{% url 'staffs:office_manage_bonafide' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="request_id" value="{{ req.id }}">
+                            <button type="submit" name="action" value="mark_signed"
+                                style="background: #9b59b6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">
+                                ✍️ Mark Signed
+                            </button>
                         </form>
                     </td>
                 </tr>

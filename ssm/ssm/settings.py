@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'staffs',
     "anymail",
     'storages',  # For R2 storage backend
+    'webpush',
 ]
 
 MIDDLEWARE = [
@@ -95,16 +96,30 @@ WSGI_APPLICATION = 'ssm.wsgi.application'
 #  }
                                     
 
-# CRITICAL FOR RENDER:
-# If Render provides a 'DATABASE_URL' (like for a Managed Postgres DB),
-# this line overrides the MySQL settings above automatically.
-DATABASES = {
-    "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL"),
-        conn_max_age=600,
-        ssl_require=True,
-    )
-}
+# Database Configuration
+# Tries to use DATABASE_URL from environment first (for production/Render)
+# Falls back to local PostgreSQL if not found.
+
+if os.environ.get("DATABASE_URL"):
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=os.environ.get("DATABASE_URL"),
+            conn_max_age=600,
+            ssl_require=True,
+        )
+    }
+else:
+    # Local Database Settings
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "ssm",
+            "USER": "postgres",
+            "PASSWORD": "dbms",
+            "HOST": "localhost",
+            "PORT": "5432",
+        }
+    }
 
 # --- PASSWORD VALIDATION ---
 AUTH_PASSWORD_VALIDATORS = [
@@ -329,5 +344,15 @@ JAZZMIN_UI_TWEAKS = {
         "danger": "btn-danger",
         "success": "btn-success"
     }
+}
+
+
+# ==========================================
+# WEBPUSH CONFIGURATION (VAPID)
+# ==========================================
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": "BEw6LWC0G64ByqHYGlJl7+Uuzp4E3MCGiENIkLEp3Kr228uOv/92V/LhXSyWZ1CSUzT135/8QuTOyfHbSW8gjA==",
+    "VAPID_PRIVATE_KEY": "NW2zAzsXXWh+mJK3ZqLeTXSItIEJ+icI0+7Z/pRAmrI=",
+    "VAPID_ADMIN_EMAIL": "admin@annamalai.edu"
 }
 
