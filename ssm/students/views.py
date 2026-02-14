@@ -1592,14 +1592,34 @@ def request_bonafide(request):
     student = Student.objects.get(roll_number=roll_number)
 
     if request.method == 'POST':
-        reason = request.POST.get('reason')
-        if not reason:
+        bonafide_type = request.POST.get('bonafide_type')
+        
+        # Construct the final reason string based on type
+        final_reason = bonafide_type
+        
+        if bonafide_type == 'Educational Loan':
+            bank = request.POST.get('bank_name', '').strip()
+            branch = request.POST.get('branch_name', '').strip()
+            if bank and branch:
+                final_reason = f"Educational Loan - Bank: {bank}, Branch: {branch}"
+            else:
+                 messages.error(request, 'Bank and Branch names are required for Educational Loan.')
+                 return redirect('bonafide_list')
+        
+        elif bonafide_type == 'Other':
+            custom_reason = request.POST.get('custom_reason', '').strip()
+            if custom_reason:
+                final_reason = custom_reason
+            else:
+                messages.error(request, 'Please specify the reason.')
+                return redirect('bonafide_list')
+        
+        if not final_reason:
              messages.error(request, 'Reason is required.')
              return redirect('bonafide_list')
         
-        # Limit check removed as per new requirements
-        
-        BonafideRequest.objects.create(student=student, reason=reason, status='Pending Office Approval')
+        # Unlimited requests
+        BonafideRequest.objects.create(student=student, reason=final_reason, status='Pending Office Approval')
         messages.success(request, 'Bonafide Request submitted successfully to Office!')
         return redirect('bonafide_list')
     

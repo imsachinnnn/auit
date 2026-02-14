@@ -128,7 +128,7 @@
 
         .content-body {
             font-size: 11pt;
-            line-height: 1.8;
+            line-height: 2.5;
             color: #003366;
             text-align: justify;
         }
@@ -231,19 +231,15 @@
     <!-- Body Content -->
     <div class="content-body">
         This is to certify that Mr./Ms. <span class="inline-field">{{ student.student_name }}</span>
-        <br><br>
         (<span class="red-text">Roll. No.</span> <span class="inline-field roll-field">{{ student.roll_number }}</span>)
         Son/Daughter of <span class="inline-field father-field">{{ father_name }}</span>
-        <br><br>
         is a bonafide student of this University studying in the
         <span class="inline-field" style="min-width: 50px; text-align: center;">{{ current_year_roman }}</span> Year /
         <span class="inline-field" style="min-width: 50px; text-align: center;">{{ current_semester_roman }}</span>
         Semester
-        <br><br>
         <strong>B.E.</strong> (Information Technology) Full Time / Lateral Entry Programme during the year
-        {{academic_year }}.
-        <br><br> This certificate is issued to the above student for the purpose of
-        <br><br>
+        {{academic_year }}. This certificate is issued to the above student for the purpose of
+        <br>
         <span class="inline-field reason-field">{{ bonafide_request.reason }}</span>
     </div>
 

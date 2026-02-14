@@ -74,23 +74,119 @@
         color: #555;
         font-style: italic;
     }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    /* ================= MOBILE OPTIMIZATION ================= */
+
+    @media (max-width: 768px) {
+
+        /* Sticky header */
+        .page-header {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Compact card */
+        .leave-card {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            padding: 14px;
+            border-radius: 12px;
+            border-left: 5px solid transparent;
+        }
+
+        /* Color indicator */
+        .leave-card:has(.status-Approved) {
+            border-left-color: #28a745;
+        }
+
+        .leave-card:has(.status-Pending) {
+            border-left-color: #ffc107;
+        }
+
+        .leave-card:has(.status-Rejected) {
+            border-left-color: #dc3545;
+        }
+
+        /* Header row */
+        .leave-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .leave-info h3 {
+            font-size: 0.95rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 4px 9px;
+        }
+
+        /* Dates */
+        .leave-dates {
+            font-size: 0.8rem;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+
+        /* Reason truncate */
+        .leave-reason {
+            font-size: 0.85rem;
+            margin-top: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Reject info compact */
+        .leave-info div[style*="border-left"] {
+            font-size: 0.8rem;
+            padding: 6px;
+        }
+    }
 </style>
 
-<div class="page-header"
-    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h2 style="color: var(--accent-color); margin: 0;">My Leave History</h2>
-    <a href="{% url 'apply_leave' %}" class="btn-sm btn-outline" style="text-decoration: none;">← Back</a>
+<div class="page-header">
+    <h2 style="color: var(--accent-color); margin: 0; font-size: 1.5rem;">My Leave History</h2>
+    <a href="{% url 'student_dashboard' %}" class="btn-sm btn-outline" style="text-decoration: none;">← Back</a>
 </div>
 
 <div class="leaves-grid">
     {% for leave in leaves %}
     <div class="leave-card">
         <div class="leave-info">
-            <h3>{{ leave.get_leave_type_display }}</h3>
+
+            <!-- Mobile optimized header -->
+            <div class="leave-top">
+                <h3>{{ leave.get_leave_type_display }}</h3>
+                <span class="status-badge status-{{ leave.status }}">
+                    {{ leave.status }}
+                </span>
+            </div>
+
             <div class="leave-dates">
                 📅 {{ leave.start_date|date:"M d, Y" }} - {{ leave.end_date|date:"M d, Y" }}
             </div>
+
             <div class="leave-reason">"{{ leave.reason }}"</div>
+
             {% if leave.status == 'Rejected' %}
             <div
                 style="background: #fff5f5; border-left: 3px solid var(--danger-color); padding: 8px; margin-top: 8px; border-radius: 4px;">
@@ -106,13 +202,10 @@
                 {% endif %}
             </div>
             {% endif %}
-        </div>
-        <div>
-            <span class="status-badge status-{{ leave.status }}">
-                {{ leave.status }}
-            </span>
+
         </div>
     </div>
+
     {% empty %}
     <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
         <p>No leave requests found.</p>

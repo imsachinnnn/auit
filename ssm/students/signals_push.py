@@ -23,8 +23,17 @@ def notify_bonafide_status_change(sender, instance, created, **kwargs):
     new_status = instance.status
     
     if old_status != new_status:
-        user = instance.student.user
+        # Try to resolve Django User from Student
+        # Attempt 1: Direct attribute
+        user = getattr(instance.student, 'user', None)
+        
+        # Attempt 2: Lookup by username (assuming roll_number == username)
         if not user:
+            from django.contrib.auth.models import User
+            user = User.objects.filter(username=instance.student.roll_number).first()
+
+        if not user:
+            print(f"WebPush: No Django User found for student {instance.student.roll_number}. Notification skipped.")
             return
 
         payload = {
@@ -59,8 +68,15 @@ def notify_leave_status_change(sender, instance, created, **kwargs):
     new_status = instance.status
 
     if old_status != new_status:
-        user = instance.student.user
+        # Try to resolve Django User from Student
+        user = getattr(instance.student, 'user', None)
+        
         if not user:
+            from django.contrib.auth.models import User
+            user = User.objects.filter(username=instance.student.roll_number).first()
+
+        if not user:
+            print(f"WebPush: No Django User found for student {instance.student.roll_number}. Notification skipped.")
             return
 
         payload = {

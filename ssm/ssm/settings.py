@@ -203,20 +203,23 @@ AWS_DEFAULT_ACL = None  # R2 doesn't use ACLs
 AWS_QUERYSTRING_AUTH = False  # Don't add auth params to URLs
 
 
+from urllib.parse import urlparse
+import os
+
 raw_public_url = os.getenv('R2_PUBLIC_URL')
+
 if raw_public_url:
     raw_public_url = raw_public_url.strip().strip("'").strip('"')
-    # Use urlparse to properly extract the domain
-    from urllib.parse import urlparse
+
     parsed = urlparse(raw_public_url)
-    # If it has a scheme (http/https), use just the netloc (domain)
+
     if parsed.scheme:
         raw_public_url = parsed.netloc
-    # Otherwise, remove any leading // or / if present
     else:
         raw_public_url = raw_public_url.lstrip('/')
-    
+
 AWS_S3_CUSTOM_DOMAIN = raw_public_url
+
 # print(f"DEBUG: AWS_S3_CUSTOM_DOMAIN set to: '{AWS_S3_CUSTOM_DOMAIN}'")
 
 # Use R2 for default file storage

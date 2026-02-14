@@ -10,7 +10,6 @@
         @page {
             size: A4;
             margin: 0;
-            /* Removes browser headers/footers (stamps) */
         }
 
         * {
@@ -23,18 +22,19 @@
             font-family: "Times New Roman", Times, serif;
             color: #000;
             background: #fff;
-            max-width: 210mm;
-            margin: 0 auto;
-            /* Padding is applied to the container, not body to allow full page breaks */
-            font-size: 11pt;
         }
 
-        .certificate-wrapper {
+        .certificate-page {
+            max-width: 210mm;
+            margin: 0 auto;
             padding: 15mm 20mm;
-            /* Optimizing whitespace for each page */
-            height: 297mm;
-            /* Force A4 height */
-            position: relative;
+            font-size: 11pt;
+            page-break-after: always;
+            min-height: 297mm;
+        }
+
+        .certificate-page:last-child {
+            page-break-after: auto;
         }
 
         .header-container {
@@ -97,7 +97,6 @@
             color: #000;
         }
 
-
         .bottom-border {
             border-bottom: 2px solid #000;
             margin-top: 5px;
@@ -126,7 +125,7 @@
 
         .content-body {
             font-size: 11pt;
-            line-height: 1.8;
+            line-height: 2.5;
             color: #003366;
             text-align: justify;
         }
@@ -138,7 +137,6 @@
             padding: 0 5px 2px 5px;
             color: #000;
             text-align: center;
-            /* Centering data */
         }
 
         .roll-field {
@@ -157,20 +155,9 @@
             color: #ff0000;
         }
 
-        .page-break {
-            page-break-after: always;
-            break-after: page;
-            display: block;
-            height: 0;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-
         @media print {
             body {
                 margin: 0;
-                /* Padding handled by wrapper */
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -179,15 +166,8 @@
                 display: none;
             }
 
-            .certificate-wrapper {
-                /* Ensure each wrapper takes up a full page */
-                height: 296mm;
-                /* Slightly less than 297 to avoid overflow blank page */
-                page-break-after: always;
-            }
-
-            .certificate-wrapper:last-child {
-                page-break-after: auto;
+            .certificate-page {
+                padding: 15mm 20mm;
             }
         }
     </style>
@@ -205,7 +185,7 @@
     </div>
 
     {% for item in bulk_data %}
-    <div class="certificate-wrapper">
+    <div class="certificate-page">
         <!-- Header Section -->
         <div class="header-container">
             <img src="{% static 'imgs/annamalai.png' %}" alt="Annamalai University Logo" class="university-logo">
@@ -253,19 +233,15 @@
         <!-- Body Content -->
         <div class="content-body">
             This is to certify that Mr./Ms. <span class="inline-field">{{ item.student.student_name }}</span>
-            <br><br>
-            (<span class="red-text">Roll. No.</span> <span class="inline-field roll-field">{{ item.student.roll_number}}</span>)
+            (<span class="red-text">Roll. No.</span> <span class="inline-field roll-field">{{ item.student.roll_number }}</span>)
             Son/Daughter of <span class="inline-field father-field">{{ item.father_name }}</span>
-            <br><br>
             is a bonafide student of this University studying in the
-            <span class="inline-field" style="min-width: 50px; text-align: center;">{{ item.current_year_roman }}</span>
-            Year /
-            <span class="inline-field" style="min-width: 50px; text-align: center;">{{ item.current_semester_roman}}</span>
+            <span class="inline-field" style="min-width: 50px; text-align: center;">{{ item.current_year_roman }}</span> Year /
+            <span class="inline-field" style="min-width: 50px; text-align: center;">{{ item.current_semester_roman }}</span>
             Semester
-            <br><br>
-            <strong>B.E.</strong> (Information Technology) Full Time / Lateral Entry Programme during the year {{item.academic_year }}.
-            <br><br> This certificate is issued to the above student for the purpose of
-            <br><br>
+            <strong>B.E.</strong> (Information Technology) Full Time / Lateral Entry Programme during the year
+            {{ item.academic_year }}. This certificate is issued to the above student for the purpose of
+            <br>
             <span class="inline-field reason-field">{{ item.bonafide_request.reason }}</span>
         </div>
     </div>

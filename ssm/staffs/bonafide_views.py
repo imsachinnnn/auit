@@ -242,13 +242,18 @@ def office_bonafide_list(request):
     ready_requests = BonafideRequest.objects.filter(status__in=['Signed', 'Ready for Collection']).order_by('updated_at')
     
     # 4. History
-    processed_requests = BonafideRequest.objects.filter(status__in=['Collected', 'Rejected']).order_by('-updated_at')[:20]
+    # 4. History (Handovered)
+    completed_requests = BonafideRequest.objects.filter(status='Collected').order_by('-updated_at')[:20]
+    
+    # 5. Rejected History
+    rejected_requests = BonafideRequest.objects.filter(status='Rejected').order_by('-updated_at')[:20]
 
     context = {
         'staff': staff,
         'pending_requests': pending_requests,
         'waiting_requests': waiting_requests,
         'ready_requests': ready_requests,
-        'processed_requests': processed_requests,
+        'completed_requests': completed_requests,
+        'rejected_requests': rejected_requests,
     }
     return render(request, 'staff/bonafide/office_list.html', context)

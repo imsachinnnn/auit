@@ -12,11 +12,7 @@ class R2Storage(S3Boto3Storage):
     Configured to use R2's S3-compatible API.
     """
     # R2 Configuration from environment variables
-    access_key = os.getenv('R2_ACCESS_KEY_ID')
-    secret_key = os.getenv('R2_SECRET_ACCESS_KEY')
-    bucket_name = os.getenv('R2_BUCKET_NAME')
-    endpoint_url = os.getenv('R2_ENDPOINT_URL')
-    custom_domain = os.getenv('R2_PUBLIC_URL', None)  # Optional CDN URL
+
     
     # R2-specific settings
     region_name = 'auto'  # R2 uses 'auto' for region

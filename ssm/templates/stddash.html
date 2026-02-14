@@ -913,21 +913,90 @@
             style="background: #fff; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; position: relative;">
             <button onclick="closeBonafideModal()"
                 style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
-            <h3 style="margin-top: 0; color: #333;">Request Bonafide</h3>
-            <form method="post" action="{% url 'request_bonafide' %}">
+            <h3 style="margin-top: 0; color: #333; margin-bottom: 15px;">Request Bonafide</h3>
+
+            <form method="post" action="{% url 'request_bonafide' %}" id="bonafideForm">
                 {% csrf_token %}
-                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #475569;">Reason for
-                    Request:</label>
-                <textarea name="reason" rows="4"
-                    style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 10px; font-family: inherit;"
-                    placeholder="e.g. For Passport Application..." required></textarea>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #475569;">Purpose of
+                        Request:</label>
+                    <select name="bonafide_type" id="bonafideType" onchange="toggleBonafideFields()" required
+                        style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; background: white; color: #334155;">
+                        <option value="" disabled selected>-- Select a Reason --</option>
+                        <option value="Applying for First Graduate Scholarship">Applying for First Graduate Scholarship
+                        </option>
+                        <option value="Applying for Post Matric Scholarship">Applying for Post Matric Scholarship
+                        </option>
+                        <option value="First Graduate Scholarship Not Availed">He/She has not availed First Graduate
+                            Scholarship from this institution</option>
+                        <option value="Passport Verification">Passport Verification</option>
+                        <option value="Applying for Passport">Applying for Passport (Govt. of India)</option>
+                        <option value="7.5% Reservation / Puthumai Penn / Thamil Pudhalvan Scheme">7.5% Reservation /
+                            Puthumai Penn / Thamil Pudhalvan Scheme</option>
+                        <option value="Nalavariyam / Uzhavar Scholarship">Nalavariyam / Uzhavar Scholarship</option>
+                        <option value="Educational Loan">Educational Loan</option>
+                        <option value="Other">Other (Type Manually)</option>
+                    </select>
+                </div>
+
+                <!-- Conditional: Educational Loan -->
+                <div id="loanFields"
+                    style="display: none; margin-bottom: 15px; border-left: 3px solid #5a7d7c; padding-left: 10px;">
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; color: #64748b;">Bank
+                            Name:</label>
+                        <input type="text" name="bank_name" placeholder="e.g. State Bank of India"
+                            style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem; color: #64748b;">Branch
+                            Name:</label>
+                        <input type="text" name="branch_name" placeholder="e.g. Annamalai Nagar"
+                            style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    </div>
+                </div>
+
+                <!-- Conditional: Other Reason -->
+                <div id="otherField" style="display: none; margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #475569;">Enter
+                        Reason:</label>
+                    <textarea name="custom_reason" rows="3"
+                        style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit;"
+                        placeholder="Type your specific reason here... [1 line Maximum]"></textarea>
+                </div>
 
                 <button type="submit"
-                    style="width: 100%; background: #5a7d7c; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 500; cursor: pointer;">Submit
-                    Request</button>
+                    style="width: 100%; background: #5a7d7c; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 1rem; margin-top: 5px;">
+                    Submit Request
+                </button>
             </form>
         </div>
     </div>
+
+    <script>
+        function toggleBonafideFields() {
+            const type = document.getElementById('bonafideType').value;
+            const loanFields = document.getElementById('loanFields');
+            const otherField = document.getElementById('otherField');
+
+            // Reset visibility
+            loanFields.style.display = 'none';
+            otherField.style.display = 'none';
+
+            // Reset required attributes to prevent validation errors on hidden fields
+            loanFields.querySelectorAll('input').forEach(input => input.required = false);
+            otherField.querySelector('textarea').required = false;
+
+            if (type === 'Educational Loan') {
+                loanFields.style.display = 'block';
+                loanFields.querySelectorAll('input').forEach(input => input.required = true);
+            } else if (type === 'Other') {
+                otherField.style.display = 'block';
+                otherField.querySelector('textarea').required = true;
+            }
+        }
+    </script>
 
     <script>
         // Toast Notification System
